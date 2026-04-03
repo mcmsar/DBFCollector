@@ -1,0 +1,39 @@
+<project name='DBFCollector'
+				default='build_release'
+               basedir=".">
+   
+	<taskdef name='vc10'       classname='com.arrizza.ant.taskdefs.VC7' classpath='jarrizza.jar' />
+    <taskdef name='setproductversion' classname='com.emsgt.build.HGTCPPBuildTask'/> 	
+	               			
+	<target name='init'>
+		<property name='srcdir'  value='${src_dir}' />
+		<property name='mode'    value='release' />
+		<property name='rebuild' value='yes' />
+    </target>
+	
+	<target name='DBFCollector_setproductversion' depends='init'>
+		<exec dir="${src_dir}/DBFCollectorMT" executable="cmd">
+		  <arg value="/c"/>
+          <arg value="svn_cleanup.bat"/>
+		</exec>
+		<setproductversion
+		        filename="${srcdir}\DBFCollectorMT\DBFCollector.rc" 
+                productversion ="${build_label}"
+				filebuildnum ="${build_number}"/>
+	</target>
+	
+	<target name='DBFCollector_build' depends='init'>
+		<vc10  buildmode='${mode}' projectrootfolder='${srcdir}' compilerfolder='${vs2010_location}'>
+			<targets dir='${srcdir}' includes='**/DBFCollector.sln'/>
+		</vc10>
+    </target>
+	
+	<target name='svnCommit' depends='DBFCollector_build'>
+		<exec dir="${src_dir}/DBFCollectorMT" executable="cmd">
+		  <arg value="/c"/>
+          <arg value="svn_commit.bat"/>
+		</exec>
+    </target>
+		   
+	<target name='build_release' depends='svnCommit'/>
+</project>

@@ -1,0 +1,220 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|x64">
+      <Configuration>Debug</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|x64">
+      <Configuration>Release</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <SccProjectName />
+    <SccLocalPath />
+    <ProjectGuid>{5B77D649-577C-FEA6-1EA3-73B0EAE9F86C}</ProjectGuid>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseOfMfc>false</UseOfMfc>
+    <CharacterSet>MultiByte</CharacterSet>
+    <PlatformToolset>v145</PlatformToolset>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseOfMfc>false</UseOfMfc>
+    <CharacterSet>MultiByte</CharacterSet>
+    <PlatformToolset>v145</PlatformToolset>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+    <Import Project="$(VCTargetsPath)Microsoft.Cpp.UpgradeFromVC60.props" />
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+    <Import Project="$(VCTargetsPath)Microsoft.Cpp.UpgradeFromVC60.props" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <OutDir>.\Release\</OutDir>
+    <IntDir>.\Release\</IntDir>
+    <LinkIncremental>false</LinkIncremental>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <OutDir>.\x64\Debug\</OutDir>
+    <IntDir>.\x64\Debug\</IntDir>
+    <LinkIncremental>true</LinkIncremental>
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <ClCompile>
+      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
+      <InlineFunctionExpansion>OnlyExplicitInline</InlineFunctionExpansion>
+      <StringPooling>true</StringPooling>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <Optimization>MaxSpeed</Optimization>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <WarningLevel>Level3</WarningLevel>
+      <AdditionalIncludeDirectories>..\DBFPassScheduler;..\3rdParty\microsoft\microsoft sdk\include;..\3rdParty\microsoft\msxml4;..\common\include;..\3rdParty\intel\mkl\include;..\3rdParty\intel\ipp\5.2\ia32\include;.\;..\3rdParty\XSD-3.3\include;.\FreqSwitch;..\3rdParty\intel\mkl;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>WIN32;NDEBUG;_CONSOLE;_WIN32_WINNT=0x400;EMS_USE_INTEL_PP;_64BITS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AssemblerListingLocation>.\Release\</AssemblerListingLocation>
+      <PrecompiledHeaderOutputFile>.\Release\DBFCollector.pch</PrecompiledHeaderOutputFile>
+      <ObjectFileName>.\Release\</ObjectFileName>
+      <ProgramDataBaseFileName>.\Release\</ProgramDataBaseFileName>
+      <ExceptionHandling>Async</ExceptionHandling>
+      <TreatWChar_tAsBuiltInType>true</TreatWChar_tAsBuiltInType>
+    </ClCompile>
+    <Midl>
+      <TypeLibraryName>.\Release\DBFCollector.tlb</TypeLibraryName>
+    </Midl>
+    <ResourceCompile>
+      <Culture>0x1009</Culture>
+      <PreprocessorDefinitions>NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+    </ResourceCompile>
+    <Bscmake>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <OutputFile>.\Release\DBFCollector.bsc</OutputFile>
+    </Bscmake>
+    <Link>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <SubSystem>Console</SubSystem>
+      <OutputFile>.\Release\DBFCollector.exe</OutputFile>
+      <AdditionalDependencies>odbc32.lib;odbccp32.lib;ws2_32.lib;EMSConfigClientCPP x64.lib;ipps.lib;ippm.lib;Wsnmp32.lib;xerces-c_3.lib;mkl_intel_lp64.lib;mkl_core.lib;mkl_sequential.lib;comsuppw.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>..\Common\Library;..\3rdParty\apache\xerces\c\libx64;..\3rdParty\Intel\mkl\;..\3rdParty\Intel\IPP\8.0\intel64\stublib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <GenerateDebugInformation>false</GenerateDebugInformation>
+      <AdditionalOptions>/verbose %(AdditionalOptions)</AdditionalOptions>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <ClCompile>
+      <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
+      <InlineFunctionExpansion>Default</InlineFunctionExpansion>
+      <FunctionLevelLinking>false</FunctionLevelLinking>
+      <Optimization>Disabled</Optimization>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <WarningLevel>Level3</WarningLevel>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+      <AdditionalIncludeDirectories>C:\dev\trunk\DBFCollectorMT_Apr2_2025;..\DBFPassScheduler;..\3rdParty\microsoft\microsoft sdk\include;..\3rdParty\microsoft\msxml4;..\common\include;..\3rdParty\intel\ipp\5.2\ia32\include;.\;..\3rdParty\XSD-3.3\include;.\FreqSwitch;..\common\include\mkl;..\3rdParty\Intel\MKL\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;_WIN32_WINNT=0x400;EMS_USE_INTEL_PP;_64BITS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AssemblerListingLocation>.\Debug\</AssemblerListingLocation>
+      <BrowseInformation>true</BrowseInformation>
+      <PrecompiledHeaderOutputFile>.\Debug\DBFCollector.pch</PrecompiledHeaderOutputFile>
+      <ObjectFileName>.\Debug\</ObjectFileName>
+      <ProgramDataBaseFileName>.\Debug\</ProgramDataBaseFileName>
+      <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
+      <AdditionalOptions>/w14103 %(AdditionalOptions)</AdditionalOptions>
+    </ClCompile>
+    <Midl>
+      <TypeLibraryName>.\Debug\DBFCollector.tlb</TypeLibraryName>
+    </Midl>
+    <ResourceCompile>
+      <Culture>0x1009</Culture>
+      <PreprocessorDefinitions>_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+    </ResourceCompile>
+    <Bscmake>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <OutputFile>.\Debug\DBFCollector.bsc</OutputFile>
+    </Bscmake>
+    <Link>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <SubSystem>Console</SubSystem>
+      <OutputFile>x64\Debug\DBFCollector.exe</OutputFile>
+      <AdditionalDependencies>odbc32.lib;odbccp32.lib;ws2_32.lib;..\3rdParty\Intel\IPP\8.0\intel64\stublib\ipps.lib;..\3rdParty\Intel\IPP\8.0\intel64\stublib\ippm.lib;Wsnmp32.lib;xerces-c_3D.lib;mkl_intel_lp64.lib;mkl_core.lib;mkl_sequential.lib;comsuppw.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>..\3rdParty\apache\xerces\c\libx64;..\common\library\mkl\intel64_win;..\3rdParty\Intel\mkl\include;..\3rdParty\Intel\MKL;..\common\library;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ClCompile Include="..\Common\AOBJBASE.CPP" />
+    <ClCompile Include="..\Common\ArrayHelper.cpp" />
+    <ClCompile Include="..\Common\ccbootstrap.cpp" />
+    <ClCompile Include="..\Common\EMSCONFG.CPP" />
+    <ClCompile Include="..\Common\EMSRGKEY.CPP" />
+    <ClCompile Include="..\Common\RegistrySettings.cpp" />
+    <ClCompile Include="..\Common\RIFFHeader.cpp" />
+    <ClCompile Include="..\Common\StdRIFF.cpp" />
+    <ClCompile Include="..\Common\StdWave.cpp" />
+    <ClCompile Include="..\Common\WaveDataChunk.cpp" />
+    <ClCompile Include="..\Common\WaveEx.cpp" />
+    <ClCompile Include="..\Common\WaveExtChunk.cpp" />
+    <ClCompile Include="..\Common\WaveExtLutDetails.cpp" />
+    <ClCompile Include="..\Common\WaveExtProperties.cpp" />
+    <ClCompile Include="..\Common\WaveExtSatDetails.cpp" />
+    <ClCompile Include="..\Common\WaveExtSignalDetails.cpp" />
+    <ClCompile Include="..\Common\WaveExtSubBandDetails.cpp" />
+    <ClCompile Include="..\Common\WaveExtSubBandsDetails.cpp" />
+    <ClCompile Include="..\Common\WaveFormatChunk.cpp" />
+    <ClCompile Include="CollectionObject.cpp" />
+    <ClCompile Include="..\Common\ConfigurationAccessor.cpp" />
+    <ClCompile Include="..\Common\convutility.cpp" />
+    <ClCompile Include="DataProcessor.cpp" />
+    <ClCompile Include="DBFCollector.cpp" />
+    <ClCompile Include="DBFDataMgr.cpp" />
+    <ClCompile Include="DBFPointingAngles.cpp" />
+    <ClCompile Include="..\Common\EMSCLOCK.CPP" />
+    <ClCompile Include="..\Common\EMSCMREG.CPP" />
+    <ClCompile Include="..\Common\EMSCOORD.CPP" />
+    <ClCompile Include="..\Common\emsdomdocument.cpp" />
+    <ClCompile Include="..\Common\emsdomnode.cpp" />
+    <ClCompile Include="..\Common\emsdomnodelist.cpp" />
+    <ClCompile Include="..\Common\EMSEARTH.CPP" />
+    <ClCompile Include="..\Common\EMSEXCPT.CPP" />
+    <ClCompile Include="..\Common\emsflist.cpp" />
+    <ClCompile Include="..\Common\emsgpsconvert.cpp" />
+    <ClCompile Include="..\Common\EMSGPSOrbit.cpp" />
+    <ClCompile Include="..\Common\EMSRANGE.CPP" />
+    <ClCompile Include="..\Common\emsthread.cpp" />
+    <ClCompile Include="..\Common\EMSTIME.CPP" />
+    <ClCompile Include="..\Common\emstleconv.cpp" />
+    <ClCompile Include="..\Common\EMSVECTR.CPP" />
+    <ClCompile Include="..\Common\ESECDESC.CPP" />
+    <ClCompile Include="..\Common\Eservice.cpp" />
+    <ClCompile Include="..\ADBoards\GS - 64\GSRawBuffer.cpp" />
+    <ClCompile Include="..\Common\LogMsgParam.cpp" />
+    <ClCompile Include="..\Common\LogRegistrySettings.cpp" />
+    <ClCompile Include="DigitalBeamFormer.cpp" />
+    <ClCompile Include="FreqSwitch\DBFConstellation.cxx" />
+    <ClCompile Include="FreqSwitch\EMSDBFConfigReader.cpp" />
+    <ClCompile Include="FreqSwitch\EMSDBFConstellationManager.cpp" />
+    <ClCompile Include="FreqSwitch\EMSDBFEnvSensor.cpp" />
+    <ClCompile Include="FreqSwitch\EMSDBFSynthesizer.cpp" />
+    <ClCompile Include="FreqSwitch\EMSSNMPException.cpp" />
+    <ClCompile Include="FreqSwitch\EMSSNMPManager.cpp" />
+    <ClCompile Include="FreqSwitch\EMSSNMPObject.cpp" />
+    <ClCompile Include="FreqSwitch\EMSSNMPRemoteAgent.cpp" />
+    <ClCompile Include="FreqSwitch\EMSSNMPRequest.cpp" />
+    <ClCompile Include="FreqSwitch\EMSSNMPSession.cpp" />
+    <ClCompile Include="FreqSwitch\EMSSNMPTracer.cpp" />
+    <ClCompile Include="FreqSwitch\EMSSNMPTrap.cpp" />
+    <ClCompile Include="HGTEigenVectors.cpp" />
+    <ClCompile Include="SIGPROC.CPP" />
+    <ClCompile Include="TrackDBFSatellites.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\Common\Include\PointerQueue.h" />
+    <ClInclude Include="StdAfx.h" />
+    <ClInclude Include="TimeElapsed.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <Midl Include="..\Common\Include\DataTransmitter.idl">
+      <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">..\Common\Include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='Release|x64'">..\Common\Include</AdditionalIncludeDirectories>
+      <HeaderFileName Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">%(Filename).h</HeaderFileName>
+      <HeaderFileName Condition="'$(Configuration)|$(Platform)'=='Release|x64'">%(Filename).h</HeaderFileName>
+    </Midl>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="ClassDiagram1.cd" />
+    <None Include="ClassDiagram2.cd" />
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="DBFCollector.rc" />
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+</Project>

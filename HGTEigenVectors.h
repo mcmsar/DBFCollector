@@ -1,0 +1,40 @@
+#pragma once
+#include <string>
+#include <Mkl_lapacke.h>
+#include <mkl_trans.h>
+//#include "d:\All_SAR\dev\3rdParty\Intel\IPP\5.2\ia32\include\ippdefs.h"
+const int EIGEN_ROWS = 31;
+const int EIGEN_COLS = 31;
+
+class CHGTEigenVectors
+{
+public:
+	//void Init( std::string binFilePath  );
+	
+	void PerformEigenDecomposition(const MKL_Complex8 *acCovarianceMatrix, 
+                              float *EigenValues, MKL_Complex8 *acEigenVectors);
+	void print_matrix( char* desc, MKL_INT m, MKL_INT n, MKL_Complex8* a, MKL_INT lda );
+
+								 
+								 
+
+private:
+	void _Init( const _MKL_Complex8 *acCovarianceMatrix  );
+
+	void _CreateEigenVectors( float *, MKL_Complex8 *);
+
+	//debug
+	//void _CreateTransposed2dMatrix();
+	//void _LogOutputCSV( std::string fileName );
+private:
+
+	_MKL_Complex8 *m_inputMatrix;	//matrix read from bin file
+
+	//debug
+	//_MKL_Complex8 m_inputMatrix2D[ EIGEN_ROWS ] [EIGEN_COLS];	//input transposed N*N matrix in 2d form
+	//_MKL_Complex8 m_inputMatrix2DSUBARRAY[ EIGEN_ROWS - 1 ] [EIGEN_COLS - 1]; //input transposed N-1*N-1 matrix in 2d form
+	//end debug
+	//_MKL_Complex8 m_outputEigenVectors[ EIGEN_ROWS * EIGEN_COLS ];	//eigen vectors output
+	//float		   m_outputEigenValues[EIGEN_ROWS];
+
+};

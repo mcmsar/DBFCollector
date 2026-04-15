@@ -7,6 +7,7 @@ struct EMSDBFCOMPUTERCFG
 	std::string szSynthesizerIP;
 	std::string szEnvSensorIP;
 	std::string szComputerId;
+	float fFrequencyOffset;   // Hz – read from <FrequencyOffset> in DBFConstellation.xml; 0 if absent
 };
 
 #pragma once

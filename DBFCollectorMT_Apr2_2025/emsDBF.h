@@ -69,7 +69,7 @@ using std::wstring;
 #define NUM_CHANNELS		(31)
 #define DBF_NUM_ELEMENTS	(31)		// number of antenna elements (assume 1 channel is reserved for 1 pPS signal)
 #define DBF_CENTRE_ELEMENT  (23)		// Central element of the array
-#define DBF_FREQ_OFFSET		50000		// 50 kHz offset of element filter
+#define DBF_FREQ_OFFSET		0.0			// 0 kHz offset of element filter by default
 #define DBF_FREQ_BANDWIDTH	100000		// MEO satellite downlink 100kHz bandwidth
 
 #define MAX_BEAMS			(5)
@@ -175,10 +175,13 @@ public:
 
 	static int GetNextObjID() {return ms_iNextObjectID++;}
 
-	static void SetSPIP( std::string SPIP ) 
-	{ 
+	static void SetSPIP( std::string SPIP )
+	{
 		m_wsSPIP = std::wstring( SPIP.begin(), SPIP.end() );
 	}
+
+	void SetFrequencyOffset( float fHz ) { m_fFrequencyOffset = fHz; }
+	float GetFrequencyOffset() const     { return m_fFrequencyOffset; }
 	//funcs added on Sichun's behalf
 	
 protected:
@@ -250,6 +253,7 @@ protected:
 
 	ULONG					m_ulFreqIndex;
 	float					m_fMaxPower;
+	float					m_fFrequencyOffset;  // Hz – set from DBFConstellation.xml <FrequencyOffset>
 
 	unsigned long*			m_asRawTimeSeries;
 //	short*					m_asPhaseVector;

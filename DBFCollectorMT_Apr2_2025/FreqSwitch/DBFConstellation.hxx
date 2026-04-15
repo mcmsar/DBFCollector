@@ -282,7 +282,7 @@ namespace dbfconstellation
     SynthesizerIP (::std::auto_ptr< SynthesizerIP_type > p);
 
     // EnvSensorIP
-    // 
+    //
     typedef ::xml_schema::string EnvSensorIP_type;
     typedef ::xsd::cxx::tree::traits< EnvSensorIP_type, char > EnvSensorIP_traits;
 
@@ -297,6 +297,24 @@ namespace dbfconstellation
 
     void
     EnvSensorIP (::std::auto_ptr< EnvSensorIP_type > p);
+
+    // FrequencyOffset (optional – defaults to 0 when absent)
+    //
+    typedef ::xml_schema::float_ FrequencyOffset_type;
+    typedef ::xsd::cxx::tree::optional< FrequencyOffset_type > FrequencyOffset_optional;
+    typedef ::xsd::cxx::tree::traits< FrequencyOffset_type, char > FrequencyOffset_traits;
+
+    const FrequencyOffset_optional&
+    FrequencyOffset () const;
+
+    FrequencyOffset_optional&
+    FrequencyOffset ();
+
+    void
+    FrequencyOffset (const FrequencyOffset_type& x);
+
+    void
+    FrequencyOffset (const FrequencyOffset_optional& x);
 
     // id
     // 
@@ -348,6 +366,7 @@ namespace dbfconstellation
     ::xsd::cxx::tree::one< Switch_type > Switch_;
     ::xsd::cxx::tree::one< SynthesizerIP_type > SynthesizerIP_;
     ::xsd::cxx::tree::one< EnvSensorIP_type > EnvSensorIP_;
+    ::xsd::cxx::tree::optional< FrequencyOffset_type > FrequencyOffset_;
     ::xsd::cxx::tree::one< id_type > id_;
   };
 

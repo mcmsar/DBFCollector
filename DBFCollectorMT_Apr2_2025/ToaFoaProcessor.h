@@ -19,36 +19,42 @@
 class CToaFoaProcessor {
 public:
     static EMS_RESULT InitializeTOAFOA(
-        EMSTIME timestamp, 
-        ULONG ulSatellites, 
-        EMSDBFPASSRECORDS2* pPassSchedule, 
-        float* pTemp1, 
-        EMSCOMPLEX* pAcTemp1, 
-        EMSCOMPLEX* pAcFFTBeacon, 
+        EMSTIME timestamp,
+        ULONG ulSatellites,
+        EMSDBFPASSRECORDS2* pPassSchedule,
+        float* pTemp1,
+        EMSCOMPLEX* pAcTemp1,
+        EMSCOMPLEX* pAcFFTBeacon,
         EMSDBFTOAFOARECORD* pTOAFOA
     );
 
     static bool SatelliteTOAFOA(
-        int isat, 
-        EMSDBFPASSRECORDS2* pPassSchedule, 
-        float* pTemp1, 
-        EMSCOMPLEX* pAcTemp3, 
+        int isat,
+        EMSDBFPASSRECORDS2* pPassSchedule,
+        float* pTemp1,
+        EMSCOMPLEX* pAcTemp1,
+        EMSCOMPLEX* pAcTemp2,
+        EMSCOMPLEX* pAcTemp3,
+        EMSCOMPLEX* pAcFFTBeacon,
         EMSDBFTOAFOARECORD* pTOAFOA
     );
 
     static bool IdentifyTOAFOA(
-        EMSTIME tm, 
-        ULONG ulSatellites, 
-        EMSDBFPASSRECORDS2* pPassSchedule, 
-        CEMSQueue<DBFTrackingData>& qrefDBFBeamVectors, 
-        EMSCOMPLEX* acDBFBeamVectors_In, 
-        int* pBeamIDs, 
-        EMSCOMPLEX* pAcDBFBeamVectors, 
+        EMSTIME tm,
+        ULONG ulSatellites,
+        EMSDBFPASSRECORDS2* pPassSchedule,
+        CEMSQueue<DBFTrackingData>& qrefDBFBeamVectors,
+        EMSCOMPLEX* acDBFBeamVectors_In,
+        int* pBeamIDs,
+        int* pPredictedSATIDs,
+        float* pProbability,
+        int* pPrevPassSchedSATIDs,
+        EMSCOMPLEX* pAcDBFBeamVectors,
         EMSDBFTOAFOARECORD* pTOAFOA
     );
 
 private:
-    // Helper stubs
-    static void CopyData(float* dest, float value, int count);
-    static bool CheckBit(char* buffer, int bitPos);
+    static void _CopyData(float* fTest, float fValue, ULONG nCount);
+    static bool CheckBit(char cHex[36], int iBit);
+    static int  _Hex2Int(char cHex);
 };

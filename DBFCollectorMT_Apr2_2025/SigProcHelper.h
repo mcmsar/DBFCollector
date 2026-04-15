@@ -30,6 +30,15 @@ public:
             }
         }
     }
+
+    static double _EMSsMeanStdDev(const float *vec, ULONG len, double* pfMean) {
+        double fSum = 0.0, fMean = 0.0, fStdDev = 0.0;
+        for (ULONG i = 0; i < len; ++i) fSum += vec[i];
+        fMean = fSum / len;
+        *pfMean = fMean;
+        for (ULONG i = 0; i < len; ++i) fStdDev += pow(vec[i] - fMean, 2);
+        return sqrt(fStdDev / len);
+    }
 };
 
 #endif

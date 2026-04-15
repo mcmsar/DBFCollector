@@ -46,6 +46,9 @@ void CEMSDBFConfigReader::ReadDBFComputerXMLConfig(const char *inFile)
 			computerCfg.iSwitch = iter->Switch();
 			computerCfg.szEnvSensorIP = iter->EnvSensorIP();
 			computerCfg.szSynthesizerIP = iter->SynthesizerIP();
+			computerCfg.fFrequencyOffset = iter->FrequencyOffset().present()
+			                               ? iter->FrequencyOffset().get()
+			                               : 0.0f;
 
 			m_dbfComputerCfg.push_back(computerCfg);
 		}

@@ -18,6 +18,7 @@
 		  <xs:element name="Switch" type="xs:integer"/>
 		  <xs:element name="SynthesizerIP" type="xs:string"/>
 		  <xs:element name="EnvSensorIP" type="xs:string"/>
+		  <xs:element name="FrequencyOffset" type="xs:float" minOccurs="0" maxOccurs="1"/>
       </xs:sequence>
 	  <xs:attribute name="id" use="required" type="xs:string"/>
   </xs:complexType>

@@ -311,6 +311,7 @@
     <ClCompile Include="..\Common\LogMsgParam.cpp" />
     <ClCompile Include="..\Common\LogRegistrySettings.cpp" />
     <ClCompile Include="DigitalBeamFormer.cpp" />
+    <ClCompile Include="ToaFoaProcessor.cpp" />
     <ClCompile Include="FreqSwitch\DBFConstellation.cxx" />
     <ClCompile Include="FreqSwitch\EMSDBFConfigReader.cpp" />
     <ClCompile Include="FreqSwitch\EMSDBFConstellationManager.cpp" />

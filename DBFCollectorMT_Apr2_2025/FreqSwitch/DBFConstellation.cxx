@@ -87,6 +87,30 @@ namespace dbfconstellation
     this->EnvSensorIP_.set (x);
   }
 
+  const computer::FrequencyOffset_optional& computer::
+  FrequencyOffset () const
+  {
+    return this->FrequencyOffset_;
+  }
+
+  computer::FrequencyOffset_optional& computer::
+  FrequencyOffset ()
+  {
+    return this->FrequencyOffset_;
+  }
+
+  void computer::
+  FrequencyOffset (const FrequencyOffset_type& x)
+  {
+    this->FrequencyOffset_.set (x);
+  }
+
+  void computer::
+  FrequencyOffset (const FrequencyOffset_optional& x)
+  {
+    this->FrequencyOffset_ = x;
+  }
+
   const computer::id_type& computer::
   id () const
   {
@@ -198,6 +222,7 @@ namespace dbfconstellation
     Switch_ (Switch, ::xml_schema::flags (), this),
     SynthesizerIP_ (SynthesizerIP, ::xml_schema::flags (), this),
     EnvSensorIP_ (EnvSensorIP, ::xml_schema::flags (), this),
+    FrequencyOffset_ (::xml_schema::flags (), this),
     id_ (id, ::xml_schema::flags (), this)
   {
   }
@@ -210,6 +235,7 @@ namespace dbfconstellation
     Switch_ (x.Switch_, f, this),
     SynthesizerIP_ (x.SynthesizerIP_, f, this),
     EnvSensorIP_ (x.EnvSensorIP_, f, this),
+    FrequencyOffset_ (x.FrequencyOffset_, f, this),
     id_ (x.id_, f, this)
   {
   }
@@ -222,6 +248,7 @@ namespace dbfconstellation
     Switch_ (f, this),
     SynthesizerIP_ (f, this),
     EnvSensorIP_ (f, this),
+    FrequencyOffset_ (f, this),
     id_ (f, this)
   {
     if ((f & ::xml_schema::flags::base) == 0)
@@ -276,6 +303,17 @@ namespace dbfconstellation
         if (!EnvSensorIP_.present ())
         {
           this->EnvSensorIP_.set (r);
+          continue;
+        }
+      }
+
+      // FrequencyOffset (optional – primitive float, no auto_ptr)
+      //
+      if (n.name () == "FrequencyOffset" && n.namespace_ ().empty ())
+      {
+        if (!FrequencyOffset_.present ())
+        {
+          this->FrequencyOffset_.set (FrequencyOffset_traits::create (i, f, this));
           continue;
         }
       }
@@ -472,6 +510,8 @@ namespace dbfconstellation
     o << ::std::endl << "Switch: " << i.Switch ();
     o << ::std::endl << "SynthesizerIP: " << i.SynthesizerIP ();
     o << ::std::endl << "EnvSensorIP: " << i.EnvSensorIP ();
+    if (i.FrequencyOffset ().present ())
+      o << ::std::endl << "FrequencyOffset: " << i.FrequencyOffset ().get ();
     o << ::std::endl << "id: " << i.id ();
     return o;
   }
@@ -969,6 +1009,18 @@ namespace dbfconstellation
           e));
 
       s << i.EnvSensorIP ();
+    }
+
+    // FrequencyOffset (optional)
+    //
+    if (i.FrequencyOffset ().present ())
+    {
+      ::xercesc::DOMElement& s (
+        ::xsd::cxx::xml::dom::create_element (
+          "FrequencyOffset",
+          e));
+
+      s << i.FrequencyOffset ().get ();
     }
 
     // id

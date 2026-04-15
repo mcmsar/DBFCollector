@@ -125,10 +125,9 @@ CEMSDBFCollectorService::_ServiceProcessLoop( void )
 
 				switch ( dwResult )
 				{
-					case WAIT_OBJECT_0:		// asked to stop 
+					case WAIT_OBJECT_0:		// asked to stop
 						bStopped = TRUE;
 						poCS->Stop();
-						Sleep(10000);
 						break;
 
 					case WAIT_OBJECT_0 + 1:	// signalled!
@@ -323,6 +322,31 @@ CEMSDBFCollectorService::_Init()
 #include <thread>
 std::ofstream out;
 
+// ---------------------------------------------------------------------------
+// Ctrl+C / console close handler
+// ---------------------------------------------------------------------------
+static HANDLE g_hShutdownEvent    = NULL;
+static HANDLE g_hCleanupDoneEvent = NULL;  // signalled by main after join, before destructors
+
+BOOL WINAPI CtrlHandler(DWORD dwCtrlType)
+{
+	switch (dwCtrlType)
+	{
+	case CTRL_C_EVENT:
+	case CTRL_BREAK_EVENT:
+	case CTRL_CLOSE_EVENT:
+	case CTRL_SHUTDOWN_EVENT:
+		if (g_hShutdownEvent)
+			SetEvent(g_hShutdownEvent);
+		// Wait for main to finish cleanup rather than sleeping a fixed amount.
+		// Caps at 8 s so Windows doesn't force-kill us for CLOSE/SHUTDOWN events.
+		if (g_hCleanupDoneEvent)
+			WaitForSingleObject(g_hCleanupDoneEvent, 8000);
+		return TRUE;
+	}
+	return FALSE;
+}
+
 std::streambuf* RedirectToFile()
 {
 	if(!out.is_open())
@@ -411,8 +435,12 @@ int main(int argc, char* argv[])
 				oDBFCollectorService.RunAsService( FALSE );	// for DEBUGGING
 			}
 
-			oDBFCollectorService.AllowPause( FALSE );// Run the service on a separate thread so main can watch for shutdown
-			HANDLE g_hShutdownEvent = CreateEvent(NULL, TRUE, FALSE, NULL);
+			oDBFCollectorService.AllowPause( FALSE );
+
+			g_hShutdownEvent    = CreateEvent(NULL, TRUE, FALSE, NULL);
+			g_hCleanupDoneEvent = CreateEvent(NULL, TRUE, FALSE, NULL);
+			SetConsoleCtrlHandler(CtrlHandler, TRUE);
+
 			std::thread svcThread([&]() {
 				oDBFCollectorService.Run(c_szServiceName, argc, argv);
 				SetEvent(g_hShutdownEvent);  // also fires if service exits naturally
@@ -423,8 +451,16 @@ int main(int argc, char* argv[])
 			oDBFCollectorService.Stop();  // signals m_hEventStop internally
 			svcThread.join();
 
+			// Signal the handler thread that cleanup is complete.
+			// Must happen before destructors run so the handler doesn't
+			// return into a partially torn-down CRT heap.
+			SetEvent(g_hCleanupDoneEvent);
+			SetConsoleCtrlHandler(CtrlHandler, FALSE);
+
 			CloseHandle(g_hShutdownEvent);
 			g_hShutdownEvent = NULL;
+			CloseHandle(g_hCleanupDoneEvent);
+			g_hCleanupDoneEvent = NULL;
 		}
 			std::cout << "Line 2 " << std::endl;
 

@@ -6,6 +6,7 @@
 		<SynthesizerIP>1.1.1.32</SynthesizerIP>
 		<!-- <SynthesizerIP>1.1.1.32</SynthesizerIP> -->
 		<EnvSensorIP>1.1.1.17</EnvSensorIP>
+		<FrequencyOffset>50000.0</FrequencyOffset>
     </computer>
     <!-- <computer id="computer2"> -->
 		<!-- <Switch>2</Switch> -->

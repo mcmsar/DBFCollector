@@ -162,9 +162,12 @@ EMS_RESULT CEMSService::_DispatchService( DWORD dwArgc, LPTSTR *lpszArgv )
 	{
 		m_bService = FALSE;
 
-		SetConsoleCtrlHandler( _ConsoleCtrlHandlerEntry, TRUE );
+		// Console Ctrl+C/Break handling is registered by the application
+		// (DBFCollector.cpp CtrlHandler).  Registering a second handler here
+		// would take LIFO priority and block the application's handler.
+		// SetConsoleCtrlHandler( _ConsoleCtrlHandlerEntry, TRUE );
 
-#if _MSC_VER >= 1600 
+#if _MSC_VER >= 1600
 		hr = StartEMSService( dwArgc, lpszArgv );
 #else
 		hr = StartService( dwArgc, lpszArgv );

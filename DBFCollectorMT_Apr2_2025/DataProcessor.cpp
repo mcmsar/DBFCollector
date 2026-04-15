@@ -19,6 +19,7 @@
 #include "DataProcessor.h"
 #include "DBFCollectorConfig.h"
 #include "emserror.h"
+#include "FreqSwitch/EMSDBFConfigReader.h"
 
 
 
@@ -40,6 +41,19 @@ CEMSDataProcessor::CEMSDataProcessor(CEMSPointerList<CEMSRawBuffObj>& refList, C
 	sprintf(szLogFile, "%s_%d.txt", CDBFCollectorConfig::GetInstance().GetEMSDBFLogPrefix().c_str(), ms_iSeqNum++ ); 
 	m_lpLogFile = fopen( szLogFile, "at" );
 	m_pDBF = new CDigitalBeamFormer(qDBFBeamVectors);
+
+	// Load FrequencyOffset from DBFConstellation.xml and push it into the beamformer.
+	// Falls back to the compiled-in DBF_FREQ_OFFSET default if the file or tag is absent.
+	try
+	{
+		CEMSDBFConfigReader oCfg;
+		oCfg.ReadDBFComputerXMLConfig(
+			CDBFCollectorConfig::GetInstance().GetConstellationFile().c_str());
+		EMSDBFCOMPUTERCFG cfg = oCfg.GetDBFComputerCfg("computer1");
+		if (cfg.fFrequencyOffset != 0.0f)
+			m_pDBF->SetFrequencyOffset(cfg.fFrequencyOffset);
+	}
+	catch (...) {}  // Xerces not yet initialised or file absent – keep default
 }
 
 CEMSDataProcessor::CEMSDataProcessor( const CEMSDataProcessor& x ) : m_lstFreeBuffObjs( x.m_lstFreeBuffObjs ), 

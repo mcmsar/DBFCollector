@@ -1,0 +1,222 @@
+cpp_quote("/********************************************************************")
+cpp_quote("*	Module:			emsablobj.h")
+cpp_quote("*	Process ID:")
+cpp_quote("*	S/W Platforms:")
+cpp_quote("*	H/W Platforms:")
+cpp_quote("*	Compiler:")
+cpp_quote("*	Description: 	Data structure for Active Beacon Data Record; ")
+cpp_quote("*					Defines methods to be implemented in the ABL class )")
+cpp_quote("*	Usage:")
+cpp_quote("*	Entry Point:")
+cpp_quote("*	Input Files:")
+cpp_quote("*	Output Files:")
+cpp_quote("*	Comments:")
+cpp_quote("*")
+cpp_quote("*********************************************************************")
+cpp_quote("*	              Copyright (c) 2003 by EMS Technologies, Inc.,")
+cpp_quote("*										All rights reserved")
+cpp_quote("*	This program is unpublished software and contains the trade secrets")
+cpp_quote("*	and confidential information of EMS Technologies, Inc.  It may not be ")
+cpp_quote("* reproduced in whole or in part, in any form or by any means whatsoever ")
+cpp_quote("* without the express written permission of EMS Technologies, Inc.")
+cpp_quote("*")
+cpp_quote("********************************************************************/")
+cpp_quote("")
+cpp_quote("/*******************************************************************")
+cpp_quote("")
+cpp_quote("  Revision Record")
+cpp_quote("")
+cpp_quote("	Rev	Date		Auth	Changes")
+cpp_quote("	===	====		====	=======")
+cpp_quote("")
+cpp_quote("")
+cpp_quote("********************************************************************/")
+cpp_quote("#ifndef INC_ABL_OBJECT")
+cpp_quote("#define INC_ABL_OBJECT")
+cpp_quote("")
+
+
+cpp_quote( "// {205EA9E2-D237-42ff-9BC9-423818FF0BC0}" )
+cpp_quote( "DEFINE_GUID(CLSID_EMSABLObject, 0x205ea9e2, 0xd237, 0x42ff, 0x9b, 0xc9, 0x42, 0x38, 0x18, 0xff, 0xb, 0xc0);")
+cpp_quote( " " )
+
+cpp_quote( "// {D2EE65AF-47C2-4796-9FDC-CA56C4485813}" )
+cpp_quote( "DEFINE_GUID( IID_IEMSABLObject, 0xd2ee65af, 0x47c2, 0x4796, 0x9f, 0xdc, 0xca, 0x56, 0xc4, 0x48, 0x58, 0x13);")
+cpp_quote( " " )
+
+import "unknwn.idl";
+import "locate.idl";
+import "EMSPIPE.idl";
+import "ABLData.idl";
+
+
+[
+	object, uuid(D2EE65AF-47C2-4796-9FDC-CA56C4485813),
+	helpstring("IEMSABLObject Interface"),
+	pointer_default(unique)
+]
+interface IEMSABLObject : IUnknown
+{
+#pragma pack(1)
+
+	#define MAX_ABL_LUTS_PROPERTIES 24
+	#define MAX_ABL_SATS_PROPERTIES 24
+	#define MAX_ABL_LOCATIONS_TYPES_PROPERTIES 16
+	#define MAX_ABL_BEACONS_PROPERTIES 32
+	#define MAX_ABL_COUNTRYCODE_TYPES_PROPERTIES 24
+	#define MAX_ABL_PROTOCOL_PROPERTIES 16
+
+	cpp_quote( "#define MAX_ABL_LUTS_PROPERTIES 24" )
+	cpp_quote( "#define MAX_ABL_SATS_PROPERTIES 24" )
+	cpp_quote( "#define MAX_ABL_LOCATIONS_TYPES_PROPERTIES 16" )
+	cpp_quote( "#define MAX_ABL_BEACONS_PROPERTIES 32" )
+	cpp_quote( "#define MAX_ABL_COUNTRYCODE_TYPES_PROPERTIES 24" )
+	cpp_quote( "#define MAX_ABL_PROTOCOL_PROPERTIES 16" )
+
+	typedef struct _tagEMSABLProperties
+	{
+		ULONG            aulLuts[MAX_ABL_LUTS_PROPERTIES];
+		ULONG            aulSats[MAX_ABL_SATS_PROPERTIES];
+		EMSLOCATETYPE    aLocationTypes[MAX_ABL_LOCATIONS_TYPES_PROPERTIES];
+		INT64		     ai64Beacons[MAX_ABL_BEACONS_PROPERTIES];
+		int				 aiCountryCode[MAX_ABL_COUNTRYCODE_TYPES_PROPERTIES];
+		int				 aiProtocolType[MAX_ABL_PROTOCOL_PROPERTIES];
+		BOOL			 bIsShortMessage;
+		BOOL			 bEnabled;
+		BOOL             bForceUpdateAlerts;
+		BOOL             bIgnoreConfRules;
+		ULONG            ulMaxCapacity;      // This is the max number of raw records
+		ULONG            ulMinRawDataPerAB;  // Min number of raw records to be maintained per AB.
+		ULONG            ulLUTID;
+		ULONG			 ulABLID;
+		double           dLocationRadius;
+		double           dFloatRate;
+		double           dOrbDetError;
+		double           dSDEL;
+		double           dABAgeout;
+		double           dSubstituteTimeWindow;
+		double           dMsgMaxInterval;
+		double           dMinTimeBtwnBursts;
+		double           dMaxTimeStdDev;
+		double           dMaxFreqStdDev;
+		double           dMaxHDOP;
+		double           dLcnProximityThreshold;
+		int              iMaxSubstituteFSErrors;
+		int              iMaxSubstitutePDF1Errors;
+		int              iMaxSubstitutePDF2Errors;
+		int              iMinTotalSatsNum;
+		int              iMinGEOSatsNum;
+		int              iMinLEOSatsNum;
+		int              iMinMEOSatsNum;
+		EMSLOCATION      currentLocation;
+	}	EMSABLProperties, *LPEMSABLProperties;
+
+	// the input data includes locations record
+	typedef struct _tagEMSABLRawData
+	{
+	    EMSLOCATE	locate;
+		DWORD		dwStatus;			//	Solution Processing Status (redundant, ambiguous etc)
+	}	EMSABLRawData, *LPEMSABLRawData;
+
+
+#pragma pack()
+
+
+	// Initialize ABL object with EMSABLProperties data structure.
+	HRESULT  Init( [in] const EMSABLProperties cObjProperties );
+
+	// Returns the ABL properties data structure
+	HRESULT  GetABLProperties( [out] EMSABLProperties* pObjProperties );
+
+	// Returns the actual ABL data properties at time of request
+	HRESULT  GetLuts( [in] const ULONG culCount,
+					  [out] ULONG* pulActualSize, 
+					  [out,size_is(culCount)] ULONG* aLutProperties);
+						
+
+	HRESULT  GetSats( [in] const ULONG  culCount,
+					  [out] ULONG*  pulActualSize,
+					  [out,size_is(culCount)] ULONG* aSatProperties );
+
+	HRESULT  GetBeacons( [in] const ULONG  culCount,
+						 [out] ULONG* pulActualSize,
+					     [out,size_is(culCount)] INT64* aBeaconProperties );
+
+	HRESULT  GetLocationTypes( [in] const ULONG  culCount,
+							   [out] ULONG* pulActualSize,
+					           [out,size_is(culCount)] EMSLOCATETYPE* aLocationProperties );
+
+	HRESULT  GetCountryCodes( [in] const ULONG  culCount,
+							  [out] ULONG* pulActualSize,
+					          [out,size_is(culCount)] int* aCCProperies );
+
+	HRESULT  GetProtocolTypes( [in] const ULONG  culCount,
+							   [out] ULONG* pulActualSize,
+					           [out,size_is(culCount)] int* aProtocolProperies );
+
+	// To add data to the ABL object.
+	HRESULT  PutData( [in] const ULONG culNumOfRecords, 
+	                  [in,size_is(culNumOfRecords)] EMSLOCATE* caLocate );
+
+    // Get ABL count
+	HRESULT  GetBeaconCount( [out] ULONG* pulCount );
+
+    // Get ABL IDs
+	HRESULT  GetBeaconIDs( [in] const ULONG culCount, 
+						   [out] ULONG* pulActualSize,
+						   [out,size_is(culCount)] INT64* aBeaconIDs);
+
+    // Get ABL data records
+	HRESULT  GetBeaconLocationsEx( [in]  const ULONG culCount,
+								   [out] ULONG *pulActualSize,
+								   [out,size_is(culCount)] EMSABLData* aABLData );
+
+    // Get ABL data records in location record format
+	HRESULT  GetBeaconLocations( [in]  const ULONG culCount,
+								 [out] ULONG *pulActualSize,
+								 [out,size_is(culCount)] EMSLOCATE* aLocations );
+
+    // Get an active beacon data
+	HRESULT  GetBeaconLocationEx( [in]  const INT64 ci64BeaconID, 
+	                              [out] EMSABLData* pABLData );
+
+    // Get an active beacon data in location record format
+	HRESULT  GetBeaconLocation( [in]  const INT64 ci64BeaconID, 
+	                            [out] EMSLOCATE* pLocation );
+
+    // Get an active beacon data and array of raw data records
+	HRESULT  GetBeaconDataEx( [in]  const INT64 ci64BeaconID, 
+	                          [out] EMSABLData* pABLData,
+						      [in,out] ULONG* pulCount, 
+				              [out,size_is(*pulCount)] EMSABLRawData* aLocations );
+
+    // Get an active beacon data and array of raw data records in locate record format
+	HRESULT  GetBeaconData( [in]  const INT64 ci64BeaconID, 
+	                        [out] EMSLOCATE* pLocate,
+						    [in,out] ULONG* pulCount, 
+				            [out,size_is(*pulCount)] EMSLOCATE* aLocations );
+
+    // Get raw + FLAG location records
+	HRESULT  GetABLRawDataEx( [in] const INT64 ci64BeaconID,  
+	                          [in] ULONG culCount, 
+						      [out] ULONG* pulActualSize,
+	                          [out,size_is(culCount)] EMSABLRawData* aRawLocations );
+
+	// Get raw location records
+	HRESULT  GetABLRawData( [in] const INT64 ci64BeaconID,  
+	                        [in] ULONG culCount, 
+							[out] ULONG* pulActualSize,
+	                        [out,size_is(culCount)] EMSLOCATE* aLocations );
+
+	// Reset everything to initial state (keeps the config props)
+	HRESULT  Reset();
+
+	//Serialize - Deserialize 
+	HRESULT  Serialize( IEMSSeqStream* pIEMSStream );
+
+	HRESULT  Deserialize( IEMSSeqStream* pIEMSStream );
+
+};
+
+
+cpp_quote("#endif //INC_ABL_OBJECT")

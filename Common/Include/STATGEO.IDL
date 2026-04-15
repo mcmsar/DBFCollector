@@ -1,0 +1,117 @@
+cpp_quote("// {600E9B8C-282C-47f9-9CB2-526057482E43}")
+cpp_quote("DEFINE_GUID( IID_IEMSGeoSummary, 0x600e9b8c, 0x282c, 0x47f9, 0x9c, 0xb2, 0x52, 0x60, 0x57, 0x48, 0x2e, 0x43);")
+cpp_quote(" " )
+
+cpp_quote("// {6E0BA7F3-F8BE-4d52-9A82-91F7AA7E24E3}")
+cpp_quote("DEFINE_GUID( IID_IEMSGeoCalib406Stats, 0x6e0ba7f3, 0xf8be, 0x4d52, 0x9a, 0x82, 0x91, 0xf7, 0xaa, 0x7e, 0x24, 0xe3);")
+cpp_quote(" " )
+
+cpp_quote("// {78739D36-D0B3-4b12-BD9B-196919B7BBB9}")
+cpp_quote("DEFINE_GUID( IID_IEMSGeoActiveBeaconStats, 0x78739d36, 0xd0b3, 0x4b12, 0xbd, 0x9b, 0x19, 0x69, 0x19, 0xb7, 0xbb, 0xb9);")
+cpp_quote(" " )
+
+import "unknwn.idl";
+import "emstypex.idl";
+import "emstatus.idl";
+
+#define _EMS_RPC_VERSION 1
+#define __RPC_FAR 
+
+[
+	object, uuid(6E0BA7F3-F8BE-4d52-9A82-91F7AA7E24E3),
+	helpstring("IEMSGeoCalib406Stats Interface"),
+	pointer_default(unique)
+]
+
+interface IEMSGeoCalib406Stats : IEMSStatus
+{
+
+#pragma pack(1)
+
+	typedef struct _tagEMSGEOCALIB406INFO
+	{
+		ULONG ulNumGroups;
+		ULONG ulNumDetections;
+		ULONG ulNumRawMsgs;
+		ULONG ulNumIntMsgs;
+		ULONG ulNumBeaconID;
+		ULONG	ulNumGroupsMax;
+		ULONG	ulNumGroupsMin;
+		EMSTIME timeLastDetection;
+		EMSTIME timeLastRefDetection;
+	} EMSGEOCALIB406INFO, *LPEMSGEOCALIB406INFO;
+
+#pragma pack()
+	HRESULT ResetGeoCalib406Info( void );
+
+	HRESULT SetGeoCalib406Info( [in] EMSGEOCALIB406INFO *lpInfo );
+	HRESULT GetGeoCalib406Info( [out] EMSGEOCALIB406INFO *lpInfo );
+};
+
+typedef [unique] IEMSGeoCalib406Stats *LPEMSGEOCALIB406STATS;
+
+[
+	object, uuid(600E9B8C-282C-47f9-9CB2-526057482E43),
+	helpstring("IEMSGeoSummary Interface"),
+	pointer_default(unique)
+]
+
+interface IEMSGeoSummary : IEMSStatus
+{
+
+#pragma pack(1)
+
+	typedef struct _tagEMSGEOSUMMARYINFO
+	{
+		EMSTIME					timeStart;		
+		EMSTIME					timeEnd;		
+		double					dDuration;
+		double					dDurLoss;
+		ULONG						ulNumAlarms;
+		ULONG 					ulNumWarnings;
+		EMSGEOCALIB406INFO	calib406Info;
+	} EMSGEOSUMMARYINFO, *LPEMSGEOSUMMARYINFO;
+
+#pragma pack()
+	HRESULT ResetGeoSummaryInfo( void );
+
+	HRESULT SetGeoSummaryInfo( [in] EMSGEOSUMMARYINFO *lpInfo );
+	HRESULT GetGeoSummaryInfo( [out] EMSGEOSUMMARYINFO *lpInfo );
+};
+
+typedef [unique] IEMSGeoSummary *LPEMSGEOSUMMARY;
+
+[
+	object, uuid(78739D36-D0B3-4b12-BD9B-196919B7BBB9),
+	helpstring("IEMSGeoActiveBeaconsStats Interface"),
+	pointer_default(unique)
+]
+
+interface IEMSGeoActiveBeaconStats : IEMSStatus
+{
+#pragma pack(1)
+
+	typedef struct _tagEMSGEOACTIVEBEACONINFO
+	{
+		ULONG						ulNumAlerts;
+		ULONG						ulNumUniqueAlerts;
+		ULONG						ulReserved1;
+		ULONG						ulReserved2;
+		ULONG						ulReserved3;
+		ULONG						ulReserved4;
+	} EMSGEOACTIVEBEACONINFO, *LPEMSGEOACTIVEBEACONINFO;
+
+#pragma pack()
+
+	HRESULT ResetGeoActiveBeaconInfo( void );
+
+	HRESULT SetGeoActiveBeaconInfo( [in] EMSGEOACTIVEBEACONINFO *lpInfo );
+	HRESULT GetGeoActiveBeaconInfo( [out] EMSGEOACTIVEBEACONINFO *lpInfo );
+	HRESULT GetGeoActiveBeaconInfoEx( [out] EMSGEOACTIVEBEACONINFO *lpInfo, [out] EMSTIME *lpTimeUpdate );
+};
+
+typedef [unique] IEMSGeoActiveBeaconStats *LPEMSGEOACTIVEBEACONSTATS;
+
+
+
+

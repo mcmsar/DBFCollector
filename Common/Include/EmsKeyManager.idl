@@ -1,0 +1,36 @@
+cpp_quote( " " )
+cpp_quote( "#include \"emserror.h\"" )
+cpp_quote( " " )
+
+cpp_quote("// {326B28D0-2EDA-4913-92F8-FE872C0D1780}")
+cpp_quote("DEFINE_GUID( CLSID_EMSKeyManager, 0x326b28d0, 0x2eda, 0x4913, 0x92, 0xf8, 0xfe, 0x87, 0x2c, 0xd, 0x17, 0x80);")
+
+cpp_quote("// {B4792947-8BE1-44c9-990D-78CF624C7277}")
+cpp_quote("DEFINE_GUID( IID_IEMSKeyManager, 0xb4792947, 0x8be1, 0x44c9, 0x99, 0xd, 0x78, 0xcf, 0x62, 0x4c, 0x72, 0x77);")
+
+
+import "unknwn.idl";
+
+#define _EMS_RPC_VERSION 1
+#define __RPC_FAR 
+
+[
+	object, uuid(B4792947-8BE1-44c9-990D-78CF624C7277),
+	helpstring("IEMSKeyManager Interface"),
+	pointer_default(unique)
+]
+
+interface IEMSKeyManager : IUnknown
+{
+	HRESULT generatePublicKey( [in,string] LPCWSTR szFileName );
+	
+	HRESULT generateSymmetricKey( [in,string] LPCWSTR szPublicKeyFileName,
+								  [in,string] LPCWSTR szSymmetricKeyFileName );
+	
+	HRESULT generateSymmetricKeyProtect( [in,string] LPCWSTR szFileName,
+										 [in] BOOL bProtect );
+
+};
+
+typedef [unique] IEMSKeyManager *LPEMSKEYMANAGER;
+

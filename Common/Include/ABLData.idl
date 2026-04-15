@@ -1,0 +1,180 @@
+cpp_quote("/********************************************************************")
+cpp_quote("*	Module:			abldata.h")
+cpp_quote("*	Process ID:")
+cpp_quote("*	S/W Platforms:")
+cpp_quote("*	H/W Platforms:")
+cpp_quote("*	Compiler:")
+cpp_quote("*	Description: 	Data structure for Active Beacon List Record ")
+cpp_quote("*")
+cpp_quote("*	Usage:")
+cpp_quote("*	Entry Point:")
+cpp_quote("*	Input Files:")
+cpp_quote("*	Output Files:")
+cpp_quote("*	Comments:")
+cpp_quote("*")
+cpp_quote("*********************************************************************")
+cpp_quote("*	              Copyright (c) 2009 by EMS Technologies, Inc.,")
+cpp_quote("*										All rights reserved")
+cpp_quote("*	This program is unpublished software and contains the trade secrets")
+cpp_quote("*	and confidential information of EMS Technologies, Inc.  It may not be ")
+cpp_quote("* reproduced in whole or in part, in any form or by any means whatsoever ")
+cpp_quote("* without the express written permission of EMS Technologies, Inc.")
+cpp_quote("*")
+cpp_quote("********************************************************************/")
+cpp_quote("")
+cpp_quote("/*******************************************************************")
+cpp_quote("")
+cpp_quote("  Revision Record")
+cpp_quote("")
+cpp_quote("	Rev	Date		Auth	Changes")
+cpp_quote("	===	====		====	=======")
+cpp_quote("")
+cpp_quote("")
+cpp_quote("********************************************************************/")
+cpp_quote("#ifndef INC_ABL_DATA")
+cpp_quote("#define INC_ABL_DATA")
+cpp_quote("")
+
+import "unknwn.idl";
+import "emstypex.idl";
+
+#define _EMS_RPC_VERSION 1
+#define __RPC_FAR 
+
+typedef enum tagEMSWaveFormType
+{
+	WAVEFORM_NORMAL = 0,
+	WAVEFORM_TEST = -1,
+	WAVEFORM_RESERVED_MIN = 1,
+	WAVEFORM_RESERVED_MAX = 30,
+}  EMSWAVEFORMTYPE;
+
+cpp_quote("#define IS_RESERVED_WAVEFORM(e) (e>= WAVEFORM_RESERVED_MIN && e<=WAVEFORM_RESERVED_MAX)")
+cpp_quote("#define IS_TEST_WAVEFORM(e) (WAVEFORM_TEST == e)")
+cpp_quote("#define IS_NORMAL_WAVEFORM(e) (WAVEFORM_NORMAL == e)")
+
+const unsigned long EMSABLDATAVERSION	= 1;
+
+[
+	uuid(1824D545-DD6E-4ac8-A9EF-11070EF3F2C7),
+	helpstring("IEMSABLData"),
+	pointer_default(unique)
+]
+
+interface IEMSABLData
+{
+#pragma pack(1)
+
+	#define MAX_ABL_LUTS 16
+	#define MAX_ABL_SATS 16
+
+	cpp_quote( "#define MAX_ABL_LUTS 16" )
+	cpp_quote( "#define MAX_ABL_SATS 16" )
+
+	typedef enum _tagEMSABLSTATUSFLAGS
+	{
+		EMS_ABL_CHECK_BCN_MSG   	  = 0x00000001,  // if set, there is a problem in the active beacon msg correcting process
+		// Cospas-Sarsat Flags
+		EMS_ABL_REFERENCE_BCN   	  = 0x00000200,  // if set, the active beacon is configured in the system as a reference beacon.
+		EMS_ABL_ENCODED_LOCN_BCN      = 0x00010000	 // if set, the active beacon has an encoded location.
+	} EMSABLSTATUSFLAGS, *LPEMSABLSTATUSFLAGS;
+
+	//	ABL Record - Merge Identification Information
+	typedef struct _tagEMSMERGEID
+	{
+		EMSTIME	timestamp;			//	Timestamp of last update.
+		ULONG   ulLUTID;            //  The LUT ID where the ABL exists
+		INT64	i64BeaconID;		//	Beacon Identifier 
+		BYTE	acBeaconMsg[18];		//  Full beacon message, 144 bits.
+		WORD	wBitErrorFS;		//	Number of bit errors in frame synchronization preamble.
+		WORD	wBitErrorField1;	//	Number of bit errors in first protected field.
+		WORD	wBitErrorField2;	//	Number of bit errors in second protected field.
+		WORD	wType;				//	Solution Data Type 
+		DWORD	dwCSFlags;			//	Cospas-Sarsat Flags
+		DWORD	dwEMSFlags;			//	Solution Processing Status flags (redundant, ambiguous etc)
+		WORD	wCountryCode;		//	The country code of the beacon
+		WORD	wProtocolFlag;		//	The protocol flag of the beacon 
+		WORD	wProtocolCode;		//	The protocol code of the beacon 
+		WORD	wWaveFormID;		//	The wave form ID 
+		BYTE	acSatIDs[MAX_ABL_SATS];		 //	Satellite Identifier numbers.
+		BYTE	acLutIDs[MAX_ABL_LUTS];		 //	LUT Identifier numbers.
+	}	EMSMERGEID, *LPEMSMERGEID;
+
+	//	ABL Record - Merge Location Information
+	typedef struct _tagEMSMERGELOCATEINFO
+	{
+		double	dLatitude;		    //	Merged latitude.
+		double	dLongitude;		    //	Merged longitude.
+		double	dAltitude;		    //	Merged altitude.
+		double	dProbability;		//	Ambiguity probability of location, A side > .5.
+		double	dMajorError;		//	Semi-major axis of error ellipse in km.
+		double	dMinorError;		//	Semi-minor axis of error ellipse in km.
+		double	dHeading;			//	Heading direction of error ellipse in degrees Azimuth.
+		double	dRadiusErrEllipse;	//	Equivalent radius of error ellipse in km.
+		double	dTOANoise;			//  Standard deviation of TOA measurement residuals in msec
+		double	dFOANoise;			//  Standard deviation of FOA measurement residuals in Hz.
+		double  dHDOP;              //  Horizontal Dilution of Precision.
+		double	dLocationError;		//	Location Error Estimate (km)
+		double	dEncodedLat;		//	Encoded latitude
+		double	dEncodedLong;		//	Encoded longitude
+		double	dComputedQualityFactor;		//	The computed location's quality factor (rating)
+		double	dEncodedQualityFactor;		//	The encoded location's quality factor (rating)
+	}	EMSMERGELOCATEINFO, *LPEMSMERGELOCATEINFO;
+
+	// ABL Record - Merge Detection Information
+	typedef struct _tagEMSMERGEDETECTINFO
+	{
+		WORD	wNumMsgs;			//	Number of measurements available.
+		WORD	wNumFOAMsgsUsed;	//	Number of FOA messages used.
+		WORD	wNumTOAMsgsUsed;	//	Number of TOA messages used.
+		WORD	wNumBursts;	    	//	Number of different transmissions used.
+		EMSTIME	timeDataStart;		//	Time of first message.
+		EMSTIME	timeDataEnd;		//	Time of last message.
+	}	EMSMERGEDETECTINFO, *LPEMSMERGEDETECTINFO;
+
+	// ABL Record - Merge Beacon Measurements
+	typedef struct _tagEMSMERGEBEACONINFO
+	{
+		double	dCNR_Ave;			    //  Average C/No Estimate in dB-Hz.
+		double	dCNR_Sigma;			    //  Standard Deviation C/No Estimate in dB-Hz
+		double	dFrequency_Ave;			//  Average Transmit Frequency in MHz. 
+		double	dFrequency_Sigma;		//  Standard Deviation Transmit Frequency in Hz. 
+		double	dBitRate_Ave;			//  Average Bit Rate in bps. 
+		double	dBitRate_Sigma;			//  Standard Deviation Bit Rate in bps. 
+		double	dRepetitionRate_Ave;	//  Average Repetition Rate in bps. 
+		double	dRepetitionRate_Sigma;	//  Standard Deviation Repetition Rate in bps.
+	}	EMSMERGEBEACONINFO, *LPEMSMERGEBEACONINFO;
+
+	// the output summary
+	typedef struct _tagEMSABLData
+	{
+		EMSMERGEID			Id;
+		EMSMERGELOCATEINFO	Locate;
+		EMSMERGEDETECTINFO	Detect;
+		EMSMERGEBEACONINFO	Beacon;
+		
+		// Future expansion
+		WORD       wReserved;
+        ULONG      ulReserved1;
+        ULONG      ulReserved2;
+        ULONG      ulReserved3;
+        ULONG      ulReserved4;
+        ULONG      ulReserved5;
+        ULONG      ulReserved6;
+		INT64	   i64Reserved1;	// Used by ABL and MTL to communicate the timeOffset value from a single detection.
+		INT64	   i64Reserved2;
+		INT64	   i64Reserved3;
+		INT64	   i64Reserved4;
+		INT64	   i64Reserved5;
+		double	   dReserved1;		// Used by ABL and MTL to communicate the freqOffset value from a single detection.
+		double	   dReserved2;
+		double	   dReserved3;
+		double	   dReserved4;
+		double	   dReserved5;
+
+	}	EMSABLData, *LPEMSABLData;
+
+#pragma pack()
+}
+
+cpp_quote("#endif //INC_ABL_DATA")

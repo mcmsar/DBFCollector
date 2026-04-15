@@ -1,0 +1,82 @@
+cpp_quote("#ifndef INC_STATLOCN")
+cpp_quote("#define INC_STATLOCN")
+cpp_quote("")
+
+cpp_quote("// {ABFAD671-F182-11d5-8D38-009027912866}")
+cpp_quote("DEFINE_GUID( IID_IEMSLocationStatus, 0xabfad671, 0xf182, 0x11d5, 0x8d, 0x38, 0x0, 0x90, 0x27, 0x91, 0x28, 0x66);")
+cpp_quote(" " )
+cpp_quote("// {3CD5BAEE-56D9-4c83-BC82-6560FC48DFA6}")
+cpp_quote("DEFINE_GUID( IID_IEMSLocnAnalysisStatus, 0x3cd5baee, 0x56d9, 0x4c83, 0xbc, 0x82, 0x65, 0x60, 0xfc, 0x48, 0xdf, 0xa6);")
+cpp_quote(" " )
+
+import "unknwn.idl";
+import "emstypex.idl";
+import "emstatus.idl";
+
+#define _EMS_RPC_VERSION 1
+#define __RPC_FAR 
+
+[
+	object, uuid(ABFAD671-F182-11d5-8D38-009027912866),
+	helpstring("IEMSLocationStatus Interface"),
+	pointer_default(unique)
+]
+
+interface IEMSLocationStatus : IEMSStatus
+{
+	typedef [v1_enum] enum _tagEMSLOCATIONSTATE
+	{
+		EMS_LS_Idle = 0,
+		EMS_LS_Initialized = 1,
+		EMS_LS_Processing = 2,
+		EMS_LS_WaitingToProcess = 3,
+		EMS_LS_Shutdown = 4
+	} EMSLOCATIONSTATE;
+
+#pragma pack(1)
+	typedef struct _tagEMSLOCATIONINFO
+	{
+		WORD 				wStatus; // Location Processing Status
+		WORD 				wNumBeacons;
+		WORD				wTotalCbc121Solutions;
+		WORD				wTotalCbc243Solutions;
+		WORD				wTotalCbc406Solutions;
+		WORD 				wTotal406FdoaSolutions;
+		WORD				wTotal406Solutions;
+		WORD				wTotal406UnlocatedSolutions;
+		WORD				wTotal406SingleBursts;
+		ULONG				ulResidualRecords;
+		ULONG				ulInputRecords;
+		ULONG				ulOutputRecords;
+	} EMSLOCATIONINFO, *LPEMSLOCATIONINFO;
+
+#pragma pack()
+
+	HRESULT ResetLocationInfo( void );
+
+	HRESULT SetLocationInfo( [in] EMSLOCATIONINFO *lpInfo );
+	HRESULT GetLocationInfo( [out] EMSLOCATIONINFO *lpInfo );
+};
+
+typedef [unique] IEMSLocationStatus *LPEMSLOCATIONSTATUS;
+
+
+[
+	object, uuid(3CD5BAEE-56D9-4c83-BC82-6560FC48DFA6),
+	helpstring("IEMSLocnAnalysisStatus Interface"),
+	pointer_default(unique)
+]
+
+interface IEMSLocnAnalysisStatus : IEMSStatus
+{
+	HRESULT ResetLocnError( );
+	HRESULT SetMedianLocnError( [in] const WORD cwSampleSize,
+				  [in] const double cdMedianError );
+	HRESULT GetMedianLocnError( [out] WORD* pwSampleSize,
+				  [out] double* pdMedianError );
+};
+
+
+typedef [unique] IEMSLocnAnalysisStatus *LPEMSLOCNANALYSISSTATUS;
+
+cpp_quote("#endif //INC_STATLOCN")

@@ -1,0 +1,111 @@
+cpp_quote("/********************************************************************")
+cpp_quote("*	Module:			alertflt.h")
+cpp_quote("*	Description: 	Alert Filtering Interface")
+cpp_quote("*")
+cpp_quote("*********************************************************************")
+cpp_quote("*	              Copyright (c) 2003 by EMS Technologies, Inc.,")
+cpp_quote("*										All rights reserved")
+cpp_quote("*	This program is unpublished software and contains the trade secrets")
+cpp_quote("*	and confidential information of EMS Technologies, Inc.  It may not be ")
+cpp_quote("* reproduced in whole or in part, in any form or by any means whatsoever ")
+cpp_quote("* without the express written permission of EMS Technologies, Inc.")
+cpp_quote("*")
+cpp_quote("********************************************************************/")
+cpp_quote("")
+cpp_quote("#ifndef INC_ALERTFLT")
+cpp_quote("#define INC_ALERTFLT")
+cpp_quote("")
+
+cpp_quote(" ")
+cpp_quote("#include \"emserror.h\"")
+cpp_quote(" ")
+
+cpp_quote("// {6177BD13-EA0F-4655-8CAC-EBE760C11160}")
+cpp_quote("DEFINE_GUID( CLSID_EMSAlertFilter, 0x6177bd13, 0xea0f, 0x4655, 0x8c, 0xac, 0xeb, 0xe7, 0x60, 0xc1, 0x11, 0x60);")
+
+
+cpp_quote("// {AAC69CB3-2A4D-4fc6-BF96-DBFB8048B8CC}")
+cpp_quote("DEFINE_GUID( IID_IEMSAlertFilter, 0xaac69cb3, 0x2a4d, 0x4fc6, 0xbf, 0x96, 0xdb, 0xfb, 0x80, 0x48, 0xb8, 0xcc);")
+cpp_quote( " " )
+
+cpp_quote("// {AD9F839C-274A-4966-90EC-553CE05AAD29}")
+cpp_quote("DEFINE_GUID( IID_IEMSAlertFilter2, 0xad9f839c, 0x274a, 0x4966, 0x90, 0xec, 0x55, 0x3c, 0xe0, 0x5a, 0xad, 0x29);")
+
+cpp_quote("// {1ECAFE5E-E5C1-41a6-B4F1-9BFFF5404A11}")
+cpp_quote("DEFINE_GUID( IID_IEMSAlertFilter3, 0x1ecafe5e, 0xe5c1, 0x41a6, 0xb4, 0xf1, 0x9b, 0xff, 0xf5, 0x40, 0x4a, 0x11);")
+
+cpp_quote("// {1415F6F0-9147-4d94-8A6D-2D82AD8F4931}")
+cpp_quote("DEFINE_GUID( IID_IEMSAlertFilter4, 0x1415f6f0, 0x9147, 0x4d94, 0x8a, 0x6d, 0x2d, 0x82, 0xad, 0x8f, 0x49, 0x31);")
+
+cpp_quote( " " )
+cpp_quote("#ifdef UNICODE")
+cpp_quote("#define CheckAlertFilter     CheckAlertFilterW")
+cpp_quote("#else")
+cpp_quote("#define CheckAlertFilter     CheckAlertFilterA")
+cpp_quote("#endif // UNICODE")
+cpp_quote( " " )
+
+import "unknwn.idl";
+import "emstypex.idl";
+import "locate.idl";
+import "abldata.idl";
+#define _EMS_RPC_VERSION 1
+#define __RPC_FAR 
+
+[
+	object, uuid(AAC69CB3-2A4D-4fc6-BF96-DBFB8048B8CC),
+	helpstring("IEMSAlertFilter Interface"),
+	pointer_default(unique)
+]
+
+interface IEMSAlertFilter : IUnknown
+{	
+	HRESULT Initialize( void );
+	HRESULT Reset( void );
+	HRESULT CheckAlertFilterA( EMSLOCATE *lpLocate, char *lpcszDest );
+	HRESULT CheckAlertFilterW( EMSLOCATE *lpLocate, WCHAR *lpcszDest );
+};
+
+typedef [unique] IEMSAlertFilter *LPEMSALERTFILTER;
+
+[
+	object, uuid(AD9F839C-274A-4966-90EC-553CE05AAD29),
+	helpstring("IEMSAlertFilter2 Interface"),
+	pointer_default(unique)
+]
+
+interface IEMSAlertFilter2 : IEMSAlertFilter
+{	
+	HRESULT GetAlertFilterResult( HRESULT *lphrReason );
+};
+
+typedef [unique] IEMSAlertFilter2 *LPEMSALERTFILTER2;
+
+[
+	object, uuid(1ECAFE5E-E5C1-41a6-B4F1-9BFFF5404A11),
+	helpstring("IEMSAlertFilter3 Interface"),
+	pointer_default(unique)
+]
+interface IEMSAlertFilter3 : IEMSAlertFilter2
+{	
+	HRESULT CheckABLAlertFilter( 
+		[in] const EMSABLData cAlert, 
+		[in,string,unique] const wchar_t* cwszDest );
+};
+
+typedef [unique] IEMSAlertFilter3 *LPEMSALERTFILTER3;
+
+
+[
+	object, uuid(1415F6F0-9147-4d94-8A6D-2D82AD8F4931),
+	helpstring("IEMSAlertFilter4 Interface"),
+	pointer_default(unique)
+]
+interface IEMSAlertFilter4 : IEMSAlertFilter3
+{	
+	HRESULT CheckFixedBitsAlertFilter( EMSLOCATE *lpLocate, char *lpcszDest );
+};
+
+typedef [unique] IEMSAlertFilter4 *LPEMSALERTFILTER4;
+
+cpp_quote("#endif //INC_ALERTFLT")

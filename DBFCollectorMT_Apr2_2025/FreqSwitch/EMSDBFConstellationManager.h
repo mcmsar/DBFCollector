@@ -1,0 +1,61 @@
+#ifndef __EMSDBFConstellationManager_H__
+#define	__EMSDBFCONSTELLATIONMANAGER_H__
+
+#include "EMSDBFSynthesizer.h"
+#include "EMSDBFEnvSensor.h"
+#include "EMSDBFConfigReader.h"
+
+typedef enum _tagPolarisation
+{
+	RHCP,	// 0 - OFF
+	LHCP	// 1 - ON	
+}Polarisation;
+
+typedef enum tagEMSConstellationType
+{	
+	UNKNOWN			= -1,
+	GPS				= 0,
+	GAL				= 1,
+	GLONASS			= 2,
+	BEIDOU			= 3,
+	LEO				= 4,
+	GEO				= 5,
+	INMARSAT		= 6
+
+} EMSCONSTELLATIONTYPE;
+
+class CEMSDBFConstellationManager
+{
+public:
+	CEMSDBFConstellationManager();
+	CEMSDBFConstellationManager(int iSwitch, std::string szSyntIP, std::string szEnvSensorIP);
+	~CEMSDBFConstellationManager();
+
+	bool ConnectToSynthsizer();
+	bool ConnectToEnvSensor();
+	bool DisplayConfiguration();
+
+	void SetSatelliteConstellation(EMSCONSTELLATIONTYPE Constellation);
+
+	EMSDBFCOMPUTERCFG& ReadDBFConstellationCfg();
+	int Initialize(/*int iSwitch, std::string szSyntIP, std::string szEnvSensorIP*/);
+
+private:
+
+	CEMSDBFSynthesizer& getSynthsizer(){return m_oSynth;}
+	CEMSDBFEnvSensor& getEnvSensor(){return m_oEnvSensor;}
+
+private:
+
+	int m_nSwitch;
+	std::string m_szSynthesizerIP;
+	std::string m_szEnvSensorIP;
+
+	CEMSDBFSynthesizer m_oSynth;
+	CEMSDBFEnvSensor m_oEnvSensor;
+
+};
+
+
+
+#endif

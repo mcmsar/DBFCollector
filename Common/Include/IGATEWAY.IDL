@@ -1,0 +1,780 @@
+cpp_quote("// {C0AE5A01-0314-11d7-9D3F-000021FAA228}")
+cpp_quote("DEFINE_GUID( CLSID_EMSGateway, 0xc0ae5a01, 0x314, 0x11d7, 0x9d, 0x3f, 0x0, 0x0, 0x21, 0xfa, 0xa2, 0x28); ")
+
+
+cpp_quote("// {E4EAC144-030C-11d7-9D3F-000021FAA228}")
+cpp_quote("DEFINE_GUID( IID_IEMSGatewayConnection, 0xe4eac144, 0x30c, 0x11d7, 0x9d, 0x3f, 0x0, 0x0, 0x21, 0xfa, 0xa2, 0x28);")
+cpp_quote(" ")
+
+cpp_quote("// {E4EAC145-030C-11d7-9D3F-000021FAA228}")
+cpp_quote("DEFINE_GUID( IID_IEMSGatewayNotification, 0xe4eac145, 0x30c, 0x11d7, 0x9d, 0x3f, 0x0, 0x0, 0x21, 0xfa, 0xa2, 0x28);")
+cpp_quote(" ")
+
+cpp_quote("// {2E941035-468A-4d65-AF78-3D6F81B9A37B}")
+cpp_quote("DEFINE_GUID( IID_IEMSMCCGtwy, 0x2e941035, 0x468a, 0x4d65, 0xaf, 0x78, 0x3d, 0x6f, 0x81, 0xb9, 0xa3, 0x7b);")
+cpp_quote(" ")
+
+cpp_quote("// {E4EAC146-030C-11d7-9D3F-000021FAA228}")
+cpp_quote("DEFINE_GUID( IID_IEMSGatewayEventManager, 0xe4eac146, 0x30c, 0x11d7, 0x9d, 0x3f, 0x0, 0x0, 0x21, 0xfa, 0xa2, 0x28);")
+cpp_quote(" ")
+
+cpp_quote("// {35F83B1B-148A-46b8-94CE-CF74AA587626}")
+cpp_quote("DEFINE_GUID(CLSID_EMSGateway2, 0x35f83b1b, 0x148a, 0x46b8, 0x94, 0xce, 0xcf, 0x74, 0xaa, 0x58, 0x76, 0x26);")
+cpp_quote(" ")
+
+cpp_quote("// {7D399DD3-5BAE-48b3-AB2E-37EF540B05EB}")
+cpp_quote("DEFINE_GUID(IID_IEMSDALGtwy, 0x7d399dd3, 0x5bae, 0x48b3, 0xab, 0x2e, 0x37, 0xef, 0x54, 0xb, 0x5, 0xeb);")
+cpp_quote(" ")
+
+cpp_quote("// {11CA4B54-7D62-45a2-9620-052049A3AA39}")
+cpp_quote("DEFINE_GUID(IID_IEMSLocationGtwy, 0x11ca4b54, 0x7d62, 0x45a2, 0x96, 0x20, 0x5, 0x20, 0x49, 0xa3, 0xaa, 0x39);")
+cpp_quote(" ")
+
+cpp_quote("// {EF7FD937-6AC3-4dd6-98C9-C255117542F5}")
+cpp_quote("DEFINE_GUID(IID_IEMSAlertGenGtwy, 0xef7fd937, 0x6ac3, 0x4dd6, 0x98, 0xc9, 0xc2, 0x55, 0x11, 0x75, 0x42, 0xf5);")
+cpp_quote(" ")
+
+cpp_quote("// {B3305C7E-91DC-42cf-8976-39D3D759B83B}")
+cpp_quote("DEFINE_GUID(IID_IEMSDACGtwy, 0xb3305c7e, 0x91dc, 0x42cf, 0x89, 0x76, 0x39, 0xd3, 0xd7, 0x59, 0xb8, 0x3b);")
+cpp_quote(" ")
+
+cpp_quote("// {2030FA6F-8600-4534-8A29-B07AD50C34EC}")
+cpp_quote("DEFINE_GUID(IID_IEMSAudioGtwy, 0x2030fa6f, 0x8600, 0x4534, 0x8a, 0x29, 0xb0, 0x7a, 0xd5, 0xc, 0x34, 0xec);")
+cpp_quote(" ")
+
+cpp_quote("// {771DD684-BEB2-408d-9051-CF0929A3C583}")
+cpp_quote("DEFINE_GUID(IID_IEMSDataTransferGtwy, 0x771dd684, 0xbeb2, 0x408d, 0x90, 0x51, 0xcf, 0x9, 0x29, 0xa3, 0xc5, 0x83);")
+cpp_quote(" ")
+
+cpp_quote("// {A1B37799-1BF3-4e15-81A0-805A80A5603A}")
+cpp_quote("DEFINE_GUID(IID_IEMSConfigGtwy, 0xa1b37799, 0x1bf3, 0x4e15, 0x81, 0xa0, 0x80, 0x5a, 0x80, 0xa5, 0x60, 0x3a);")
+cpp_quote(" ")
+
+cpp_quote("// {BE75FFD8-9FC3-41b5-ABF1-9E03688A5A87}")
+cpp_quote("DEFINE_GUID(IID_IEMSGtwySecure, 0xbe75ffd8, 0x9fc3, 0x41b5, 0xab, 0xf1, 0x9e, 0x3, 0x68, 0x8a, 0x5a, 0x87);")
+cpp_quote(" ")
+
+cpp_quote("// {EC92FCFC-7E9D-4b5b-88E6-BC7587FF0668}")
+cpp_quote("DEFINE_GUID(IID_IEMSAlertManagerGtwy, 0xec92fcfc, 0x7e9d, 0x4b5b, 0x88, 0xe6, 0xbc, 0x75, 0x87, 0xff, 0x6, 0x68);")
+cpp_quote(" ")
+
+cpp_quote("// {1E29E10B-804F-4e3f-AEA1-0CB7939C1459}")
+cpp_quote("DEFINE_GUID(IID_IEMSAlertManagerGtwy2, 0x1e29e10b, 0x804f, 0x4e3f, 0xae, 0xa1, 0xc, 0xb7, 0x93, 0x9c, 0x14, 0x59);")
+cpp_quote(" ")
+
+cpp_quote("// {EB381D22-7D01-40aa-89B3-6BB8F3F1C053}")
+cpp_quote("DEFINE_GUID(IID_IEMSAlertManagerGtwy3, 0xeb381d22, 0x7d01, 0x40aa, 0x89, 0xb3, 0x6b, 0xb8, 0xf3, 0xf1, 0xc0, 0x53);")
+cpp_quote(" ")
+
+cpp_quote("// {D6C68EA6-A751-4944-B72D-C75BB0B2BB03}")
+cpp_quote("DEFINE_GUID(IID_IEMSSITGtwy, 0xd6c68ea6, 0xa751, 0x4944, 0xb7, 0x2d, 0xc7, 0x5b, 0xb0, 0xb2, 0xbb, 0x3);")
+cpp_quote(" ")
+
+cpp_quote("// {43AC17C3-43AE-400d-816C-6A2759B3C346}")
+cpp_quote("DEFINE_GUID(IID_IEMSMCCGtwy2, 0x43ac17c3, 0x43ae, 0x400d, 0x81, 0x6c, 0x6a, 0x27, 0x59, 0xb3, 0xc3, 0x46);")
+cpp_quote(" ")
+
+cpp_quote("// {9C33E067-BB2A-48c2-809C-CF791705310A}")
+cpp_quote("DEFINE_GUID(IID_IEMSHealthStatusGtwy, 0x9c33e067, 0xbb2a, 0x48c2, 0x80, 0x9c, 0xcf, 0x79, 0x17, 0x5, 0x31, 0xa);")
+cpp_quote(" ")
+
+
+import "unknwn.idl";
+import "emscommontypes.idl";
+import "securitytoken.idl";
+import "emscc.idl";
+import "dal.idl";
+import "iconfigmanager.idl";
+import "ABLData.idl";
+import "HealthStatusTypes.idl";
+
+cpp_quote( "#define ORIG_DEST_SIZE 64" )
+#define ORIG_DEST_SIZE 64
+
+typedef enum tagEMSGATEWAYDATATYPE
+{
+	EMSGatewayDataUnknown = 0,
+	EMSGatewayPtrFlag = 0x8000,
+	EMSGatewaySitMsg = 1,							// Buffer containing serialized SIT message
+	EMSGatewaySITMsgFile = 2,						// Path/Filename of SIT message file.
+	EMSGatewaySITPtr = 3,							// Pointer to a SIT message object.
+	EMSGatewaySitMsgPtr = 1 + EMSGatewayPtrFlag		// Pointer to a SIT message class.
+} EMSGATEWAYDATATYPE, *LPEMSGATEWAYDATATYPE;
+
+#pragma pack(1)
+
+
+typedef enum tagEMSGATEWAYADDRESSTYPE
+{
+	EMSGatewayCSAddress	= 1,			// COSPAS-SARSAT name
+	EMSGatewayIPAddress	= 2			// IP address [0].[1].[2].[3] binary
+} EMSGATEWAYADDRESSTYPE, *LPEMSGATEWAYADDRESSTYPE;
+
+cpp_quote( " " )
+cpp_quote( "// Although cAddress is declared as a byte array it ALWAYS ")
+cpp_quote( "// holds a char* representation of the address." )
+cpp_quote( "// e.g. sprintf( (char*)lpTo->cAddress, \"%u\", ulLutID );" )
+cpp_quote( " " )
+
+typedef struct tagEMSGATEWAYADDRESS
+{
+	EMSGATEWAYADDRESSTYPE type;		
+	BYTE cAddress[ ORIG_DEST_SIZE ];
+} EMSGATEWAYADDRESS, *LPEMSGATEWAYADDRESS;
+
+[
+	uuid(E4EAC144-030C-11d7-9D3F-000021FAA228),
+	helpstring("IEMSGatewayConnection"),
+	pointer_default(unique)
+]
+
+interface IEMSGatewayConnection : IUnknown
+{
+	HRESULT Connect( EMSGATEWAYADDRESS *lpFromAddress, DWORD dwFlags );
+
+	HRESULT Disconnect( );
+
+	HRESULT Send( [in] EMSGATEWAYDATATYPE eType,
+				[in,size_is(lMsgSize)] BYTE cMsg[],
+				[in] long lMsgSize,
+				[in] EMSGATEWAYTOKEN *lpSecurityToken,
+				[in] EMSGATEWAYADDRESS *lpToAddress );
+};
+
+// Interface implemented by clients to receive notification of the receipt of
+// a message.
+[
+	uuid(E4EAC145-030C-11d7-9D3F-000021FAA228),
+	helpstring("IEMSGatewayNotification"),
+	pointer_default(unique)
+]
+
+interface IEMSGatewayNotification : IUnknown
+{
+	// Safe for out-of-proc/remote notifications.
+	HRESULT OnMsgReceived( [in] EMSGATEWAYDATATYPE eType,
+						   [in,size_is(lMsgSize)] BYTE cMsg[],
+						   [in] long lMsgSize,
+							[in] EMSGATEWAYTOKEN *lpSecurityToken,
+						   [in] EMSGATEWAYADDRESS *lpFromAddress );
+};
+
+// Interface used by clients to register for notifications when messages
+// are received.
+[
+	uuid(E4EAC146-030C-11d7-9D3F-000021FAA228),
+	helpstring("IEMSGatewayEventManager"),
+	pointer_default(unique)
+]
+
+interface IEMSGatewayEventManager : IUnknown
+{
+	HRESULT Advise(	[in] IEMSGatewayNotification* pNotify,		// Interface to be called with notifications.
+					[in] BOOL bRemote, 		// TRUE: Notification interface is out-of-proc/remote.  FALSE:  Notification interface in inproc.
+					[out] DWORD* pdwCookie ); 	// Token used to "turn off" notifications.
+
+	HRESULT Unadvise( [in] DWORD dwCookie );
+};
+
+
+// LUT Server 1.0 Additions
+
+[
+	uuid(BE75FFD8-9FC3-41b5-ABF1-9E03688A5A87),
+	helpstring("IEMSGtwySecure"),
+	pointer_default(unique)
+]
+interface IEMSGtwySecure : IUnknown
+{
+	HRESULT SendMsg(	[in] EMSGATEWAYDATATYPE eType,
+						[in,size_is(lMsgSize)] BYTE cMsg[],
+						[in] long lMsgSize,
+						[in] EMSGATEWAYTOKEN *lpSecurityToken,
+						[in] EMSGATEWAYADDRESS *lpToAddress,
+						[in] long lSitType,
+						[in] EMSSITCONTROLCODE eCtrlCode );
+};
+
+typedef enum tagEMSResourceIdentifier
+{
+	EMSRES_UKNOWN = 0,
+	EMSRES_SEND_LOCATION = 1,
+	EMSRES_SEND_ALARM = 2,
+	EMSRES_SEND_WARNING = 3,
+	EMSRES_SEND_STATUS = 4,
+	EMSRES_SEND_ORBV = 5,
+	EMSRES_SEND_TLE = 6,
+	EMSRES_SEND_PASS_SCHED = 7,
+	EMSRES_SEND_METOP_SCHED = 8,
+	EMSRES_SEND_SARP_CALIB = 9,
+	EMSRES_SEND_SARR_CALIB = 10,
+	EMSRES_SEND_STARTUP = 11,
+	EMSRES_SEND_LEO_PASS_SUMMARY = 12,
+	EMSRES_SEND_GEO_PASS_SUMMARY = 13,
+	EMSRES_SEND_CMD_ACK = 14,
+	EMSRES_SEND_COMMS_CHECK = 15,
+	EMSRES_SEND_CMD = 16,
+	EMSRES_RETRANSMIT_MSGS = 17,
+	EMSRES_SEND_MSGS = 18,
+	EMSRES_GET_DATA = 19,
+	EMSRES_INIT_MAN_PROC = 20,
+	EMSRES_REMOVE_DATA = 21,
+	EMSRES_UPLOAD_DATA = 22,
+	EMSRES_PROCESS_406 = 23,
+	EMSRES_CANCEL_SESSION = 24,
+	EMSRES_GEN_ALERTS = 25,
+	EMSRES_SEND_DATA = 26,
+	EMSRES_RECOVER_DATA = 27,
+	EMSRES_GET_CONTROL_FILENAMES = 28,
+	EMSRES_SEND_DATA_REPORT = 29,
+	EMSRES_CONFIG_GET = 30,
+	EMSRES_CONFIG_SET_STRING = 31,
+	EMSRES_ALERT_SEND_SOLNS = 32,
+	EMSRES_ALERT_TRANSMIT = 33,
+	EMSRES_SIT_TRANSMIT = 34,
+	EMSRES_AUDIO_CONNECT = 35,
+	EMSRES_AUDIO_GETDATA = 36,
+	EMSRES_AUDIO_SETPARAM = 37,
+	EMSRES_AUDIO_DISCONNECT = 38,
+	EMSRES_AUDIO_MAKEFREEREQUEST = 39,
+	EMSRES_AUDIO_GETFREEREQUESTDATA = 40,
+	EMSRES_AUDIO_CANCELFREEREQUEST = 41,
+	EMSRES_LAST
+
+} EMSRESOURCEIDENTIFIER;
+
+
+[
+	object, 
+	uuid(771DD684-BEB2-408d-9051-CF0929A3C583),
+	helpstring("IEMSDataTransferGtwy Interface"),
+	pointer_default(unique)
+]
+interface IEMSDataTransferGtwy : IUnknown
+{
+	// Data Transfer
+	HRESULT UploadData(	[in] unsigned long ulDestID,
+						[in] EMSGATEWAYTOKEN* psecToken,
+						[in] unsigned long ulUploadTarget,
+						[in] EMSRECORDTYPE eRecordType,
+						[in] unsigned long ulMaxPackageSize,
+						[in,string] wchar_t* wszSQLWhere );
+};
+
+
+[
+	object, 
+	uuid(2E941035-468A-4d65-AF78-3D6F81B9A37B),
+	helpstring("IEMSMCCGtwy Interface"),
+	pointer_default(unique)
+]
+interface IEMSMCCGtwy : IUnknown
+{
+	HRESULT SendLocation(	[in] unsigned long ulDestID,
+							[in] EMSGATEWAYTOKEN* psecToken,
+							[in] EMSTRIGGER eTrigger,
+							[in] unsigned long ulSits,
+							[in,size_is(ulSits)] long* alSitIDs,
+							[in] unsigned long ulSatID,
+							[in] unsigned long ulPassID,
+							[in] unsigned long ulLocations,
+							[in,size_is(ulLocations)] EMSSITLOCALERTSOLUTION** apLocations );
+
+	HRESULT SendAlarm(	[in] unsigned long ulDestID,
+						[in] EMSGATEWAYTOKEN* psecToken,
+						[in] EMSTRIGGER eTrigger,
+						[in,string] wchar_t* wszSource,
+						[in,string] wchar_t* wszMsg,
+						[in] unsigned long ulSatID,
+						[in] unsigned long ulPassID );
+
+	HRESULT SendWarning(	[in] unsigned long ulDestID,
+							[in] EMSGATEWAYTOKEN* psecToken,
+							[in] EMSTRIGGER eTrigger,
+							[in,string] wchar_t* wszSource,
+							[in,string] wchar_t* wszMsg,
+							[in] unsigned long ulSatID,
+							[in] unsigned long ulPassID );
+
+	HRESULT SendStatus(	[in] unsigned long ulDestID,
+						[in] EMSGATEWAYTOKEN* psecToken,
+						[in] EMSTRIGGER eTrigger,
+						[in] unsigned long ulNumStatus,
+						[in,size_is(ulNumStatus)] EMS605ADATA** apStatus,
+						[in] unsigned long ulSatID,
+						[in] unsigned long ulPassID );
+
+	HRESULT SendOrbitVector(	[in] unsigned long ulDestID,
+								[in] EMSGATEWAYTOKEN* psecToken,
+								[in] EMSTRIGGER eTrigger,
+								[in] unsigned long ulCmdMsgSequence,
+								[in] unsigned long ulSitID,
+								[in] EMSSITCONTROLCODE eCtrlCode,
+								[in] unsigned long ulOrbits,
+								[in,size_is(ulOrbits)]	EMSSIT215DATA** apOrbVectors );
+
+	HRESULT SendTLE(	[in] unsigned long ulDestID,
+						[in] EMSGATEWAYTOKEN* psecToken,
+						[in] EMSTRIGGER eTrigger,
+						[in] unsigned long ulCmdMsgSequence,
+						[in] EMSSITCONTROLCODE eCtrlCode,
+						[in] unsigned long ulOrbits,
+						[in,size_is(ulOrbits)] EMSSIT255ADATA** apTLEs );
+
+	HRESULT SendPassSchedule(	[in] unsigned long ulDestID,
+								[in] EMSGATEWAYTOKEN* psecToken,
+								[in] EMSTRIGGER eTrigger,
+								[in] unsigned long ulCmdMsgSequence,
+								[in] EMSSCHEDUSAGE eUsage, 
+								[in] long lSatelliteCount, 
+								[in] unsigned long ulPasses, 
+								[in,size_is(ulPasses)] EMSSATELLITETRACK** apPasses );
+
+	HRESULT SendMetopSchedule(	[in] unsigned long ulDestID,
+								[in] EMSGATEWAYTOKEN* psecToken,
+								[in] EMSTRIGGER eTrigger,
+								[in] unsigned long ulEntries, 
+								[in,size_is(ulEntries)] EMSMANOEUVREDATA** apManoeuvres );
+
+	HRESULT SendSARPCalib(	[in] unsigned long ulDestID,
+							[in] EMSGATEWAYTOKEN* psecToken,
+							[in] EMSTRIGGER eTrigger,
+							[in] unsigned long ulCmdMsgSequence,
+							[in] unsigned long ulSit,
+							[in] EMSSITCONTROLCODE eCtrlCode,
+							[in] unsigned long ulMsgRequestNumber,
+							[in] unsigned long ulSatID,
+							[in] unsigned long ulPassID,
+							[in] EMSTIME timeRollover,
+							[in] double dUSOFrequency );
+
+	HRESULT SendSARRCalib(	[in] unsigned long ulDestID,
+							[in] EMSGATEWAYTOKEN* psecToken,
+							[in] EMSTRIGGER eTrigger,
+							[in] unsigned long ulCmdMsgSequence,
+							[in] unsigned long ulSit,
+							[in] EMSSITCONTROLCODE eCtrlCode,
+							[in] unsigned long ulSatellites,
+							[in,size_is(ulSatellites)] EMSSARRCALIBDATA** apSarrData );
+
+	HRESULT SendStartUp(	[in] unsigned long ulDestID, 
+							[in] EMSGATEWAYTOKEN* psecToken, 
+							[in] EMSTRIGGER eTrigger,
+							[in] unsigned long ulCmdMsgSequence );
+
+	HRESULT SendLEOPassSummary(	[in] unsigned long ulDestID,
+								[in] EMSGATEWAYTOKEN* psecToken,
+								[in] EMSTRIGGER eTrigger,
+								[in] unsigned long ulSatID,
+								[in] unsigned long ulPassID,
+								[in] EMSPASSSUMMARYINFO2* pSummary );
+
+	HRESULT SendGEOPassSummary(	[in] unsigned long ulDestID,
+								[in] EMSGATEWAYTOKEN* psecToken,
+								[in] EMSTRIGGER eTrigger,
+								[in] unsigned long ulSatID,
+								[in] unsigned long ulPassID,
+								[in] EMSGEOSUMMARYINFO* pSummary );
+
+	HRESULT SendCmdAck(	[in] unsigned long ulDestID,
+						[in] EMSGATEWAYTOKEN* psecToken,
+						[in] EMSTRIGGER eTrigger,
+						[in] unsigned long ulCommandMsgSequence,
+						[in,string] wchar_t* wszStatus );
+
+	HRESULT SendCommsCheck(	[in] unsigned long ulDestID, 
+							[in] EMSGATEWAYTOKEN* psecToken,
+							[in] EMSTRIGGER eTrigger );
+
+	HRESULT SendCommand(	[in] unsigned long ulDestID,
+							[in] EMSGATEWAYTOKEN* psecToken,
+							[in] EMSTRIGGER eTrigger,
+							[in] unsigned long ulCmdMsgSequence,
+							[in] EMSOPERATORCMD* popCommand );
+
+	HRESULT RequestRetransmitMsgs(	[in] unsigned long ulDestID,
+									[in] EMSGATEWAYTOKEN* psecToken,
+									[in] EMSTRIGGER eTrigger,
+									[in] unsigned long ulCmdMsgSequence,
+									[in] unsigned long ulSendToID,
+									[in] unsigned long ulSeqStart,
+									[in] unsigned long ulSeqEnd );
+
+	HRESULT SendMessages(	[in] unsigned long ulDestID,
+							[in] EMSGATEWAYTOKEN* psecToken,
+							[in] EMSTRIGGER eTrigger,
+							[in] unsigned long ulCount,
+							[in,string,size_is(ulCount)] wchar_t** awszFilePath );
+
+	HRESULT SendDataReport(	[in] unsigned long ulDestID,
+							[in] EMSGATEWAYTOKEN* psecToken,
+							[in] EMSTRIGGER eTrigger,
+							[in] unsigned long ulMessages,
+							[in,string,size_is(ulMessages)] wchar_t** awszMessages );
+
+	HRESULT SendAlarmsAsLog(	[in] unsigned long ulDestID,
+							[in] EMSGATEWAYTOKEN* psecToken,
+							[in] EMSTRIGGER eTrigger,
+							[in] unsigned long ulAlarms,
+							[in,size_is(ulAlarms)] EMSLOGDATA* aLogData );
+
+	HRESULT SendWarningsAsLog(	[in] unsigned long ulDestID,
+							[in] EMSGATEWAYTOKEN* psecToken,
+							[in] EMSTRIGGER eTrigger,
+							[in] unsigned long ulWarnings,
+							[in,size_is(ulWarnings)] EMSLOGDATA* aLogData );
+
+	HRESULT SendStatusAsLog(	[in] unsigned long ulDestID,
+							[in] EMSGATEWAYTOKEN* psecToken,
+							[in] EMSTRIGGER eTrigger,
+							[in] unsigned long ulStatus,
+							[in,size_is(ulStatus)] EMSLOGDATA* aLogData );
+
+};
+
+//! @struct tagEMSCalib406DataIdentity
+//! Structure for holding Calibrated406 data plus the identity field of the associated
+//! record in the database.
+struct tagEMSCalib406DataIdentity 
+{
+	EMSCALIB406DATA data;
+	unsigned long ulIdentity;
+};
+
+//! @typdef typedef tagEMSCalib406DataIdentity EMSCALIB406DATAIDENTITY
+//! Alias for tagEMSCalib406DataIdentity
+typedef struct tagEMSCalib406DataIdentity EMSCALIB406DATAIDENTITY;
+
+[
+	object, 
+	uuid(7D399DD3-5BAE-48b3-AB2E-37EF540B05EB),
+	helpstring("IEMSDALGtwy Interface"),
+	pointer_default(unique)
+]
+interface IEMSDALGtwy : IUnknown
+{
+	HRESULT GetData(	[in] unsigned long ulDestID, 
+						[in] EMSGATEWAYTOKEN* psecToken,
+						[in,out] EMSDALCACHEID* pCacheID,
+						[in] const unsigned long culMaxRecords,
+						[in] const boolean cbReturnDescriptor,
+						[in,string,unique] const wchar_t* cwszOutputFileSpec,
+						[in,out] unsigned long* pulTotalRecords,
+						[in,out] unsigned long* pulRecordSize,
+						[in,out] boolean* pbCacheOverflow,
+						[in,string,unique] const wchar_t* cwszConnection,
+						[in,string,unique] const wchar_t* cwszSQLQuery,
+						[in,out] unsigned long* pulFields,
+						[out,size_is(,*pulFields)] EMSFIELDDESCRIPTOR** paFields,
+						[in,out] unsigned long* pulDataSize,
+						[out,size_is(,*pulDataSize)] unsigned char** paData);
+};
+
+[
+	object, 
+	uuid(11CA4B54-7D62-45a2-9620-052049A3AA39),
+	helpstring("IEMSLocationGtwy Interface"),
+	pointer_default(unique)
+]
+interface IEMSLocationGtwy : IUnknown
+{
+	typedef enum tagManualProcessingMode
+	{
+		EMS_MANUAL_MODE_UNKNOWN = 0,
+		EMS_MANUAL_MODE_LEO_ONLY = 1,
+		EMS_MANUAL_MODE_LEO_GEO = 2,
+		EMS_MANUAL_MODE_LEO_GEO_COMBINED = 3,
+		EMS_MANUAL_MODE_LAST = EMS_MANUAL_MODE_LEO_GEO_COMBINED
+	} EMSMANUALPROCESSINGMODE;
+
+	// Manual CLOP Processing
+	HRESULT InitManualProcessing(	[in] unsigned long ulDestID,
+									[in] EMSGATEWAYTOKEN* pToken,
+									[in,string] wchar_t* wszWhereClause,
+									[out] unsigned long* pulSessionID,
+									[in,out] unsigned long* pulRecords,
+									[out,size_is(,*pulRecords)] EMSCALIB406DATA** paBeaconData );
+
+	HRESULT RemoveDataFromSet(	[in] unsigned long ulDestID,
+								[in] EMSGATEWAYTOKEN* pToken,
+								[in] unsigned long ulSessionID,
+								[in] unsigned long ulKeys,
+								[in,size_is(ulKeys)] unsigned long* aulKeys );
+
+	HRESULT	Process406(	[in] unsigned long ulDestID,
+						[in] EMSGATEWAYTOKEN* psecToken,
+						[in] unsigned long ulSessionID,
+						[in,string] wchar_t* wszControlFilename,
+						[in,out] unsigned long* pulResults,
+						[out,size_is(,*pulResults)] EMSLOCATE** paLocations );
+
+	HRESULT CancelSession(	[in] unsigned long ulDestID,
+							[in] EMSGATEWAYTOKEN* psecToken,
+							[in] unsigned long ulSessionID );
+
+	HRESULT GetControlFilenames(	[in] unsigned long ulDestID,
+									[in] EMSGATEWAYTOKEN* psecToken, 
+									[out] unsigned long* pulCount,
+									[out, string, size_is(, *pulCount)] wchar_t***  ppaControlFilenames );
+
+	HRESULT InitManual(	[in] unsigned long ulDestID,
+						[in] EMSGATEWAYTOKEN* pToken,
+						[in,string] const wchar_t* cwszWhereClause,
+						[in] const EMSMANUALPROCESSINGMODE ceProcessingMode,
+						[out] unsigned long* pulSessionID,
+						[in,out] unsigned long* pulRecords,
+						[out,size_is(,*pulRecords)] EMSVARIANTRECORD** paData );
+
+};
+
+
+[
+	object, 
+	uuid(EF7FD937-6AC3-4dd6-98C9-C255117542F5),
+	helpstring("IEMSAlertGenGtwy Interface"),
+	pointer_default(unique)
+]
+interface IEMSAlertGenGtwy : IUnknown
+{
+	// Alert Generator
+	HRESULT GenerateAlerts(	[in] unsigned long ulDestID,
+							[in] EMSGATEWAYTOKEN* psecToken,
+							[in] unsigned long ulDestinations,
+							[in,size_is(ulDestinations)] unsigned long* aulDestinationIDs,
+							[in] unsigned long ulLocations,
+							[in,size_is(ulLocations)] EMSLOCATIONKEY* aLocations );
+};
+
+[
+	object, 
+	uuid(EC92FCFC-7E9D-4b5b-88E6-BC7587FF0668),
+	helpstring("IEMSAlertManagerGtwy Interface"),
+	pointer_default(unique)
+]
+interface IEMSAlertManagerGtwy : IUnknown
+{
+	const unsigned long MAX_ALERT_RECORDS = 2;	// A solution can have maximum two EMSLOCATE records (an A side and a B side).
+	
+	// A value of 0 for ulSolutionDestination tells the software
+	// to send the solution to all interested routes/destinations
+	// This value also indicates that the software should accumulate solutions 
+	// until the sit message reaches maximum size or until TransmitAutoAlerts() is called
+	HRESULT SendSolution(	[in] unsigned long ulDestID,  // identifies the LUT where this request is to be processed
+							[in] EMSGATEWAYTOKEN* psecToken,
+							[in] EMSTRIGGER eTrigger,
+							[in] unsigned long ulSolutionDestination, 
+							[in] unsigned long ulSatID,
+							[in] unsigned long ulPassID,
+							[in] EMSLOCATE aLocations[MAX_ALERT_RECORDS],
+							[in] char szUserID[ EMS_MAX_USER_NAME ] ); // Used for logging
+
+	// Send accumulated alert data now
+	HRESULT TransmitAutoAlerts( [in] unsigned long ulDestID,
+								[in] EMSGATEWAYTOKEN* psecToken,
+								[in] EMSTRIGGER eTrigger );
+};
+
+[
+	object, 
+	uuid(1E29E10B-804F-4e3f-AEA1-0CB7939C1459),
+	helpstring("IEMSAlertManagerGtwy2 Interface"),
+	pointer_default(unique)
+]
+interface IEMSAlertManagerGtwy2 : IEMSAlertManagerGtwy
+{
+	// Same as SendSolution() but the software ensures that resulting sit messages are sent immediately
+	HRESULT SendSolutionNow(	[in] const unsigned long culDestID, // identifies the LUT where this request is to be processed
+								[in] const EMSGATEWAYTOKEN* cpsecToken,
+								[in] const EMSTRIGGER ceTrigger,
+								[in] const unsigned long culSolutionDestination,
+								[in] const unsigned long culSatID,
+								[in] const unsigned long culPassID,
+								[in] const EMSLOCATE caLocations[MAX_ALERT_RECORDS],
+								[in] const char cszUserID[ EMS_MAX_USER_NAME ] );
+};
+
+[
+	object, 
+	uuid(EB381D22-7D01-40aa-89B3-6BB8F3F1C053),
+	helpstring("IEMSAlertManagerGtwy3 Interface"),
+	pointer_default(unique)
+]
+interface IEMSAlertManagerGtwy3 : IEMSAlertManagerGtwy2
+{
+	// Same as SendSolution() but the input is EMSABLData
+	HRESULT SendSolutionEx(	[in] const unsigned long culDestID, // identifies the LUT where this request is to be processed
+							[in] const EMSGATEWAYTOKEN* cpsecToken,
+							[in] const EMSTRIGGER ceTrigger,
+							[in] const unsigned long culSolutionDestination,
+							[in] const unsigned long culSatID,
+							[in] const unsigned long culPassID,
+							[in] const EMSABLData* cpABLData,
+							[in] const char cszUserID[ EMS_MAX_USER_NAME ],
+							[in] const BOOL cbSendNow );
+};
+
+
+[
+	object, 
+	uuid(B3305C7E-91DC-42cf-8976-39D3D759B83B),
+	helpstring("IEMSDACGtwy Interface"),
+	pointer_default(unique)
+]
+interface IEMSDACGtwy : IUnknown
+{
+	// Data Acquisition
+	HRESULT RecoverData(	[in] unsigned long ulDestID,
+							[in] EMSGATEWAYTOKEN* psecToken,
+							[in] unsigned long ulNumLuts,
+							[in,size_is(ulNumLuts)] unsigned long* aulLutIDs,
+							[in] unsigned long ulNumDataTypes,
+							[in,size_is(ulNumDataTypes)] EMSRECORDTYPE* aeDataTypes,
+							[in] EMSTIME timeStart,
+							[in] EMSTIME timeEnd );
+
+	HRESULT SendData(	[in] unsigned long ulDestID,
+						[in] EMSGATEWAYTOKEN* psecToken,
+						[in,string] wchar_t* wszFilePath );
+
+	HRESULT SendData2(	[in] unsigned long ulDestID,
+						[in] EMSGATEWAYTOKEN* psecToken,
+						[in] unsigned long ulSourceID,
+						[in] unsigned long ulRecords,
+						[in,size_is(ulRecords)] EMSVARIANTRECORD* aRecords );
+};
+
+
+[
+	object, 
+	uuid(2030FA6F-8600-4534-8A29-B07AD50C34EC),
+	helpstring("IEMSAudioGtwy Interface"),
+	pointer_default(unique)
+]
+interface IEMSAudioGtwy : IUnknown
+{
+	// --- real time audio requests ---
+	HRESULT AudioConnect( [in] const unsigned long culLutID,
+						  [in] EMSGATEWAYTOKEN* psecToken,
+						  [in,out] unsigned long* ulSession );
+
+	HRESULT AudioGetData( [in] unsigned long ulDestID,
+					 [in] const unsigned long ulSession,
+					 [in] EMSGATEWAYTOKEN* psecToken,
+					 [in,out,size_is(*pLen)] unsigned char* pData,
+					 [in,out] unsigned int* pLen );
+
+	HRESULT AudioSetParameters( [in] unsigned long ulDestID,
+	                       [in] const unsigned long ulSession,
+						   [in] EMSGATEWAYTOKEN* psecToken,
+						   [in] const float fCenterFreq, 
+						   [in] const float fBandwidth);
+
+	HRESULT AudioDisconnect( [in] unsigned long ulDestID,
+	                    [in] const unsigned long culSession,
+						[in] EMSGATEWAYTOKEN* psecToken );
+
+	// --- free requests - based on audio frequency / time parameters ---
+
+	HRESULT AudioMakeFreeRequest( [in] unsigned long ulDestID,
+						[in] EMSGATEWAYTOKEN* psecToken,
+						[in] EMSAUDIOREQUEST audreq,
+	                    [in,out] unsigned long* pulSessionID );
+
+	HRESULT AudioGetFreeRequestData( [in] unsigned long ulDestID,
+						[in] EMSGATEWAYTOKEN* psecToken,
+						[in] unsigned long ulSessionID,
+						[in,out] EMSAUDIODATARECORD_RIFF* audrec );
+
+	HRESULT AudioCancelFreeRequest( [in] unsigned long ulDestID,
+						[in] EMSGATEWAYTOKEN* psecToken,
+						[in] unsigned long ulSessionID);
+
+};
+
+
+[
+	object, 
+	uuid(A1B37799-1BF3-4e15-81A0-805A80A5603A),
+	helpstring("IEMSConfigGtwy Interface"),
+	pointer_default(unique)
+]
+interface IEMSConfigGtwy : IUnknown
+{
+	HRESULT Get(	[in] unsigned long ulDestID,
+					[in] EMSGATEWAYTOKEN* psecToken,
+					[in,string] const wchar_t* cwszGroupType,
+					[in,string] const wchar_t* cwszGroupID,
+					[in,string] const wchar_t* cwszKeyName,
+					[in,out] EMSVARITYPE* pValue );
+
+	HRESULT SetString(  [in] unsigned long ulDestID,
+						[in] EMSGATEWAYTOKEN* psecToken,
+                        [in, string]   const wchar_t*                pwcsGroupType,
+                        [in, string]   const wchar_t*                pwcsGroupID,
+                        [in, string]   const wchar_t*                pwcsKeyName,
+                        [in, string]   const wchar_t*                pwcsValue );
+
+};
+
+[
+	object,
+	uuid(D6C68EA6-A751-4944-B72D-C75BB0B2BB03),
+	helpstring("IEMSSITGtwy Interface"),
+	pointer_default(unique)
+]
+interface IEMSSITGtwy : IUnknown
+{
+	HRESULT Transmit(	[in] unsigned long ulDestID,
+						[in] EMSGATEWAYTOKEN* psecToken,
+						[in] const EMSTRIGGER ceTrigger,
+						[in] const EMSCONTROLDATAVALUE ceControlData,
+						[in,string,unique] const wchar_t* cwszUserID,
+						[in,string] const wchar_t* cwszRouteID,
+						[in] const unsigned long culNumMessages,
+						[in,string,size_is(culNumMessages)] const wchar_t** cawszMessages );
+
+};
+
+[
+	object, 
+	uuid(43AC17C3-43AE-400d-816C-6A2759B3C346),
+	helpstring("IEMSMCCGtwy2 Interface"),
+	pointer_default(unique)
+]
+interface IEMSMCCGtwy2 : IEMSMCCGtwy
+{
+	HRESULT SendPassSchedule2(	[in] unsigned long ulDestID,
+								[in] EMSGATEWAYTOKEN* psecToken,
+								[in] EMSTRIGGER eTrigger,
+								[in] unsigned long ulCmdMsgSequence,
+								[in] EMSSCHEDUSAGE eUsage, 
+								[in] long lSatelliteCount, 
+								[in] unsigned long ulPasses, 
+								[in,size_is(ulPasses)] EMSSATELLITETRACK2** apPasses );
+};
+
+
+[
+	object, 
+	uuid(9C33E067-BB2A-48c2-809C-CF791705310A),
+	helpstring("IEMSHealthStatusGtwy Interface"),
+	pointer_default(unique)
+]
+interface IEMSHealthStatusGtwy : IUnknown
+{	
+	// A value of 0 for culSendStatusTo tells the software to send
+	// the health status SIT message to all interested routes/destinations
+	// Remember that culDestID is the destination for this request 
+	// and not the ultimate destination for the data
+	HRESULT SendHealthStatus(	[in] const unsigned long culDestID,
+								[in] const EMSGATEWAYTOKEN* cpsecToken,
+								[in] const EMSTRIGGER ceTrigger,
+								[in] const unsigned long culSendStatusTo,
+								[in] const EMSHEALTHSTATUS cStatus,
+								[in] const unsigned long culRecCount,
+								[in,size_is(culRecCount)] 
+									const EMSHEALTHDETECTIONS* caDetectionRecords );
+};
+
+
+#pragma pack()

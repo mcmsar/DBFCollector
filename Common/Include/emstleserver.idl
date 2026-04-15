@@ -1,0 +1,69 @@
+cpp_quote( " " )
+cpp_quote( "#include \"emserror.h\"" )
+cpp_quote( " " )
+
+cpp_quote("// {39CF31B4-C4FB-40bf-BBD5-29511D007E3C} " )
+cpp_quote("DEFINE_GUID( CLSID_EMSTLEServer, 0x39cf31b4, 0xc4fb, 0x40bf, 0xbb, 0xd5, 0x29, 0x51, 0x1d, 0x0, 0x7e, 0x3c); " )
+cpp_quote(" " )
+
+cpp_quote("// {BAD6DDEA-88AB-4899-88E9-9B7BABB726C0} ")
+cpp_quote("DEFINE_GUID( IID_IEMSTLEServer, 0xbad6ddea, 0x88ab, 0x4899, 0x88, 0xe9, 0x9b, 0x7b, 0xab, 0xb7, 0x26, 0xc0); ")
+cpp_quote(" " )
+
+cpp_quote("// {3D9B8751-CA7E-11d8-8E69-009027912866}")
+cpp_quote("DEFINE_GUID( IID_IEMSTLEServer2, 0x3d9b8751, 0xca7e, 0x11d8, 0x8e, 0x69, 0x0, 0x90, 0x27, 0x91, 0x28, 0x66);")
+cpp_quote(" ")
+
+cpp_quote("// Settings for ulFlags ")
+cpp_quote("//")
+cpp_quote("#define EMSTLEServerFlag_AllowDefault         (0x1)  /* Supply Default TLE */")
+cpp_quote(" ")
+
+import "unknwn.idl";
+import "emsorbit.idl";
+import "dal.idl";
+
+#define _EMS_RPC_VERSION 1
+#define __RPC_FAR 
+
+[
+    object, uuid(BAD6DDEA-88AB-4899-88E9-9B7BABB726C0),
+    helpstring("IEMSTLEServer Interface"),
+    pointer_default(unique)
+]
+
+interface IEMSTLEServer : IUnknown
+{
+
+    HRESULT GetBestSatTLE( [in]  ULONG ulLutID, [in]  ULONG ulSatID,
+                           [in]  EMSTIME eTime, [out] LPEMSTLEDATA lpTLEData );
+
+    HRESULT SetCacheTLE(   [in]  LPEMSTLERECORD lpTLERecs, int nTLERecs );
+
+};
+
+typedef [unique] IEMSTLEServer *LPEMSTLEServer;
+
+[
+    object, uuid(3D9B8751-CA7E-11d8-8E69-009027912866),
+    helpstring("IEMSTLEServer2 Interface"),
+    pointer_default(unique)
+]
+
+interface IEMSTLEServer2 : IEMSTLEServer
+{
+	HRESULT Initialize( [ in ] ULONG ulMaxTLEs, [in] ULONG ulFlags );
+	HRESULT Reset( void );
+
+	HRESULT ResetCacheTLEs( void );
+	HRESULT LoadCacheTLEs( [in] ULONG ulLutID, [in] ULONG ulSatID, 
+								[in] EMSTIME timeStart, [in] EMSTIME timeEnd );
+
+	HRESULT GetCacheTLECount( [out] ULONG *lpulCount );
+	HRESULT GetCacheTLERecord( [out] LPEMSTLERECORD lpTLERecord, [ in ] ULONG ulIndex );
+	HRESULT GetCacheTLEData( [out] LPEMSTLEDATA lpTLEData, [ in ] ULONG ulIndex );
+};
+
+typedef [unique] IEMSTLEServer2 *LPEMSTLESERVER2;
+
+

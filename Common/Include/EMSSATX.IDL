@@ -1,0 +1,67 @@
+cpp_quote("/********************************************************************")
+cpp_quote("*	Module:			emssatx.h ")
+cpp_quote("*	Process ID:")
+cpp_quote("*	S/W Platforms:")
+cpp_quote("*	H/W Platforms:")
+cpp_quote("*	Compiler:")
+cpp_quote("*	Description: 	IEMSSatelliteInfoEx")
+cpp_quote("*")
+cpp_quote("*	Usage:")
+cpp_quote("*	Entry Point:")
+cpp_quote("*	Input Files:")
+cpp_quote("*	Output Files:")
+cpp_quote("*	Comments:")
+cpp_quote("*")
+cpp_quote("*********************************************************************")
+cpp_quote("*	              Copyright (c) 2001 by EMS Technologies, Inc.,")
+cpp_quote("*										All rights reserved")
+cpp_quote("*	This program is unpublished software and contains the trade secrets")
+cpp_quote("*	and confidential information of EMS Technologies, Inc.  It may not be ")
+cpp_quote("* reproduced in whole or in part, in any form or by any means whatsoever ")
+cpp_quote("* without the express written permission of EMS Technologies, Inc.")
+cpp_quote("*")
+cpp_quote("********************************************************************/")
+cpp_quote("")
+cpp_quote("/*******************************************************************")
+cpp_quote("")
+cpp_quote("  Revision Record")
+cpp_quote("")
+cpp_quote("	Rev	Date			Auth	Changes")
+cpp_quote("	===	====			====	=======")
+cpp_quote("")
+cpp_quote("	0.0	02/01/18		rvw	start")
+cpp_quote("")
+cpp_quote("********************************************************************/")
+cpp_quote("#ifndef INC_EMSSATX")
+cpp_quote("#define INC_EMSSATX")
+
+import "unknwn.idl";
+import "emstypex.idl";
+import "emstatus.idl";
+
+cpp_quote("// {55869DCE-8C75-4c09-AFAB-B5358EACC31F}")
+cpp_quote("DEFINE_GUID( IID_IEMSSatelliteInfoEx, 0x55869dce, 0x8c75, 0x4c09, 0xaf, 0xab, 0xb5, 0x35, 0x8e, 0xac, 0xc3, 0x1f);")
+cpp_quote(" ")
+
+#define _EMS_RPC_VERSION 1
+#define __RPC_FAR 
+
+[
+	object, uuid(55869DCE-8C75-4c09-AFAB-B5358EACC31F),
+	helpstring("IEMSSatelliteInfoEx"),
+	pointer_default(unique)
+]
+
+interface IEMSSatelliteInfoEx : IUnknown
+{
+	HRESULT GetSatelliteOrbitTolerance( [in] ULONG ulSatID, [out] double *lpdWarnPos, 
+					[out] double *lpdWarnVelocity, [out] double *lpdMaxPos, [out] double *lpdMaxVelocity );
+
+	HRESULT GetSatelliteWeightFactor( [in] ULONG ulSatID, [out] double *lpdWeightFactor );
+
+};
+
+typedef [unique] IEMSSatelliteInfoEx *LPEMSSATELLITEINFOEX;
+
+cpp_quote("#endif //INC_EMSSATX")
+

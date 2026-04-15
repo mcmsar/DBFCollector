@@ -1,0 +1,29 @@
+cpp_quote("// {B87AF813-7459-43ea-819A-CE378F03F19A}")
+cpp_quote("DEFINE_GUID(IID_IEMSAlertGenerator, 0xb87af813, 0x7459, 0x43ea, 0x81, 0x9a, 0xce, 0x37, 0x8f, 0x3, 0xf1, 0x9a);")
+
+cpp_quote("// {5B2BA125-4D13-4f21-BD85-F5547326B251}")
+cpp_quote("DEFINE_GUID(CLSID_EMSAlertGenerator, 0x5b2ba125, 0x4d13, 0x4f21, 0xbd, 0x85, 0xf5, 0x54, 0x73, 0x26, 0xb2, 0x51);")
+
+import "unknwn.idl";
+import "emstypex.idl";
+
+//! @struct tagEMSLocationKey
+//! Structure for holding a database key for a locate_data record.
+//! @typedef struct tagEMSLocationKey EMSLOCATIONKEY
+//! Alias for tagEMSLocationKey
+typedef struct tagEMSLocationKey
+{
+	EMSTIME timestamp;
+	unsigned short usType;
+} EMSLOCATIONKEY;
+
+[
+	uuid(B87AF813-7459-43ea-819A-CE378F03F19A),
+	helpstring("IEMSAlertGenerator"),
+	pointer_default(unique)
+]
+interface IEMSAlertGenerator : IUnknown
+{
+	HRESULT GenerateAlerts(	[in] unsigned long ulLocations,
+							[in,size_is(ulLocations)] EMSLOCATIONKEY* aLocations );
+};

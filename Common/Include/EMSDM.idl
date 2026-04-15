@@ -1,0 +1,41 @@
+cpp_quote("// {0837EEDF-9AB4-4ae6-B7C0-49CBE5F0F485}")
+cpp_quote("DEFINE_GUID(CLSID_CEMSDataManager, 0x837eedf, 0x9ab4, 0x4ae6, 0xb7, 0xc0, 0x49, 0xcb, 0xe5, 0xf0, 0xf4, 0x85);")
+cpp_quote("")
+cpp_quote("// {94D155A6-3D58-4869-B15A-8E6ECAD2AC9A}")
+cpp_quote("DEFINE_GUID(IID_IEMSDataManager, 0x94d155a6, 0x3d58, 0x4869, 0xb1, 0x5a, 0x8e, 0x6e, 0xca, 0xd2, 0xac, 0x9a);")
+cpp_quote("")
+
+import "unknwn.idl";
+import "EMSTYPEX.IDL";
+import "DAL.idl";
+
+const ULONG c_ulMAX_SOURCE_PATH_LEN = 512;
+
+typedef struct _tagEMSSourcesTimeOut
+{
+   double dOlderThan;
+   EMSRECORDTYPE rt;
+} EMSSOURCESTIMEOUT;
+
+typedef struct _tagEMSPathTimeOut
+{
+   wchar_t wszPath[c_ulMAX_SOURCE_PATH_LEN];
+   double dOlderThan;
+} EMSSOURCEPATHTIMEOUT;
+
+[
+	uuid(94D155A6-3D58-4869-B15A-8E6ECAD2AC9A),
+	helpstring("IEMSDataManager"),
+	pointer_default(unique)
+]
+
+interface IEMSDataManager : IUnknown
+{
+   HRESULT ArchiveDB( [in] ULONG ulNumSources,
+                    [in,size_is(ulNumSources)] EMSSOURCESTIMEOUT aSources[] );
+
+   HRESULT ArchivePath( [in] ULONG ulNumSources,
+                      [in,size_is(ulNumSources)] EMSSOURCEPATHTIMEOUT aSourcePaths[] );
+}
+
+typedef IEMSDataManager *LPEMSDATAMANAGER;

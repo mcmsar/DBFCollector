@@ -1,0 +1,98 @@
+cpp_quote("/********************************************************************")
+cpp_quote("*	Module:			StatusBroadcaster.h")
+cpp_quote("*	Process ID:")
+cpp_quote("*	S/W Platforms:")
+cpp_quote("*	H/W Platforms:")
+cpp_quote("*	Compiler:")
+cpp_quote("*	Description: 	Data structure for Active Beacon Data Record; ")
+cpp_quote("*					Defines methods to be implemented in the StatusBroadcaster class )")
+cpp_quote("*	Usage:")
+cpp_quote("*	Entry Point:")
+cpp_quote("*	Input Files:")
+cpp_quote("*	Output Files:")
+cpp_quote("*	Comments:")
+cpp_quote("*")
+cpp_quote("*********************************************************************")
+cpp_quote("*	              Copyright (c) 2003 by EMS Technologies, Inc.,")
+cpp_quote("*										All rights reserved")
+cpp_quote("*	This program is unpublished software and contains the trade secrets")
+cpp_quote("*	and confidential information of EMS Technologies, Inc.  It may not be ")
+cpp_quote("* reproduced in whole or in part, in any form or by any means whatsoever ")
+cpp_quote("* without the express written permission of EMS Technologies, Inc.")
+cpp_quote("*")
+cpp_quote("********************************************************************/")
+cpp_quote("")
+cpp_quote("/*******************************************************************")
+cpp_quote("")
+cpp_quote("  Revision Record")
+cpp_quote("")
+cpp_quote("	Rev	Date		Auth	Changes")
+cpp_quote("	===	====		====	=======")
+cpp_quote("")
+cpp_quote("")
+cpp_quote("********************************************************************/")
+cpp_quote("#ifndef INC_STATUS_BROADCASTER")
+cpp_quote("#define INC_STATUS_BROADCASTER")
+cpp_quote("")
+
+cpp_quote( "// {99FAB986-B46D-4779-A28C-655F71F68685}" )
+cpp_quote( "DEFINE_GUID(CLSID_EMSStatusBroadcaster, 0x99fab986, 0xb46d, 0x4779, 0xa2, 0x8c, 0x65, 0x5f, 0x71, 0xf6, 0x86, 0x85);")
+cpp_quote( " " )
+
+cpp_quote( "// {C2F97501-1617-460d-8B15-DC911D2C64F7}" )
+cpp_quote( "DEFINE_GUID( IID_IEMSStatusBroadcaster, 0xc2f97501, 0x1617, 0x460d, 0x8b, 0x15, 0xdc, 0x91, 0x1d, 0x2c, 0x64, 0xf7);")
+cpp_quote( " " )
+
+import "unknwn.idl";
+import "emstypex.idl";
+
+[
+	object, uuid(C2F97501-1617-460d-8B15-DC911D2C64F7),
+	helpstring("IEMSStatusBroadcaster Interface"),
+	pointer_default(unique)
+]
+interface IEMSStatusBroadcaster : IUnknown
+{
+#pragma pack(1)
+
+	typedef enum _tagEMSCOMPONENTSTATUS
+	{
+		EMS_STATUS_OK   	  = 0,
+		EMS_STATUS_WARNING 	  = 1,
+		EMS_STATUS_ERROR      = 2,
+		EMS_STATUS_UNKNOWN    = 3
+	} EMSCOMPONENTSTATUS, *LPEMSCOMPONENTSTATUS;
+
+	typedef enum tagEMSAntenna_State
+	{
+		EMS_ANTENNA_STATE_IDLE = 0,
+		EMS_ANTENNA_STATE__TRACKING = 1,
+		EMS_ANTENNA_STATE_TRACKING_ACQUISTION = 2,
+		EMS_ANTENNA_STATE_STOW = 3,
+		EMS_ANTENNA_STATE_FAILED = 4,
+		EMS_ANTENNA_STATE_OUTAGE = 5
+	} EMSANTENNA_STATE;
+
+#pragma pack()
+
+	// Broadcast a status
+	HRESULT  BroadcastStatus( [in] const ULONG culLutID,
+	                          [in] const ULONG culServiceID,
+							  [in] const EMSTIME ctmTimeStamp,
+							  [in] const EMSCOMPONENTSTATUS eStatus,
+							  [in,string] const wchar_t* cwszServiceDescr,
+							  [in,string] const wchar_t* cwszError  );
+
+	// Broadcast a status
+	HRESULT  BroadcastAntennaDetails( [in] const ULONG culAntennaID,
+	                                  [in] const ULONG culSatID,
+							          [in] const EMSTIME ctmTimeStamp,
+									  [in] const EMSANTENNA_STATE ceState,
+									  [in] const float cfAzimuth,
+									  [in] const float cfElevation  );
+
+
+};
+
+
+cpp_quote("#endif //INC_STATUS_BROADCASTER")

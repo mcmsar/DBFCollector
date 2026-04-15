@@ -1,0 +1,77 @@
+cpp_quote("// {51527521-DDE8-4877-A99A-B09001EDEFF1}")
+cpp_quote("DEFINE_GUID(IID_IEMSFP, 0x51527521, 0xdde8, 0x4877, 0xa9, 0x9a, 0xb0, 0x90, 0x1, 0xed, 0xef, 0xf1);")
+
+cpp_quote("// {D389B28D-B466-48ef-BDB6-8D8DCA1237C7}")
+cpp_quote("DEFINE_GUID(IID_IEMSFP2, 0xd389b28d, 0xb466, 0x48ef, 0xbd, 0xb6, 0x8d, 0x8d, 0xca, 0x12, 0x37, 0xc7);")
+
+
+import "unknwn.idl";
+import "emstrack.idl";
+import "emstle.idl";
+
+[
+	uuid(51527521-DDE8-4877-A99A-B09001EDEFF1),
+	helpstring("IEMSFP"),
+	pointer_default(unique)
+]
+interface IEMSFP : IUnknown
+{
+	typedef struct tagEMSAntennaDataPair
+	{
+		ULONG ulPairID;
+		ULONG ulAntennaID;
+		ULONG ulDataStreamID;
+	} EMSANTDATAPAIR;
+
+	//! Stop all processing and restart software.
+	HRESULT Restart();
+
+	//! Reboot the computer implementing this interface.
+	HRESULT Reboot( [in] const BOOL cbForce );
+
+	//! Start the associated (via configuration) antennas and data collectors.
+	HRESULT Start();
+
+	//! Stop the associated (via configuration) antennas and data collectors.
+	HRESULT Stop();
+
+	//! Input the tracking schedule.  A schedule is for an antenna and its associated data stream, identified
+	//! by the Pair Identifier.
+	HRESULT SetSchedule(	[in] const ULONG culPairID, 
+							[in] const ULONG culPasses, 
+							[in,size_is(culPasses)] const EMSSATTRACKRECORD* caPasses );
+
+	//! Retrieve the tracking schedule.  A schedule is for an antenna and its associated data stream, identified
+	//! by the Pair Identifier.
+	HRESULT GetSchedule( [in] const ULONG culPairID, 
+						[in] const ULONG culMaxPasses, 
+						[out] ULONG* pulActualPasses,
+						[out,size_is(culMaxPasses),length_is(*pulActualPasses)] EMSSATTRACKRECORD* aPasses );
+
+	//! Retrieve a list of the configured antenna ID /data stream ID pairs managed by the FP.  A data stream
+	//! is the collection of input digititized data from a single antenna.
+	HRESULT GetList( [in] const ULONG culMaxEntries, 
+					[out] ULONG* pulActualEntries,
+					[out,size_is(culMaxEntries),length_is(*pulActualEntries)] EMSANTDATAPAIR* aAntPairs );
+
+	//! Set the TLEs for multiple satellites.
+	HRESULT SetOrbits(	[in] const ULONG culOrbits, 
+						[in,size_is(culOrbits)] const EMSTLERECORD* castrTLE );
+
+	//! Get the TLEs for multiple satellites.
+	HRESULT GetOrbits(	[in] const ULONG culMaxOrbits, 
+						[out] ULONG* pulActualOrbits, 
+						[out,size_is(culMaxOrbits),length_is(*pulActualOrbits)] EMSTLERECORD* astrTLEs );
+
+
+}
+
+[
+	uuid(D389B28D-B466-48ef-BDB6-8D8DCA1237C7),
+	helpstring("IEMSFP2"),
+	pointer_default(unique)
+]
+interface IEMSFP2 : IEMSFP
+{
+	HRESULT Idle();
+}

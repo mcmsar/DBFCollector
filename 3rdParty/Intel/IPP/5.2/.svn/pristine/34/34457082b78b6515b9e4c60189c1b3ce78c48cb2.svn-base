@@ -1,0 +1,244 @@
+<html>
+
+<head>
+<title>Intel&#174; Integrated Performance Primitives Document Index</title>
+</head>
+
+<h1 align="center"><i>Intel<sup>&#174;</sup> Integrated Performance Primitives 
+v5.2 </i>
+
+<em>for Windows* on IA-32 Intel® Architecture </em></h1>
+
+<h1>Documentation Map</h1>
+<p>The Intel<sup>&#174;</sup> Integrated Performance Primitives (Intel<sup>&#174;</sup>
+IPP) is a cross-platform low-level software layer that abstracts multimedia functionality from the processor
+underneath. You may use this library if you agree to all terms and
+conditions of the License Agreement.</p>
+
+<p>This page lists all documents included with the Intel IPP package, provides links to them and outlines the type of
+information that you can find in each of these documents. </p>
+<p><b>Note</b>. For better keyword search capabilities when viewing files in PDF format,
+we recommend using <i>Search</i> feature of Adobe* Acrobat Reader*&nbsp; version 
+7.0 or higher.</p>
+
+
+
+
+<table border="1" cellpadding="2" style="border-collapse: collapse" bordercolor="#111111" width="95%" id="AutoNumber1">
+  <tr>
+    <td width="27%" align="center"><b>Document Name</b></td>
+    <td width="15%" align="center"><b>File Name</b></td>
+    <td width="29%" align="center"><b>Type of Information in the Document </b>
+    </td>
+    <td width="32%" align="center"><b>Comment</b></td>
+  </tr>
+  <tr>
+    <td width="27%"><a href="ReleaseNotes.htm">Intel IPP Release Notes</a></td>
+    <td width="15%"><font face="Courier New">ReleaseNotes.htm</font></td>
+    <td width="29%">General overview of
+    Intel IPP and information about this release. Includes:<ul>
+      <li>Overview</li>
+      <li>What's New in Intel IPP</li>
+      <li>System requirements</li>
+      <li>Compiler support</li>
+      <li>Installation</li>
+      <li>Technical support</li>
+    </ul>
+    </td>
+    <td width="32%">For getting started
+    information and details about the building options with Intel IPP, see <i>
+    Getting Started with Intel</i><sup>&#174;</sup><i>
+    IPP</i> document.<p>
+    &nbsp;</td>
+  </tr>
+  <tr>
+    <td width="27%"><a href="Getting_Started.htm">Getting Started with Intel&#174; IPP</a></td>
+    <td width="15%"><font face="Courier New">Getting_Started.htm</font></td>
+    <td width="29%">Includes Intel IPP-specific
+    information about:<ul>
+      <li>Environment variables</li>
+      <li>Header files</li>
+      <li>Using DLLs and dispatchers </li>
+      <li>Using Intel IPP static
+      libraries</li>
+      <li>Building applications using
+      DLL-finding libraries</li>
+    </ul>
+    </td>
+    <td width="32%">&nbsp;</td>
+  </tr>
+  <tr>
+    <td width="27%"><a href="../training/ipp_wbt/index.htm">Web-Based Tutorial</a> </td>
+    <td width="15%"><font face="Courier New">../training/ipp_wbt/</font></td>
+    <td width="29%">Provides overview and tutorial information about the
+    structure, functionality and operation of Intel IPP.</td>
+    <td width="32%">&nbsp;</td>
+  </tr>
+  <tr>
+    <td width="27%"><a href="ippiqr.pdf">Quick Reference (Image Processing)</a></td>
+    <td width="15%"><font face="Courier New">ippiqr.pdf</font></td>
+    <td width="29%">An abbreviated guide, describes interfaces to all&nbsp; functions in
+    image processing domain of Intel IPP</td>
+    <td width="32%">For detailed descriptions of functions' arguments and behavior,
+    see volume 2 of the <i>
+    Intel</i><sup>&#174;</sup><i>
+
+    IPP
+    Reference Manual</i>.</td>
+  </tr>
+  <tr>
+    <td width="27%"><a href="ippsqr.pdf">Quick Reference (Signal Processing)</a></td>
+    <td width="15%"><font face="Courier New">ippsqr.pdf</font></td>
+    <td width="29%">An abbreviated guide, describes interfaces to all&nbsp; functions in
+    signal processing domain of Intel IPP</td>
+    <td width="32%">For detailed descriptions of functions' arguments and behavior,
+    see volume 1 of the <i>
+    Intel</i><sup>&#174;</sup><i>
+
+    IPP
+    Reference Manual</i>.</td>
+  </tr>
+  <tr>
+    <td width="27%"><a href="ippmqr.pdf">Quick Reference (Small Matrices)</a></td>
+    <td width="15%"><font face="Courier New">ippmqr.pdf</font></td>
+    <td width="29%">An abbreviated guide, describes interfaces to all&nbsp; functions
+	in small matrix processing domain of Intel IPP</td>
+    <td width="32%">For detailed descriptions of functions' arguments and
+	behavior, see volume 3 of the <i>Intel</i><sup>&#174;</sup><i>
+	IPP Reference Manual</i>.</td>
+  </tr>
+	<tr>
+    <td width="27%"><a href="ippcpqr.pdf">Quick Reference (Cryptography)</a></td>
+    <td width="15%"><font face="Courier New">ippcpqr.pdf</font></td>
+    <td width="29%">An abbreviated guide, describes interfaces to all&nbsp; functions
+	in cryptography domain of Intel IPP</td>
+    <td width="32%">For detailed descriptions of functions' arguments and
+	behavior, see volume 4 of the <i>Intel</i><sup>&#174;</sup><i>
+	IPP Reference Manual</i>.</td>
+  </tr>
+  <tr>
+    <td width="27%"><i>Intel IPP Reference Manual, </i>in four volumes:</td>
+    <td width="15%">&nbsp;</td>
+    <td width="29%">Contains detailed descriptions of all Intel IPP functions and interfaces.
+    </td>
+    <td width="32%">For implementation-specific information about
+    the library, see <i>
+    Intel</i><sup>&#174;</sup><i>
+
+    IPP Release Notes </i>and<i> Getting Started with Intel</i><sup>&#174;</sup><i>
+    IPP</i>.</td>
+  </tr>
+  <tr>
+    <td width="27%">
+    <blockquote>
+      <p><a href="ippsman.pdf">Signal Processing</a> (vol.1)</p>
+    </blockquote>
+    </td>
+    <td width="15%"><font face="Courier New">ippsman.pdf</font></td>
+    <td width="29%">&nbsp;Covers the following function groups:<UL>
+	<LI>Support
+	<LI>Initialization<LI>Essential Vector<LI>Filtering<LI>Transform<LI>Speech
+    Recognition
+	<LI>Speech Coding<LI>Audio Coding<LI>String<LI>Vector Arithmetic<LI>Data 
+	Compression</UL>
+
+    </td>
+    <td width="32%">For a quick list of all function primitives for this domain,
+    see <i>Quick Reference (Signal Processing)</i></td>
+  </tr>
+  <tr>
+    <td width="27%">
+    <blockquote>
+      <p><a href="ippiman.pdf">Image Processing</a> (vol.2)</p>
+    </blockquote>
+    </td>
+    <td width="15%"><font face="Courier New">ippiman.pdf</font></td>
+    <td width="29%">Covers the following function groups:<UL>
+	<LI>Support
+	<LI>Data Exchange and Initialization<LI>Image Arithmetic and Logical<LI>
+    Color Conversion<LI>Threshold and Compare<LI>Morphological
+	<LI>Filtering<LI>Linear Transforms<LI>Image Statistics<LI>Geometric
+    Transforms<LI>Wavelet Transforms<LI>Computer Vision<LI>Image Compression<LI>
+    Video Coding</UL>
+
+    </td>
+    <td width="32%">For a quick list of all function primitives for this domain,
+    see <i>Quick Reference (Image Processing)</i></td>
+  </tr>
+  <tr>
+    <td width="27%">
+    <blockquote>
+      <p><a href="ippmman.pdf">Small Matrices</a> (vol.3)</p>
+    </blockquote>
+    </td>
+    <td width="15%"><font face="Courier New">ippmman.pdf</font></td>
+    <td width="29%">Covers the following function groups:<UL>
+	<LI>Utility
+	<LI>Vector Algebra<LI>Matrix Algebra<LI>Linear Systems Solution<LI>Least
+    Squares Problem<LI>Eigenvalue Problem<LI>Realistic Rendering</UL>
+
+    </td>
+    <td width="32%">&nbsp;</td>
+  </tr>
+  <tr>
+    <td width="27%">
+    <blockquote>
+      <p><a href="ippcpman.pdf">Cryptography</a> (vol.4)</p>
+    </blockquote>
+    </td>
+    <td width="15%"><font face="Courier New">ippcpman.pdf</font></td>
+    <td width="29%">Covers the following function groups:<UL>
+	<LI>Symmetric Cryptography<LI>Hash and Data Authentication<LI>Big Number
+    Arithmetic<LI>Montgomery Reduction Scheme<LI>Pseudorandom Number Generation<LI>
+    Prime Number Generation<LI>RSA Algorithm<LI>DSA Primitive</UL>
+
+    </td>
+    <td width="32%">For more information about the installation and use of this
+    stand-alone package, see <i>Cryptography for Intel</i><sup>&#174;</sup><i>
+    IPP Release Notes </i>document provided in the
+	separate install package.</td>
+  </tr>
+  <tr>
+    <td width="103%" colspan="4">Examples and Readme's<ul type="disc">
+    <li><a href="../tools/runtime/readme.htm">Using the Intel&#174; IPP Runtime Installer</a>
+    </li>
+    <li><a href="../tools/staticlib/readme.htm">Using Intel&#174; IPP to create a Single
+      Processor Application</a>
+    </li>
+  </ul>
+    <p>&nbsp;</td>
+  </tr>
+  </table>
+
+
+<P>&nbsp;</P>
+
+
+<p>For more information about the library, refer to the
+<a href="http://www.intel.com/software/products/ipp/index.htm">Intel&#174; IPP
+web site</a>.</p>
+<ul>
+	<li>Main product features
+	</li>
+	<li>Technical white papers
+	</li>
+	<li>Intel IPP self-help web site, including FAQs and errata
+	</li>
+	<li>Answers to common questions on Intel IPP license agreement and
+	redistribution.</li>
+</ul>
+
+<p>For customer support, please visit the<a href="http://www.intel.com/software/products/support">http://www.intel.com/software/products/support</a> </p>
+
+<font size=-2>
+<p>Intel, the Intel logo, Intel SpeedStep, Intel NetBurst, Intel NetStructure,
+MMX, i386, i486, Intel386, Intel486, Intel740, IntelDX2, IntelDX4,
+IntelSX2,Celeron, Intel Centrino, Intel Xeon, Intel XScale, Itanium, Pentium,
+Pentium II Xeon, Pentium III Xeon, Pentium M, and VTune are trademarks or
+registered trademarks of Intel Corporation or its subsidiaries in the United
+States and other countries. </p>
+<p>* Other names and brands may be claimed as the property of others. <br>
+&nbsp;<br>
+Copyright © 2002-2007 Intel Corporation.</p>
+
+</html>

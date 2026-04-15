@@ -1,0 +1,123 @@
+/********************************************************************
+*	Module:			emsDBFDataMgr.h
+*	Process ID:
+*	S/W Platforms:
+*	H/W Platforms:
+*	Compiler:
+*	Description: 	
+*
+*	Usage:
+*	Entry Point:
+*	Input Files:
+*	Output Files:
+*	Comments:
+*
+*********************************************************************
+*	              Copyright (c) 2006 by EMS Technologies, Inc.,
+*										All rights reserved
+*	This program is unpublished software and contains the trade secrets
+*	and confidential information of EMS Technologies, Inc.  It may not be 
+* reproduced in whole or in part, in any form or by any means whatsoever 
+* without the express written permission of EMS Technologies, Inc.
+*
+********************************************************************/
+
+/*******************************************************************
+
+  Revision Record
+
+	Rev	Date			Auth	Changes
+	===	====			====	=======
+
+	0.0	06/07/09		rcr		start
+
+********************************************************************/
+#ifndef INC_EMSDBFDATAMGR
+#define INC_EMSDBFDATAMGR
+
+#include <string>
+#include "emstypes.h"
+#include "emserror.h"
+#include <stdio.h>
+#include "emsDBFtypes2.h"
+#include "emsdbfconstellationmanager.h"
+using std::string;
+using std::wstring;
+
+//#define MAX_SCHEDULE_RECORDS (10000)
+//#define MAX_SCHEDULE_RECORDS_HOUR (3600)
+
+#define MAX_SCHEDULE_RECORDS (26000)
+#define MAX_SCHEDULE_RECORDS_HOUR (25200)
+
+class CEMSDBFDataMgr
+{
+public:
+
+	~CEMSDBFDataMgr( void );
+	CEMSDBFDataMgr();
+
+	CEMSDBFDataMgr( const CEMSDBFDataMgr& x ) ;
+
+	EMS_RESULT Initialize( int nPlateNumber );
+
+	EMS_RESULT Initialize( const wchar_t* cwsPlateConfigFile );
+
+	EMS_RESULT ReadDBFPlateXML( const wchar_t* cwszXMLString );
+
+	EMSDBFPASSRECORDS2 GetPassSchedule( EMSTIME tm );
+
+	EMSDBFARRAY GetPlate(){ return m_aDBFplate; };
+
+	EMS_RESULT ReadPassSchedule( EMSTIME tm );
+
+	EMS_RESULT WritePassSchedule( EMSDBFPASSRECORD2 aPass, bool bTestSun = false );
+
+	EMS_RESULT WritePassSchedule_Debug(  EMSDBFAZEL* aAzEls, ULONG* pulActual  );
+
+	EMS_RESULT _PhaseCorrection( EMSDBFPASSRECORD2 *aPass );
+
+	void Reset( );
+
+
+protected:
+
+	EMS_RESULT _ParseCELLS( const wchar_t* cwszXMLString );
+	EMS_RESULT _ParseFIXEDPOINTS( const wchar_t* cwszXMLString );
+
+	void _AddPassRecord( EMSDBFPASSRECORD2& dbfPassRec );
+	
+	EMSVECTORD _Convert2UnitVector( const double dAzimuth, const double dElevation );
+
+private: // methods
+	BOOL	_SetPolarization( UINT uiSatID );
+	EMSCONSTELLATIONTYPE _GetConstellation( UINT satID);
+
+private: // data
+	FILE 					*m_lpPassFileBIN;
+	FILE 					*m_lpPassFileCSV;
+	TCHAR					m_cFilePath[256];
+
+	EMSDBFPASSRECORD2*		m_aPassSchedule;
+	EMSDBFPASSRECORDS2*		m_aHourPassSchedule;
+	EMSDBFPASSRECORDS2		m_aPassScheduleNow;
+
+	EMSDBFARRAY				m_aDBFplate;
+
+	EMSTIME					m_TimeStart;
+	EMSTIME					m_TimeEnd;
+
+	ULONG					m_ulRecordCount;
+	ULONG					m_ulLastRecord;
+	UINT					m_uiPassSchedIndx;
+	EMSCONSTELLATIONTYPE	m_oConstellationType;
+	CEMSDBFConstellationManager m_oConstellationMgr;
+//private: // constants
+
+};
+
+
+#endif // INC_EMSDBFDATAMGR
+
+
+

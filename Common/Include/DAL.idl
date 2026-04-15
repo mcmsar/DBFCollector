@@ -1,0 +1,444 @@
+cpp_quote("// {F66FA79A-593B-414b-B024-934B3E91FA71}")
+cpp_quote("DEFINE_GUID(IID_IEMSDALVariable, 0xf66fa79a, 0x593b, 0x414b, 0xb0, 0x24, 0x93, 0x4b, 0x3e, 0x91, 0xfa, 0x71);")
+
+cpp_quote("// {3A891797-49A7-4070-B6B9-9A12437021C2}")
+cpp_quote("DEFINE_GUID(CLSID_EMSDAL, 0x3a891797, 0x49a7, 0x4070, 0xb6, 0xb9, 0x9a, 0x12, 0x43, 0x70, 0x21, 0xc2);")
+
+cpp_quote("// {803BA197-4A48-4d01-B545-C56F660FDF1F}")
+cpp_quote("DEFINE_GUID(IID_IEMSDALFixed, 0x803ba197, 0x4a48, 0x4d01, 0xb5, 0x45, 0xc5, 0x6f, 0x66, 0xf, 0xdf, 0x1f);")
+
+cpp_quote("// {228E8452-9AB1-4fb7-AC71-5212CC4ED9AA}")
+cpp_quote("DEFINE_GUID(IID_IEMSDALFixed2, 0x228e8452, 0x9ab1, 0x4fb7, 0xac, 0x71, 0x52, 0x12, 0xcc, 0x4e, 0xd9, 0xaa);")
+
+
+
+import "unknwn.idl";
+import "leostats.idl";
+import "sittypes.idl";
+import "calib406.idl";
+import "cbcdata.idl";
+import "cbcout.idl";
+import "combine406.idl";
+import "emsicfg.idl";
+import "locate.idl";
+import "emslog.idl";
+import "emstle.idl";
+import "residual.idl";
+import "sarpcalib.idl";
+import "sarpdata.idl";
+import "sarrcalib.idl";
+import "sarrdata.idl";
+import "emstrack.idl";
+import "spectrum.idl";
+import "emsaudio.idl";
+import "emsalarm.idl";
+import "sarrplugin.idl";
+import "calib406ext.idl";
+import "abldata.idl";
+import "healthstatustypes.idl";
+import "beaconadvisorytypes.idl";
+
+typedef enum tagEMSDBFieldType
+{
+	DBFLDTYPE_UNKNOWN = 0,
+	DBFLDTYPE_SHORT = 1,
+	DBFLDTYPE_USHORT = 2,
+	DBFLDTYPE_LONG = 3,
+	DBFLDTYPE_ULONG = 4,
+	DBFLDTYPE_BIGINT = 5,
+	DBFLDTYPE_UBIGINT = 6,
+	DBFLDTYPE_WSTRING = 7,
+	DBFLDTYPE_STRING = 8,
+	DBFLDTYPE_BINARY = 9,
+	DBFLDTYPE_LONG_BINARY = 10,
+	DBFLDTYPE_FLOAT = 11,
+	DBFLDTYPE_DOUBLE = 12,
+	DBFLDTYPE_TINYINT = 13,
+	DBFLDTYPE_UTINYINT = 14,
+	DBFLDTYPE_BOOLEAN = 15,
+	DBFLDTYPE_DATETIME = 16,
+	DBFLDTYPE_VARCHAR = 17,
+	DBFLDTYPE_CHAR = 18,
+	DBFLDTYPE_LAST
+} EMSDBFLDTYPE;
+
+typedef long EMSDALCACHEID;
+const EMSDALCACHEID INITIALDALCACHEID = 0;
+const EMSDALCACHEID NULLDALCACHEID = 0;
+const EMSDALCACHEID DONTCACHE = -1;
+
+// Remove once code that uses this type has been updated.
+typedef struct tagEMSRetrievalProperties
+{
+	unsigned long ulCacheID;
+	unsigned long ulMaxRecords;
+	unsigned long ulTotalRecords;
+	boolean bReturnDescriptor;
+	unsigned long ulRecordSize;
+} EMSRETRIEVALPROPS;
+
+#define MAX_FIELD_NAME 64
+cpp_quote("#define MAX_FIELD_NAME 64")
+
+typedef struct tagEMSFieldDescriptor
+{
+	EMSDBFLDTYPE eType;
+	long lSize;
+	wchar_t wszName[MAX_FIELD_NAME + 1 ];
+} EMSFIELDDESCRIPTOR;
+
+//! @enum eEMSRecordType
+//! The valid record types.
+typedef enum eEMSRecordType
+{
+	EMSRT_UNKNOWN = 0,
+	EMSRT_ANTENNA = 1,
+	EMSRT_CALIB406 = 2,
+	EMSRT_CALIBCBC = 3,
+	EMSRT_CALIBCBC_STATS = 4,
+	EMSRT_CBC = 5,
+	EMSRT_COLLECTOR = 6,
+	EMSRT_COMB406 = 7,
+	EMSRT_COMB406_STATS = 8,
+	EMSRT_COMMS_STATS = 9,
+	EMSRT_CONFIG = 10,
+	EMSRT_GEO_CALIB406_STATS = 11,
+	EMSRT_GEO_STATS = 12,
+	EMSRT_LEO_CALIB406_STATS = 13,
+	EMSRT_LOCATE = 14,
+	EMSRT_LOCATE_STATS = 15,
+	EMSRT_LOG = 16,
+	EMSRT_ORBIT = 17,
+	EMSRT_ORBIT_STATS = 18,
+	EMSRT_PASS_STATS = 19,
+	EMSRT_RESIDUAL = 20,
+	EMSRT_SARP_CALIB = 21,
+	EMSRT_SARP_CALIB_STATS = 22,
+	EMSRT_SARP = 23,
+	EMSRT_SARR_CALIB = 24,
+	EMSRT_SARR_CALIB_STATS = 25,
+	EMSRT_SARR = 26,
+	EMSRT_SAT_TRACK = 27,
+	EMSRT_SENSOR = 28,
+	EMSRT_SPECTRUM = 29,
+	EMSRT_STAT_SUMMARY = 30,
+	EMSRT_WIDEBAND_STATS = 31,
+	EMSRT_AUDIO = 32,
+	EMSRT_MANOEUVRE = 33,
+	EMSRT_SARP_CALIB_124 = 34,			// Backwards compatibility to LEO 1.2.4 DB version
+	EMSRT_SARP_CALIB_STATS_124 = 35,	// Backwards compatibility to LEO 1.2.4 DB version
+	EMSRT_SARR_124 = 36,				// Backwards compatibility to LEO 1.2.4 DB version
+	EMSRT_LOCATE_124 = 37,				// Backwards compatibility to LEO 1.2.4 DB version
+	EMSRT_SARR_EXT = 38,
+	EMSRT_CALIB406_EXT = 39,
+	EMSRT_CALIB406_2 = 40,
+	EMSRT_LUT_STATUS = 41,
+	EMSRT_ABL_DATA = 42,
+	EMSRT_HEALTH_STATUS = 43,
+	EMSRT_HEALTH_DETECTIONS = 44,
+	EMSRT_BEACON_ADVISORY = 45,
+	EMSRT_LP_STATUS = 46,
+	EMSRT_LAST = EMSRT_LP_STATUS
+} EMSRECORDTYPE;
+
+
+
+
+typedef struct tagEMSVariantRecord
+{
+	EMSRECORDTYPE eType;
+	
+	[switch_type(EMSRECORDTYPE), switch_is((EMSRECORDTYPE)eType)]
+	union
+	{
+		[ case( EMSRT_ANTENNA,  
+				EMSRT_CALIBCBC_STATS,
+				EMSRT_COLLECTOR,
+				EMSRT_COMB406_STATS,
+				EMSRT_COMMS_STATS,
+				EMSRT_GEO_CALIB406_STATS,
+				EMSRT_GEO_STATS,
+				EMSRT_LEO_CALIB406_STATS,
+				EMSRT_LOCATE_STATS,
+				EMSRT_ORBIT_STATS,
+				EMSRT_PASS_STATS,
+				EMSRT_SARR_CALIB_STATS,
+				EMSRT_SARP_CALIB_STATS,
+				EMSRT_SARP_CALIB_STATS_124,
+				EMSRT_SENSOR,
+				EMSRT_WIDEBAND_STATS,
+				EMSRT_LUT_STATUS ) ]
+			EMSLEOSTATUSUPDATE 	status;
+		[ case( EMSRT_CALIB406 ) ]
+			EMSCALIB406DATA calib406;
+		[ case( EMSRT_CALIBCBC ) ]
+			EMSCBCOUTPUTDATA calibCBC;
+		[ case( EMSRT_CBC ) ]
+			EMSCBCDATA rawCBC;
+		[ case( EMSRT_COMB406 ) ]
+			EMSCOMBINE406DATA combine406;
+		[ case( EMSRT_CONFIG ) ]
+			EMSCONFIGPACKET config;
+		[ case( EMSRT_LOCATE, EMSRT_LOCATE_124 ) ]
+			EMSLOCATE locate;
+		[ case( EMSRT_LOG ) ]
+			EMSLOGDATA log;
+		[ case( EMSRT_ORBIT ) ]
+			EMSTLERECORD tle;
+		[ case( EMSRT_RESIDUAL ) ]
+			EMSRESIDUALDATA residual;
+		[ case( EMSRT_SARP_CALIB, EMSRT_SARP_CALIB_124 ) ]
+			EMSSARPCALIBDATA sarpcalib;
+		[ case( EMSRT_SARP ) ]
+			EMSSARPDATA sarp;
+		[ case( EMSRT_SARR_CALIB ) ]
+			EMSSARRCALIBDATA sarrcalib;
+		[ case( EMSRT_SARR, EMSRT_SARR_124 ) ]
+			EMSSARRDATA sarr;
+		[ case( EMSRT_SAT_TRACK ) ]
+			EMSSATTRACKRECORD satTrack;
+		[ case( EMSRT_SPECTRUM ) ]
+			EMSSPECTRUM spectrum;
+		[ case( EMSRT_MANOEUVRE ) ]
+			EMSMANOEUVREDATA manoeuvre;
+		[ case( EMSRT_AUDIO ) ]
+			EMSAUDIODATARECORD_RIFF audio;
+		[ case( EMSRT_STAT_SUMMARY ) ]
+			EMSALARMDATA statsummary;
+		[ default ]
+			;
+	} data;
+} EMSVARIANTRECORD;
+
+typedef struct tagEMSVariantRecord2
+{
+	EMSRECORDTYPE eType;
+	
+	[switch_type(EMSRECORDTYPE), switch_is((EMSRECORDTYPE)eType)]
+	union
+	{
+		[ case( EMSRT_ANTENNA,  
+				EMSRT_CALIBCBC_STATS,
+				EMSRT_COLLECTOR,
+				EMSRT_COMB406_STATS,
+				EMSRT_COMMS_STATS,
+				EMSRT_GEO_CALIB406_STATS,
+				EMSRT_GEO_STATS,
+				EMSRT_LEO_CALIB406_STATS,
+				EMSRT_LOCATE_STATS,
+				EMSRT_ORBIT_STATS,
+				EMSRT_PASS_STATS,
+				EMSRT_SARR_CALIB_STATS,
+				EMSRT_SARP_CALIB_STATS,
+				EMSRT_SARP_CALIB_STATS_124,
+				EMSRT_SENSOR,
+				EMSRT_WIDEBAND_STATS,
+				EMSRT_LUT_STATUS ) ]
+			EMSLEOSTATUSUPDATE 	status;
+		[ case( EMSRT_CALIB406 ) ]
+			EMSCALIB406DATA calib406;
+		[ case( EMSRT_CALIBCBC ) ]
+			EMSCBCOUTPUTDATA calibCBC;
+		[ case( EMSRT_CBC ) ]
+			EMSCBCDATA rawCBC;
+		[ case( EMSRT_COMB406 ) ]
+			EMSCOMBINE406DATA combine406;
+		[ case( EMSRT_CONFIG ) ]
+			EMSCONFIGPACKET config;
+		[ case( EMSRT_LOCATE, EMSRT_LOCATE_124 ) ]
+			EMSLOCATE locate;
+		[ case( EMSRT_LOG ) ]
+			EMSLOGDATA log;
+		[ case( EMSRT_ORBIT ) ]
+			EMSTLERECORD tle;
+		[ case( EMSRT_RESIDUAL ) ]
+			EMSRESIDUALDATA residual;
+		[ case( EMSRT_SARP_CALIB, EMSRT_SARP_CALIB_124 ) ]
+			EMSSARPCALIBDATA sarpcalib;
+		[ case( EMSRT_SARP ) ]
+			EMSSARPDATA sarp;
+		[ case( EMSRT_SARR_CALIB ) ]
+			EMSSARRCALIBDATA sarrcalib;
+		[ case( EMSRT_SARR, EMSRT_SARR_124 ) ]
+			EMSSARRDATA sarr;
+		[ case( EMSRT_SAT_TRACK ) ]
+			EMSSATTRACKRECORD satTrack;
+		[ case( EMSRT_SPECTRUM ) ]
+			EMSSPECTRUM spectrum;
+		[ case( EMSRT_MANOEUVRE ) ]
+			EMSMANOEUVREDATA manoeuvre;
+		[ case( EMSRT_AUDIO ) ]
+			EMSAUDIODATARECORD_RIFF audio;
+		[ case( EMSRT_STAT_SUMMARY ) ]
+			EMSALARMDATA statsummary;
+		[ case ( EMSRT_SARR_EXT ) ]
+			EMSSARRDATAEX sarrext;
+		[ case ( EMSRT_CALIB406_EXT ) ]
+			EMSCALIB406DATAEXT calib406ext;
+		[ case ( EMSRT_CALIB406_2 ) ]
+			EMSCALIB406DATA2 calib406_2;
+		[ default ]
+			;
+	} data;
+} EMSVARIANTRECORD2;
+
+
+// Note that the EMSVARIANTRECORD3 has been added to support Data Transfer of a series of new
+// data types:  ABL_DATA, HEALTH_STATUS, HEALTH_DETECTIONS, and BEACON_ADVISORY.
+// DAL support is not being added at this time for querying and inserting.  That would require
+typedef struct tagEMSVariantRecord3
+{
+	EMSRECORDTYPE eType;
+	
+	[switch_type(EMSRECORDTYPE), switch_is((EMSRECORDTYPE)eType)]
+	union
+	{
+		[ case( EMSRT_ANTENNA,  
+				EMSRT_CALIBCBC_STATS,
+				EMSRT_COLLECTOR,
+				EMSRT_COMB406_STATS,
+				EMSRT_COMMS_STATS,
+				EMSRT_GEO_CALIB406_STATS,
+				EMSRT_GEO_STATS,
+				EMSRT_LEO_CALIB406_STATS,
+				EMSRT_LOCATE_STATS,
+				EMSRT_ORBIT_STATS,
+				EMSRT_PASS_STATS,
+				EMSRT_SARR_CALIB_STATS,
+				EMSRT_SARP_CALIB_STATS,
+				EMSRT_SARP_CALIB_STATS_124,
+				EMSRT_SENSOR,
+				EMSRT_WIDEBAND_STATS,
+				EMSRT_LUT_STATUS ) ]
+			EMSLEOSTATUSUPDATE 	status;
+		[ case( EMSRT_CALIB406 ) ]
+			EMSCALIB406DATA calib406;
+		[ case( EMSRT_CALIBCBC ) ]
+			EMSCBCOUTPUTDATA calibCBC;
+		[ case( EMSRT_CBC ) ]
+			EMSCBCDATA rawCBC;
+		[ case( EMSRT_COMB406 ) ]
+			EMSCOMBINE406DATA combine406;
+		[ case( EMSRT_CONFIG ) ]
+			EMSCONFIGPACKET config;
+		[ case( EMSRT_LOCATE, EMSRT_LOCATE_124 ) ]
+			EMSLOCATE locate;
+		[ case( EMSRT_LOG ) ]
+			EMSLOGDATA log;
+		[ case( EMSRT_ORBIT ) ]
+			EMSTLERECORD tle;
+		[ case( EMSRT_RESIDUAL ) ]
+			EMSRESIDUALDATA residual;
+		[ case( EMSRT_SARP_CALIB, EMSRT_SARP_CALIB_124 ) ]
+			EMSSARPCALIBDATA sarpcalib;
+		[ case( EMSRT_SARP ) ]
+			EMSSARPDATA sarp;
+		[ case( EMSRT_SARR_CALIB ) ]
+			EMSSARRCALIBDATA sarrcalib;
+		[ case( EMSRT_SARR, EMSRT_SARR_124 ) ]
+			EMSSARRDATA sarr;
+		[ case( EMSRT_SAT_TRACK ) ]
+			EMSSATTRACKRECORD satTrack;
+		[ case( EMSRT_SPECTRUM ) ]
+			EMSSPECTRUM spectrum;
+		[ case( EMSRT_MANOEUVRE ) ]
+			EMSMANOEUVREDATA manoeuvre;
+		[ case( EMSRT_AUDIO ) ]
+			EMSAUDIODATARECORD_RIFF audio;
+		[ case( EMSRT_STAT_SUMMARY ) ]
+			EMSALARMDATA statsummary;
+		[ case ( EMSRT_SARR_EXT ) ]
+			EMSSARRDATAEX sarrext;
+		[ case ( EMSRT_CALIB406_EXT ) ]
+			EMSCALIB406DATAEXT calib406ext;
+		[ case ( EMSRT_CALIB406_2 ) ]
+			EMSCALIB406DATA2 calib406_2;
+		[ case ( EMSRT_ABL_DATA ) ]
+			EMSABLData abl;
+		[ case ( EMSRT_HEALTH_STATUS ) ]
+			EMSHEALTHSTATUS healthstatus;
+		[ case ( EMSRT_HEALTH_DETECTIONS ) ]
+			EMSHEALTHDETECTIONS healthdetections;
+		[ case ( EMSRT_BEACON_ADVISORY ) ]
+			EMS_BEACON_ADVISORY beaconadvisory;
+		[ default ]
+			;
+	} data;
+} EMSVARIANTRECORD3;
+
+
+[
+	uuid(F66FA79A-593B-414b-B024-934B3E91FA71),
+	helpstring("IEMSDALVariable"),
+	pointer_default(unique)
+]
+interface IEMSDALVariable : IUnknown
+{
+	HRESULT GetData(	[in,out] EMSDALCACHEID* pCacheID,
+						[in] const unsigned long culMaxRecords,
+						[in] const boolean cbReturnDescriptor,
+						[in,string,unique] const wchar_t* cwszOutputFileSpec,
+						[in,out] unsigned long* pulTotalRecords,
+						[in,out] unsigned long* pulRecordSize,
+						[in,out] boolean* pbCacheOverflow,
+						[in,string,unique] const wchar_t* cwszConnection,
+						[in,string,unique] const wchar_t* cwszSQLQuery,
+						[in,out] unsigned long* pulFields,
+						[out,size_is(,*pulFields)] EMSFIELDDESCRIPTOR** paFields,
+						[in,out] unsigned long* pulDataSize,
+						[out,size_is(,*pulDataSize)] unsigned char** paData );
+
+	HRESULT Cancel( [in] const EMSDALCACHEID cCacheID );
+};
+
+[
+	uuid(803BA197-4A48-4d01-B545-C56F660FDF1F),
+	helpstring("IEMSDALFixed"),
+	pointer_default(unique)
+]
+interface IEMSDALFixed : IUnknown
+{
+	HRESULT GetData(	[in] const EMSRECORDTYPE ceRecordType,
+						[in,out] EMSDALCACHEID* pCacheID, 
+						[in] const unsigned long culMaxRecords, 
+						[in,out] unsigned long* pulTotalRecords, 
+						[in,out] boolean* pbCacheOverflow, 
+						[in,string,unique] const wchar_t* cwszConnection, 
+						[in,string,unique] const wchar_t* cwszSQLWhere, 
+						[in,out] unsigned long* pulRecords, 
+						[out,size_is(,*pulRecords)] EMSVARIANTRECORD** paRecords );
+
+	HRESULT Delete(	[in,string,unique] const wchar_t* cwszConnection, 
+					[in] const EMSRECORDTYPE ceType, 
+					[in] const EMSTIME ctimeStart, 
+					[in] const EMSTIME ctimeEnd,
+					[in,out] unsigned long* pulDeleted );
+
+	HRESULT Insert( [in,string,unique] const wchar_t* cwszConnection, 
+					[in] const unsigned long culRecords,
+					[in,size_is(culRecords)] const EMSVARIANTRECORD* caRecords );
+
+	HRESULT Cancel( [in] const EMSDALCACHEID cCacheID );
+};
+
+[
+	uuid(228E8452-9AB1-4fb7-AC71-5212CC4ED9AA),
+	helpstring("IEMSDALFixed2"),
+	pointer_default(unique)
+]
+interface IEMSDALFixed2 : IEMSDALFixed
+{
+	HRESULT GetData2(	[in] const EMSRECORDTYPE ceRecordType,
+						[in,out] EMSDALCACHEID* pCacheID, 
+						[in] const unsigned long culMaxRecords, 
+						[in,out] unsigned long* pulTotalRecords, 
+						[in,out] boolean* pbCacheOverflow, 
+						[in,string,unique] const wchar_t* cwszConnection, 
+						[in,string,unique] const wchar_t* cwszSQLWhere, 
+						[in,out] unsigned long* pulRecords, 
+						[out,size_is(,*pulRecords)] EMSVARIANTRECORD2** paRecords );
+
+	HRESULT Insert2( [in,string,unique] const wchar_t* cwszConnection, 
+					[in] const unsigned long culRecords,
+					[in,size_is(culRecords)] const EMSVARIANTRECORD2* caRecords );
+};

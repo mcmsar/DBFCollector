@@ -1,0 +1,209 @@
+<HTML>
+<HEAD>
+<TITLE>Getting started with the Intel&#174; Integrated Performance Primitives </TITLE>
+</HEAD>
+<BODY>
+<H1 align="center"><font face="Arial"><i>Intel<sup>&#174;</sup> Integrated 
+Performance Primitives v5.2&nbsp; </i>
+
+<em>for Windows* on IA-32 Intel® Architecture </em><br>
+<i>Getting Started Guide</i> </font> </H1>
+<H2><font face="Arial">Contents</font></H2>
+<h5>
+<font face="Arial">
+<A HREF="#Learning">Learning About the API</A>
+<BR>
+<A HREF="#Env">Environment Variables</A>
+<BR>
+<A HREF="#Headers">Header Files</A>
+<BR>
+<A HREF="#Calling">Calling Intel&#174; IPP functions</A>
+<BR>
+<A HREF="#DLLs">Using the Intel&#174; IPP DLLs and Dispatcher</A>
+<BR>
+<A HREF="#Custom">Building a Custom DLL</A>
+<BR>
+<A HREF="#Libs">Using the Intel&#174; IPP Static Libraries</A>
+<BR>
+<a href="#Perfsys">Using the Intel&#174; IPP Performance Benchmark Tool</a><br>
+<A HREF="#DLL-lib">Using the Intel&#174; IPP DLL-finding Static Libraries</A>
+</font>
+</h5><A NAME="Learning">
+<H2><font face="Arial">Learning About the API</font></H2></A>
+<p><font face="Arial">There are many ways to learn more about using Intel IPP and the functionality 
+that it offers:</font></p>
+<ul>
+	<li><font face="Arial"><b>Documentation including in this package</b> - The file
+	doc_index.htm in 
+	the <b>doc</b> directory lists all available manuals, tutorial, and other 
+	documents provided in this Intel IPP package </font> </li>
+	<li><font face="Arial"><b>Intel IPP Website </b>-
+	<a href="http://www.intel.com/software/products/ipp">
+	http://www.intel.com/software/products/ipp</a> contains releases 
+	information, evaluation release and support resource such as FAQs, technical 
+	support and online documentations, etc.</font></li>
+	<li><font face="Arial"><b>Intel IPP Samples</b> - There are extensive code 
+	samples that show implementation in source code of many functional areas 
+	that Intel IPP offers. They are downloadable 
+	at <a href="http://www.intel.com/software/products/ipp/samples.htm">
+	http://www.intel.com/software/products/ipp/samples.htm</a></font></li>
+	<li><font face="Arial"><b>Manuals</b> - Extensive API descriptions and several small code 
+	examples can be found in the manuals ippiman.pdf, ippsman.pdf, ippmman.pdf 
+	and ippcpman.pdf</font></li>
+</ul><A NAME="Env">
+<H2><font face="Arial">Environment Variables</font></H2></A>
+<P>
+<font face="Arial">The batch file <b>ippenv.bat</b>  in the <b>tools\env</b> directory sets your lib, include, and path environment variables for
+Intel<sup>&#174; </sup>IPP.&#160;
+</font>
+</P>
+
+<A NAME="Headers"><H2><font face="Arial">Header Files</font></H2></A>
+<P><font face="Arial">The Intel<sup>&#174; </sup> IPP functions and structures are defined in several header files in the
+<b>include</b>
+directory. The file <b>ipp.h</b> includes all of these.  For forward compatibility, include only <b>ipp.h</b> in your program.
+</font>
+</P>
+
+<A NAME="Calling"><H2><font face="Arial">Calling Intel&#174; IPP Functions</font></H2></A>
+<P>
+<font face="Arial">Because of the DLL dispatcher and merged static library mechanisms described below, calling
+Intel<sup>&#174; </sup> IPP functions
+is as simple as calling any other C function.  The multiple versions of optimized code for each function
+are concealed under a single entry point.
+</font>
+</P>
+<P>
+<font face="Arial">Refer to the <a href="doc_index.htm">manuals</a> for descriptions of Intel<sup>&#174; </sup>
+IPP functions.
+</font>
+</P>
+
+<A NAME="DLLs"><H2><font face="Arial">Using the Intel&#174; IPP DLLs and Dispatchers</font></H2></A>
+<P><font face="Arial">The Intel<sup>&#174; </sup> IPP comes with "stub" static library files that load the
+Intel<sup>&#174; </sup>IPP DLLs and link to the correct entry points.
+In order to use the DLLs, link to the files <b>ipp*.lib</b> in the <b>
+stublib</b> directory. You will either need to set your lib environment variable
+using the
+<b> ippenv.bat</b>  file or refer to these files using their full path.  Including these libraries is all you need to do to
+dynamically link to the DLL for the appropriate processor.</font></P>
+<P>
+<font face="Arial">The DLLs <b>ipp*.dll </b>are "dispatcher" DLLs.
+These DLLs are in the <b>bin</b> directory. At run time they will detect the processor and load the correct processor-specific DLLs.
+This allows your code to call Intel<sup>&#174; </sup> IPP functions without worrying about which processor
+the code will execute on - the appropriate version is automatically used.
+These processor-specific DLLs are named <b>*px*.dll</b>, <b>*a6*.dll, *t7*.dll, 
+*w7*.dll, </b>and<b> *v8*.dll. </b>The only actions needed to use the Intel<sup>&#174; </sup>IPP DLLs, once the "stub" static libraries are linked,
+is to insure that the dispatching DLLs and the processor-specific DLLs are on
+the path.</font></P>
+<h4>
+<font face="Arial">Processor Codes
+</font>
+</h4>
+<UL>
+<LI><font face="Arial"><b>px</b> - C-optimized for all IA-32 processors
+</font>
+<LI><font face="Arial"><b>a6</b> - Optimized for Pentium III  processors
+</font>
+<LI><font face="Arial"><b>w7</b> - Optimized for Pentium 4 processors
+</font>
+<LI><font face="Arial"><b>t7</b> - Optimized for Pentium 4 processors with Streaming SIMD
+Extensions 3 (SSE3)</font><LI><font face="Arial"><b>v8</b> - New Optimizations 
+for 32-bit applications on Intel® Core™ 2 and Intel® Xeon® 5100 Processors</font></ul>
+
+
+<A NAME="Custom"><H2><font face="Arial">Building a Custom DLL</font></H2></A>
+<p><font face="Arial">The Building Custom DLLs tool is used create a custom DLL that
+contains only the required Intel<sup>&#174; </sup>IPP functions needed by a given
+application. See the Intel IPP Linkage Samples for details.</font></p>
+
+
+<A NAME="Libs"><H2><font face="Arial">Using the Intel&#174; IPP Static Libraries</font></H2>
+</A>
+<P><font face="Arial">The Intel<sup>&#174; </sup>IPP also comes with "merged" static library files that contain every processor version of each function.
+Just as with the DLL dispatcher, the appropriate version of a function is executed when the function is
+called.&#160; This mechanism is not as convenient as the DLL mechanism, but can result in a smaller total code size.
+</font>
+</P>
+<P>
+<font face="Arial">In order to use these static libraries, link to the files <b>ipp*merged.lib </b>in the lib directory.
+You will either need to set your lib environment variable using the
+<b> ippenv.bat</b> file or refer to these files using their full path.&nbsp; See 
+the Intel IPP Samples for details.
+</font>
+</P>
+
+
+<P>
+<font face="Arial">If you desire to link to a single processor specific static library only, please
+see the tool <a href="../tools/staticlib/readme.htm">Using Intel&#174; IPP to create a
+Single Processor Application</a> included in this package.
+<a NAME="Perfsys"></a>
+</font>
+</P><h2><font face="Arial">Using the Intel&#174; IPP Performance Benchmark Tool</font></h2>
+
+
+<p><font face="Arial">The Intel IPP Package provides a tool &quot;perfsys&quot; to test the
+performance of each Intel IPP function in the API. </font> </p>
+<p><font face="Arial">For more details on running the performance test tool on 
+IA-32 Intel® Architecture , please check the
+<a href="../tools/perfsys/readme.htm">readme.htm</a> under directory
+.\tools\perfsys\.</font></p>
+<A NAME="DLL-lib"><H2><font face="Arial">Using the  Intel&#174; IPP DLL-finding Libraries</font></H2></A>
+
+<h3><font face="Arial">Overview</font></h3>
+
+<p> <font face="Arial">The
+DLL-finding libraries are dispatchers for the merged libraries described in the previous
+section. They
+provide a way of applying Intel<sup>&#174; </sup>IPP functions so that you do
+not need to create special definitions of the entry points for the Intel<sup>&#174;
+</sup>IPP functions
+you call as you would using the merged libraries. All
+that is required is to include the
+DLL-finding libraries into your project and call the Intel<sup>&#174; </sup>IPP functions from your
+source code. </font> </p>
+<p><font face="Arial">Another feature of the DLL-finding libraries is that they allow automatic updating
+of a end-user application with new
+versions of Intel<sup>&#174; </sup>  IPP functions. The dispatcher searches the PATH for the Intel<sup>&#174;
+</sup>IPP DLL dispatchers (ex. ipps.dll). If the dispatcher finds a newer version of
+the code in the Intel<sup>&#174; </sup>IPP DLL(s), the code from the newer DLL(s) is used in place of
+the code built-in to the application. So, there is no development needed to take
+advantage of the latest Intel<sup>&#174;</sup> IPP optimizations or new Intel processors!</font></p>
+<p>
+<font face="Arial">There are some disadvantages in using the DLL-finding libraries as compared to
+the merged libraries. When using the DLL-finding libraries, it is not possible
+to exclude any cpu-specific code; all processor versions (IA-32 only) of each
+function will be linked into your application. Also, you cannot use the
+DLL-finding libraries in kernel mode.</font></p>
+<h3><font face="Arial">Building Procedures</font></h3>
+<p><font face="Arial">Follow the steps below to build your application using the Intel<sup>&#174; </sup>IPP
+DLL-finding libraries:</font></p>
+<ul>
+  <li><font face="Arial">Include <b>ipp.h</b>, <b>ippcorel.lib</b>, and the appropriate <b> ipp**emerged.lib</b> file(s) to
+your project and build tree.
+    </font>
+    <ul>
+      <li><font face="Arial">Note: You must link the ippcore functions statically (using
+        ippcorel.lib)</font></li>
+    </ul>
+  </li>
+  <li><font face="Arial">Make sure the appropriate <b>ipp**merged.lib</b> file(s) are in your build
+    tree</font></li>
+  <li><font face="Arial">Call ippStaticInit() before calling other Intel<sup>® </sup>IPP functions 
+	</font> </li>
+	<li><font face="Arial">Call the Intel<sup>&#174; </sup>IPP functions required in your application source code&nbsp;</font></li>
+</ul>
+
+<font size=-2>
+<p><font face="Arial">Intel, the Intel logo, Intel SpeedStep, Intel NetBurst, Intel NetStructure,
+MMX, i386, i486, Intel386, Intel486, Intel740, IntelDX2, IntelDX4,
+IntelSX2,Celeron, Intel Centrino, Intel Xeon, Intel XScale, Itanium, Pentium,
+Pentium II Xeon, Pentium III Xeon, Pentium M, and VTune are trademarks or
+registered trademarks of Intel Corporation or its subsidiaries in the United
+States and other countries. </font> </p>
+<p><font face="Arial">* Other names and brands may be claimed as the property of others. <br>
+&nbsp;<br>
+Copyright © 2002-2007Intel Corporation.</font></p>
+</BODY>
+</HTML>

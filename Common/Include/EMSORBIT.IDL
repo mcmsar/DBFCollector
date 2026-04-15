@@ -1,0 +1,228 @@
+cpp_quote( " " )
+cpp_quote( "#include \"emserror.h\"" )
+cpp_quote( " " )
+
+cpp_quote("// {E8F04C91-4552-11d5-8B95-009027912866} " )
+cpp_quote("DEFINE_GUID( CLSID_EMSOrbit, 0xe8f04c91, 0x4552, 0x11d5, 0x8b, 0x95, 0x0, 0x90, 0x27, 0x91, 0x28, 0x66); " )
+cpp_quote(" " )
+
+cpp_quote("// {E8F04C92-4552-11d5-8B95-009027912866} ")
+cpp_quote("DEFINE_GUID( IID_IEMSOrbit, 0xe8f04c92, 0x4552, 0x11d5, 0x8b, 0x95, 0x0, 0x90, 0x27, 0x91, 0x28, 0x66); ")
+cpp_quote(" " )
+
+cpp_quote("// {90EFA3C3-CFD8-4a39-9321-AC2C7C18D5AA}")
+cpp_quote("DEFINE_GUID( IID_IEMSOrbit2, 0x90efa3c3, 0xcfd8, 0x4a39, 0x93, 0x21, 0xac, 0x2c, 0x7c, 0x18, 0xd5, 0xaa);")
+cpp_quote( " " )
+
+cpp_quote("// {31D9B372-71A0-4298-9122-F7DFFB067439}")
+cpp_quote("DEFINE_GUID( IID_IEMSOrbit3, 0x31d9b372, 0x71a0, 0x4298, 0x91, 0x22, 0xf7, 0xdf, 0xfb, 0x6, 0x74, 0x39);")
+cpp_quote( " " )
+
+cpp_quote("// {738265B6-9E40-44ff-B8A7-E5F681AFBA18}")
+cpp_quote("DEFINE_GUID( IID_IEMSOrbit4, 0x738265b6, 0x9e40, 0x44ff, 0xb8, 0xa7, 0xe5, 0xf6, 0x81, 0xaf, 0xba, 0x18);")
+cpp_quote( " " )
+
+cpp_quote("// {DEDFE2BA-F2FB-4bee-9744-207931959F40}")
+cpp_quote("DEFINE_GUID( IID_IEMSOrbit5, 0xdedfe2ba, 0xf2fb, 0x4bee, 0x97, 0x44, 0x20, 0x79, 0x31, 0x95, 0x9f, 0x40);")
+cpp_quote( " " )
+
+cpp_quote("// {CE4EC876-A5CF-4f82-9B7A-5362D6D363F1}")
+cpp_quote("DEFINE_GUID(IID_IEMSOrbitInit, 0xce4ec876, 0xa5cf, 0x4f82, 0x9b, 0x7a, 0x53, 0x62, 0xd6, 0xd3, 0x63, 0xf1);")
+
+
+cpp_quote("// Flags for SetSatelliteTLE3 ")
+cpp_quote("#define EMS_ORBIT_OVERRIDE_MORE_RECENT	(0x0001)")
+cpp_quote("#define EMS_ORBIT_OVERRIDE_ALL			(0x0002)")
+cpp_quote("#define EMS_ORBIT_POST_MANOEUVRE			(0x0004)")
+cpp_quote(" ")
+
+import "unknwn.idl";
+import "emstypex.idl";
+
+#define _EMS_RPC_VERSION 1
+#define __RPC_FAR 
+
+[
+	object, uuid(E8F04C92-4552-11d5-8B95-009027912866),
+	helpstring("IEMSOrbit Interface"),
+	pointer_default(unique)
+]
+
+interface IEMSOrbit : IUnknown
+{
+	typedef struct _tagEMSTLEDATA
+	{
+		EMSTIME timeEpoch;   // "epoch" of this data
+		double fXndt2o;  	// First time derivative of the Mean Motion
+		double fXndd6o;  	// Second time derivative of Mean motion
+//		int nExp;			 	//
+		double fBStar; 			// BSTAR drag term
+//		int nBExp;
+		int nOrbitNumber;		// revolution number at epoch (revs)
+		double fCoVarMatrix[21];	// Covariance Matrix
+    [switch_type(int), switch_is((int)nOrbitNumber)]	// hokey work around MIDL
+		union
+		{
+			[default]
+			struct
+			{
+				double fInclination;	// Inclination (degs)
+				double fRightAscNode; // Right ascension of the ascending node (degs)
+				double fEccentricity; // eccentricity
+				double fArgPerigee;	// argument of perigee (degs)
+				double fMeanAnomaly;	// mean anomaly (degs)
+				double fMeanMotion;	// mean motion (degs)
+	      } var;
+			[ case( -1 ) ]
+			double vect[6];
+		} elem;
+	} EMSTLEDATA, *LPEMSTLEDATA;
+
+	HRESULT EarthFixedOrbit( [in] ULONG ulSatelliteID,
+		[in, size_is(cbCount)]  EMSTIME const *pvTime,
+		[in] ULONG cbCount,
+		[out, size_is(cbCount), length_is(*pcbResult) ] EMSTIMECOORD *pvCoord,
+		[out] ULONG *pcbResult);
+
+	HRESULT InertialOrbit( [in] ULONG ulSatelliteID,
+		[in, size_is(cbCount)]  EMSTIME const *pvTime,
+		[in] ULONG cbCount,
+		[out, size_is(cbCount), length_is(*pcbResult) ] EMSTIMECOORD *pvCoord,
+		[out] ULONG *pcbResult);
+
+	HRESULT EarthFixedOrbitTLE( [in] EMSTLEDATA *lpTLE, 
+		[in, size_is(cbCount)]  EMSTIME const *pvTime, [in] ULONG cbCount,
+		[out, size_is(cbCount), length_is(*pcbResult) ] EMSTIMECOORD *pvCoord,
+		[out] ULONG *pcbResult);
+
+	HRESULT InertialOrbitTLE( [in] EMSTLEDATA *lpTLE, 
+		[in, size_is(cbCount)]  EMSTIME const *pvTime, [in] ULONG cbCount,
+		[out, size_is(cbCount), length_is(*pcbResult) ] EMSTIMECOORD *pvCoord,
+		[out] ULONG *pcbResult);
+
+	HRESULT SetSatelliteTLE( [in] ULONG ulSatelliteID, [in] EMSTIME const eTime,
+		[ in ] EMSTLEDATA const *pTLEData ); 
+
+	HRESULT GetSatelliteTLE( [in] ULONG ulSatelliteID, [in] EMSTIME const eTime,
+		[ out ] EMSTLEDATA *lpTLEData ); 
+
+	HRESULT PropogateTLE( [ in ] EMSTLEDATA *lpTLEData, [in] EMSTIME const eTime,
+					[ out ] EMSTLEDATA *lpPropogatedTLE );
+
+	HRESULT GetOrbitNumber( [ in ] ULONG ulSatelliteID, [ in ] EMSTIME const eTime,
+					[ out ] ULONG *lpulOrbitNumber );
+
+	HRESULT Reload( [in] DWORD dwFlags );
+};
+
+typedef [unique] IEMSOrbit *LPEMSORBIT;
+
+[
+	object, uuid(90EFA3C3-CFD8-4a39-9321-AC2C7C18D5AA),
+	helpstring("IEMSOrbit2 Interface"),
+	pointer_default(unique)
+]
+
+interface IEMSOrbit2 : IEMSOrbit
+{
+	typedef struct _tagEMSTLEDATA2
+	{
+		EMSTLEDATA	tle;
+		EMSTIME 		timeEffective;
+		EMSTIME		timeModified;
+	} EMSTLEDATA2, *LPEMSTLEDATA2;
+
+//	HRESULT SetSatelliteOrbitVectors( [in] ULONG ulSatelliteID, [ in ] EMSTIMECOORD timeCoord ); 
+
+	HRESULT SetSatelliteTLE2( [in] ULONG ulSatelliteID, [ in ] EMSTLEDATA2 const *lpTLEData ); 
+
+	HRESULT GetSatelliteTLE2( [in] ULONG ulSatelliteID, [in] EMSTIME const eTime,
+						[ out ] EMSTLEDATA2 *lpTLEData ); 
+
+	HRESULT ConvertOrbitVectorToTLE( [in] ULONG ulSatelliteID, [in] EMSTIMECOORD timeCoord,  
+		[ out ] EMSTLEDATA *lpTLEData ); 
+};
+
+
+typedef [unique] IEMSOrbit2 *LPEMSORBIT2;
+
+[
+	object, uuid(31D9B372-71A0-4298-9122-F7DFFB067439),
+	helpstring("IEMSOrbit3 Interface"),
+	pointer_default(unique)
+]
+
+
+interface IEMSOrbit3 : IEMSOrbit2
+{
+	HRESULT SetSatelliteTLE3( [in] ULONG ulSatelliteID, 
+					[ in ] EMSTLEDATA2 const *lpTLEData, [in] DWORD dwFlags ); 
+};
+
+typedef [unique] IEMSOrbit3 *LPEMSORBIT3;
+
+
+[
+	object, uuid(738265B6-9E40-44ff-B8A7-E5F681AFBA18),
+	helpstring("IEMSOrbit4 Interface"),
+	pointer_default(unique)
+]
+
+
+interface IEMSOrbit4 : IEMSOrbit3
+{
+	HRESULT EarthFixedOrbitDouble( [in] ULONG ulSatelliteID,
+		[in, size_is(cbCount)]  EMSTIME const *pvTime,
+		[in] ULONG cbCount,
+		[out, size_is(cbCount), length_is(*pcbResult) ] EMSTIMECOORDD *pvCoord,
+		[out] ULONG *pcbResult);
+
+	HRESULT InertialOrbitDouble( [in] ULONG ulSatelliteID,
+		[in, size_is(cbCount)]  EMSTIME const *pvTime,
+		[in] ULONG cbCount,
+		[out, size_is(cbCount), length_is(*pcbResult) ] EMSTIMECOORDD *pvCoord,
+		[out] ULONG *pcbResult);
+
+	HRESULT EarthFixedOrbitTLEDouble( [in] EMSTLEDATA *lpTLE, 
+		[in, size_is(cbCount)]  EMSTIME const *pvTime, [in] ULONG cbCount,
+		[out, size_is(cbCount), length_is(*pcbResult) ] EMSTIMECOORDD *pvCoord,
+		[out] ULONG *pcbResult);
+
+	HRESULT InertialOrbitTLEDouble( [in] EMSTLEDATA *lpTLE, 
+		[in, size_is(cbCount)]  EMSTIME const *pvTime, [in] ULONG cbCount,
+		[out, size_is(cbCount), length_is(*pcbResult) ] EMSTIMECOORDD *pvCoord,
+		[out] ULONG *pcbResult);
+
+	HRESULT ConvertOrbitVectorToTLEDouble( [in] ULONG ulSatelliteID, [in] EMSTIMECOORDD timeCoord,  
+		[ out ] EMSTLEDATA *lpTLEData ); 
+
+};
+
+typedef [unique] IEMSOrbit4 *LPEMSORBIT4;
+
+[
+	object, uuid(DEDFE2BA-F2FB-4bee-9744-207931959F40),
+	helpstring("IEMSOrbit5 Interface"),
+	pointer_default(unique)
+]
+
+interface IEMSOrbit5 : IEMSOrbit4
+{
+	HRESULT GetSatelliteTLE3( [in] ULONG ulSatelliteID, [in] EMSTIME const eTime,
+						[ out ] EMSTLEDATA2 *lpTLEData, [ out ] DWORD *lpdwFlags ); 
+};
+
+typedef [unique] IEMSOrbit5 *LPEMSORBIT5;
+
+
+[
+	object, uuid(CE4EC876-A5CF-4f82-9B7A-5362D6D363F1),
+	helpstring("IEMSOrbitInit Interface"),
+	pointer_default(unique)
+]
+interface IEMSOrbitInit : IUnknown
+{
+	HRESULT Initialize();
+};
+
+typedef [unique] IEMSOrbitInit *LPEMSORBITINIT;

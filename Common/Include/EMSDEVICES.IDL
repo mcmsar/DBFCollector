@@ -1,0 +1,101 @@
+cpp_quote( " " )
+cpp_quote( "#include \"emserror.h\"" )
+cpp_quote( " " )
+
+cpp_quote( "// {AC28AC42-5C2F-491d-BADA-1D1E58926BC9}" )
+cpp_quote( "DEFINE_GUID(CLSID_EMSDevices, 0xac28ac42, 0x5c2f, 0x491d, 0xba, 0xda, 0x1d, 0x1e, 0x58, 0x92, 0x6b, 0xc9);" )
+
+cpp_quote( "// {A1E1BD8D-2531-4afa-98F1-CED75B3243B8}" )
+cpp_quote( "DEFINE_GUID(IID_IEMSEnumDevices, 0xa1e1bd8d, 0x2531, 0x4afa, 0x98, 0xf1, 0xce, 0xd7, 0x5b, 0x32, 0x43, 0xb8);" )
+
+cpp_quote( "// {53EFD1FC-9105-4161-B5EF-C5D764248502}" )
+cpp_quote( "DEFINE_GUID(IID_IEMSDevice, 0x53efd1fc, 0x9105, 0x4161, 0xb5, 0xef, 0xc5, 0xd7, 0x64, 0x24, 0x85, 0x2);" )
+
+cpp_quote( "// {1C8AA1FF-158B-45e4-9623-F9D890855008}" )
+cpp_quote( "DEFINE_GUID(IID_IEMSSubDeviceFactory, 0x1c8aa1ff, 0x158b, 0x45e4, 0x96, 0x23, 0xf9, 0xd8, 0x90, 0x85, 0x50, 0x8);" )
+
+cpp_quote( "// {F76CEB4F-2C18-4ead-B3EB-8E43048BF2FA}" )
+cpp_quote( "DEFINE_GUID(IID_IEMSSubDevice, 0xf76ceb4f, 0x2c18, 0x4ead, 0xb3, 0xeb, 0x8e, 0x43, 0x4, 0x8b, 0xf2, 0xfa);" )
+
+
+
+
+import "unknwn.idl";
+import "emstypex.idl";
+import "objidl.idl";
+
+const int DEVDESCLEN = 200;
+
+const DWORD DEVTYPE_ALL = 0xFFFFFFFF;
+
+[
+	object, uuid(53EFD1FC-9105-4161-B5EF-C5D764248502),
+	helpstring("IEMSDevice Interface"),
+	pointer_default(unique)
+]
+
+interface IEMSDevice : IUnknown
+{
+	HRESULT Initialize( [in]DWORD dwParam );
+
+	HRESULT Reset();
+
+	HRESULT GetDeviceInfo( [in]DWORD dwStrLen, [out, size_is(dwStrLen)]LPTSTR lpszInfo );
+};
+
+typedef [unique] IEMSDevice *LPEMSDEVICE;
+
+[
+	object, uuid(F76CEB4F-2C18-4ead-B3EB-8E43048BF2FA),
+	helpstring("IEMSSubDevice Interface"),
+	pointer_default(unique)
+]
+
+interface IEMSSubDevice : IUnknown
+{
+	HRESULT GetParentDevice( [out]LPEMSDEVICE *lpDev );
+
+	HRESULT GetDeviceID( [out]LPDWORD lpDevID );
+};
+
+typedef [unique] IEMSSubDevice *LPEMSSUBDEVICE;
+
+[
+	object, uuid(1C8AA1FF-158B-45e4-9623-F9D890855008),
+	helpstring("IEMSDeviceFactory Interface"),
+	pointer_default(unique)
+]
+
+interface IEMSSubDeviceFactory : IEMSDevice
+{
+	HRESULT CreateSubDevice( [in]REFIID riid, [in]DWORD dwDeviceID, [out]LPEMSSUBDEVICE *lppSubDev );
+};
+
+typedef [unique] IEMSSubDeviceFactory *LPEMSSUBDEVICEFACTORY;
+
+[
+	object, uuid(A1E1BD8D-2531-4afa-98F1-CED75B3243B8),
+	helpstring("IEMSEnumDevices Interface"),
+	pointer_default(unique)
+]
+
+interface IEMSEnumDevices : IUnknown
+{
+	typedef struct _tagDEVICEINFO
+	{
+		IID iid;				//supported interface
+		GUID guid;				//CLASS ID
+		DWORD dwDevType;			//device type
+		CHAR szDevDesc[DEVDESCLEN];	//Description of Device
+	}EMSDEVICEINFO, *LPEMSDEVICEINFO;
+
+	HRESULT Initialize();
+
+	HRESULT EnumDevices( [in, out]LPDWORD lpdwnumDeviceEntries,
+						 [out]LPEMSDEVICEINFO lpDevInfo,
+						 [in]DWORD dwNumCATIDs,
+						 [in, size_is(dwNumCATIDs)]GUID catid[] );
+
+};
+
+typedef [unique] IEMSEnumDevices *LPEMSENUMDEVICES;

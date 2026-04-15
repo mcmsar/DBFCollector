@@ -1,0 +1,102 @@
+/*********************************************************************
+*	              Copyright (c) 2005 by EMS Technologies, Inc.,
+*										All rights reserved
+*	This program is unpublished software and contains the trade secrets
+*	and confidential information of EMS Technologies, Inc.  It may not be 
+* reproduced in whole or in part, in any form or by any means whatsoever 
+* without the express written permission of EMS Technologies, Inc.
+*
+********************************************************************/
+
+/*******************************************************************
+
+  Revision Record
+
+	$Log:
+	$
+********************************************************************/
+
+cpp_quote("// {E13B85BC-66D9-4d42-8622-C0566F5C92FF}")
+cpp_quote("DEFINE_GUID(IID_IEMSDetectPlugin, 0xe13b85bc, 0x66d9, 0x4d42, 0x86, 0x22, 0xc0, 0x56, 0x6f, 0x5c, 0x92, 0xff);")
+cpp_quote(" ")
+
+cpp_quote("// {9A805D96-AB39-481b-BEDD-AA08EA09B157}")
+cpp_quote("DEFINE_GUID(IID_IEMSDecodePlugin, 0x9a805d96, 0xab39, 0x481b, 0xbe, 0xdd, 0xaa, 0x8, 0xea, 0x9, 0xb1, 0x57);")
+
+#pragma pack(push,1)
+
+import "unknwn.idl";
+import "sarrdata.idl";
+
+cpp_quote("// Size is 2048 Elements of complex values with float components")
+const ULONG culSARRDataFFTElements = 2048;
+const ULONG culSARRDataFFTSize = culSARRDataFFTElements*2*4;
+
+// these should all be called EMS_SARR_EX.....
+
+typedef enum _tagSarrStatus
+{
+	EMS_SARR_TIMERES_UKN	= 0x0000,	// time resolution is unknown
+	EMS_SARR_EX_TIMERES_UKN = EMS_SARR_TIMERES_UKN,
+	EMS_SARR_TIMERES_LOW	= 0x1000,	// time resolution based upon 24 bit synch pattern
+	EMS_SARR_EX_TIMERES_LOW	= EMS_SARR_TIMERES_LOW,
+	EMS_SARR_TIMERES_MID	= 0x2000,	// time resolution based upon 106 bit PDF1 pattern
+	EMS_SARR_EX_TIMERES_MID	= EMS_SARR_TIMERES_MID,
+	EMS_SARR_TIMERES_HIGH	= 0x4000,	// time resolution based upon 144 bit PDF1+PDF2 pattern
+	EMS_SARR_EX_TIMERES_HIGH	= EMS_SARR_TIMERES_HIGH,
+
+	EMS_SARR_EX_TIMERES_MASK = 0x7000,	// to test for TIMERES flags
+
+	EMS_SARR_EX_INVERTED_FRAMESYNC	= 0x8000,	// Inverted Frame Synch flag
+// from SARP flags EMS_FLAG_INVERTED_FRAMESYNC	( 0x0800 )	// inverted framesync
+
+	EMS_SARR_EX_GROUP_ID_MASK	= 0x07FF	/// mask to protect Group ID (temporary)
+} EMSSARRSTATUS;
+
+typedef struct _tagEMSFFTDATA
+{
+	EMSTIME timeStart;
+	double dStartFrequency;
+	double dFreqBinSize;
+	double dCorrelation;
+	ULONG ulShiftIndex;
+	BYTE aFFTData[ culSARRDataFFTSize ];
+} EMSFFTDATA;
+
+typedef struct _tagEMSSARRDATAEX
+{
+	EMSSARRDATA sarrData;
+	EMSFFTDATA fftData;
+    WORD wDuplicateMsgCount;
+    WORD wStatus;
+	WORD wAntennaID;
+}  EMSSARRDATAEX;
+
+
+[
+	object, uuid(E13B85BC-66D9-4d42-8622-C0566F5C92FF),
+	helpstring("IEMSDetectPlugin Interface"),
+	pointer_default(unique)
+]
+interface IEMSDetectPlugin : IUnknown
+{
+	HRESULT Process( [in] const ULONG culBytes, [in,size_is(culBytes)] const char* cabyInData,
+					[out] ULONG* pulElements, [out,size_is(,*pulElements)] EMSSARRDATAEX** paSarrData );
+
+	HRESULT Init( [in,string,unique] const wchar_t* cwszConfig );
+};
+
+[
+	object, uuid(9A805D96-AB39-481b-BEDD-AA08EA09B157),
+	helpstring("IEMSDecodePlugin Interface"),
+	pointer_default(unique)
+]
+interface IEMSDecodePlugin : IUnknown
+{
+	HRESULT Process( [in] const ULONG culElements, 
+					[in,out,size_is(,culElements)] EMSSARRDATAEX** paSarrData );
+
+	HRESULT Init( [in,string,unique] const wchar_t* cwszConfig );
+};
+
+#pragma pack(pop)

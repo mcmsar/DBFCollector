@@ -1,0 +1,31 @@
+cpp_quote( " " )
+cpp_quote( "#include \"emserror.h\"" )
+cpp_quote( " " )
+
+cpp_quote( "// {5DD5D8A4-352A-470f-8A67-FAE3C87EBBE3}" )
+cpp_quote( "DEFINE_GUID(IID_IEMSUPS, 0x5dd5d8a4, 0x352a, 0x470f, 0x8a, 0x67, 0xfa, 0xe3, 0xc8, 0x7e, 0xbb, 0xe3);" )
+
+import "unknwn.idl";
+import "emstypex.idl";
+import "objidl.idl";
+import "EMSDEVICES.idl";
+
+const DWORD UPS_STATUS_OK           = 0x0;
+const DWORD UPS_STATUS_AC_FAILURE   = 0x1;
+const DWORD UPS_STATUS_UPS_FAILURE  = 0x2;
+const DWORD UPS_STATUS_OTHER        = 0x3;
+
+[
+    object, uuid(5DD5D8A4-352A-470f-8A67-FAE3C87EBBE3),
+    helpstring("IEMSUPS Interface"),
+    pointer_default(unique)
+]
+
+interface IEMSUPS : IEMSSubDevice
+{
+    HRESULT GetUPSStatus( [out]LPDWORD lpdwStatus );
+
+    HRESULT GetBatteryTime( [out]LPDWORD lpdwTimeMinutes );
+};
+
+typedef [unique] IEMSUPS *LPEMSUPS;

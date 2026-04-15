@@ -1,0 +1,913 @@
+cpp_quote( " " )
+cpp_quote( "#include \"emserror.h\"" )
+cpp_quote( " " )
+
+cpp_quote("// {F17394E1-4D52-11d5-8BB5-009027912866} ")
+cpp_quote("DEFINE_GUID( CLSID_EMSSatelliteInfo, 0xf17394e1, 0x4d52, 0x11d5, 0x8b, 0xb5, 0x0, 0x90, 0x27, 0x91, 0x28, 0x66);")
+cpp_quote(" ")
+
+cpp_quote("// {F17394E2-4D52-11d5-8BB5-009027912866}")
+cpp_quote("DEFINE_GUID( IID_IEMSSatelliteInfo, 0xf17394e2, 0x4d52, 0x11d5, 0x8b, 0xb5, 0x0, 0x90, 0x27, 0x91, 0x28, 0x66);")
+cpp_quote(" " )
+
+cpp_quote("// {7607D4F0-56D5-4ff6-8CDC-B54C5909E99F}")
+cpp_quote("DEFINE_GUID( IID_IEMSSatelliteInfo2, 0x7607d4f0, 0x56d5, 0x4ff6, 0x8c, 0xdc, 0xb5, 0x4c, 0x59, 0x9, 0xe9, 0x9f);")
+
+cpp_quote("// {EE8C892B-B6BB-4d4e-A747-D9D4793B55D8}")
+cpp_quote("DEFINE_GUID( IID_IEMSSatelliteInfo3, 0xee8c892b, 0xb6bb, 0x4d4e, 0xa7, 0x47, 0xd9, 0xd4, 0x79, 0x3b, 0x55, 0xd8);")
+
+cpp_quote("// {1892B319-9DB3-4cdc-A78B-728EF2F8CBB2}")
+cpp_quote("DEFINE_GUID( IID_IEMSSatelliteInfo4, 0x1892b319, 0x9db3, 0x4cdc, 0xa7, 0x8b, 0x72, 0x8e, 0xf2, 0xf8, 0xcb, 0xb2);")
+
+cpp_quote("// {6C426984-DCA1-4b55-9C07-6F45322073A0}")
+cpp_quote("DEFINE_GUID( IID_IEMSSatelliteInfo5, 0x6c426984, 0xdca1, 0x4b55, 0x9c, 0x7, 0x6f, 0x45, 0x32, 0x20, 0x73, 0xa0);")
+
+cpp_quote("// {52D3FE92-2255-4f37-9846-56BD322B4282}")
+cpp_quote("DEFINE_GUID(IID_IEMSSatelliteInfo6, 0x52d3fe92, 0x2255, 0x4f37, 0x98, 0x46, 0x56, 0xbd, 0x32, 0x2b, 0x42, 0x82);")
+cpp_quote(" " )
+
+cpp_quote("// {D0591B7D-1AD9-4f23-BFF7-ACF4BC3C2B5C}")
+cpp_quote("DEFINE_GUID( IID_IEMSSatelliteInfo7,0xd0591b7d, 0x1ad9, 0x4f23, 0xbf, 0xf7, 0xac, 0xf4, 0xbc, 0x3c, 0x2b, 0x5c);")
+cpp_quote(" " )
+
+cpp_quote("// {A2ECC7CD-1D08-4fd8-908F-376B4536B6E1}")
+cpp_quote("DEFINE_GUID( IID_IEMSSatelliteInfo8, 0xa2ecc7cd, 0x1d08, 0x4fd8, 0x90, 0x8f, 0x37, 0x6b, 0x45, 0x36, 0xb6, 0xe1);")
+cpp_quote(" " )
+
+cpp_quote("// {8E742C5A-0B5F-4b10-A037-CED8E88B5507}")
+cpp_quote("DEFINE_GUID( IID_IEMSSatelliteInfo9, 0x8e742c5a, 0xb5f, 0x4b10, 0xa0, 0x37, 0xce, 0xd8, 0xe8, 0x8b, 0x55, 0x7);")
+cpp_quote(" " )
+
+cpp_quote("// {8FB9583E-9E07-4d64-9501-796154B263FD}")
+cpp_quote("DEFINE_GUID( IID_IEMSSatelliteInfo10, 0x8fb9583e, 0x9e07, 0x4d64, 0x95, 0x1, 0x79, 0x61, 0x54, 0xb2, 0x63, 0xfd);")
+cpp_quote(" ")
+
+cpp_quote( "// {DD309AAC-DF15-48f7-9382-C48E4D52D1A8}" )
+cpp_quote( "DEFINE_GUID(IID_IEMSSatelliteInfo11, 0xdd309aac, 0xdf15, 0x48f7, 0x93, 0x82, 0xc4, 0x8e, 0x4d, 0x52, 0xd1, 0xa8);")
+cpp_quote( " ")
+
+cpp_quote( "// {A18342E2-9189-40b0-A477-DEE313BC67D8}" )
+cpp_quote( "DEFINE_GUID(IID_IEMSSatelliteInfo12, 0xa18342e2, 0x9189, 0x40b0, 0xa4, 0x77, 0xde, 0xe3, 0x13, 0xbc, 0x67, 0xd8);")
+cpp_quote( " ")
+
+cpp_quote( "// {9B683CBB-D88A-4e5b-8290-B1FC2CA60FB6}" )
+cpp_quote( "DEFINE_GUID(IID_IEMSSatelliteInfo13, 0x9b683cbb, 0xd88a, 0x4e5b, 0x82, 0x90, 0xb1, 0xfc, 0x2c, 0xa6, 0xf, 0xb6);")
+cpp_quote( " ")
+
+cpp_quote( "// {CE538E71-CA9D-43fe-BAB1-F188209645FF}" )
+cpp_quote( "DEFINE_GUID(IID_IEMSSatelliteInfo14, 0xce538e71, 0xca9d, 0x43fe, 0xba, 0xb1, 0xf1, 0x88, 0x20, 0x96, 0x45, 0xff); ")
+cpp_quote( " ")
+
+cpp_quote("// Bit Flags for GetCaps ")
+cpp_quote("#define EMS_SATCAP_121_CBC					(0x0001)")
+cpp_quote("#define EMS_SATCAP_243_CBC					(0x0002)")
+cpp_quote("#define EMS_SATCAP_406_CBC					(0x0004)")
+cpp_quote("#define EMS_SATCAP_406_SARP					(0x0008)")
+cpp_quote("#define EMS_SATCAP_406_SARR					(0x0010)")
+
+cpp_quote("#define EMS_SATCAP_406_SARP_LONG_MSG			(0x0020)")
+cpp_quote("#define EMS_SATCAP_AUDIO						(0x0040)")
+cpp_quote("#define EMS_SATCAP_SPECTRUM					(0x0080)")
+cpp_quote(" ")
+cpp_quote("#define EMSSATCONFIGAUDIO_MAX_BANDS (5)")
+
+cpp_quote(" ")
+cpp_quote("#define EMS_SATINFO_MAX_BEHAVIOURS (32)")
+cpp_quote("#define EMS_SATINFO_MAX_ORBITINFO (32)")
+cpp_quote(" ")
+
+cpp_quote("const WORD     c_wSatInfoMI406ConfirmMaxFSErr	       = 0;")
+cpp_quote("const WORD     c_wSatInfoMI406ConfirmMaxPDF1Err	       = 3;")
+cpp_quote("const WORD     c_wSatInfoMI406ConfirmMaxPDF2Err	       = 1;")
+cpp_quote("const WORD     c_wSatInfoMI406ValidMaxFSErr	      	   = 0;")
+cpp_quote("const WORD     c_wSatInfoMI406ValidMaxPDF1Err	       = 2;")
+cpp_quote("const WORD     c_wSatInfoMI406ValidMaxPDF2Err	       = 1;")
+cpp_quote("const WORD     c_wSatInfoMI406IntegrateMaxFSErr	       = 0;")
+cpp_quote("const WORD     c_wSatInfoMI406IntegrateMaxPDF1Err	   = 2;")
+cpp_quote("const WORD     c_wSatInfoMI406IntegrateMaxPDF2Err	   = 1;")
+cpp_quote("const double   c_dSatInfoMI406IntegrateAgeout	       = 20.0;")
+cpp_quote("const double   c_dSatInfoMI406BeaconAgeout	    	   = 8.0 * 60.0;")
+
+cpp_quote("const double   c_dSatInfoMI406MinMsgInterval	   = 5.0;")
+cpp_quote("const double   c_dSatInfoMI406MaxMsgInterval	   = 0.0; /* never */")
+cpp_quote("const double   c_dSatInfoMI406ValidMsgInterval  = 5.0;")
+
+cpp_quote("const BOOL     c_bSatInfoMI406Restart                 = TRUE;")
+cpp_quote("const float    c_fSatInfoMI406WindowFreqHz            = 15;  ")
+cpp_quote("const float    c_fSatInfoMI406WindowTimeSecs          = 2.5; ")
+cpp_quote("const int      c_iSatInfoMI406WindowBits              = 28;  ")
+cpp_quote("const int      c_iSatInfoMI406OutOfSpecWindowBits     = -1;  ")
+cpp_quote("const double   c_dSatInfoMI406MsgTimeoutMin           = 20;  ")
+cpp_quote("const BOOL     c_bSatInfoMI406MsgForceUpdate          = TRUE;")
+cpp_quote("const int      c_iSatInfoMI406MaxFSErr                = 2;   ")
+cpp_quote("const int      c_iSatInfoMI406PF1Err                  = 3;   ")
+cpp_quote("const int      c_iSatInfoMI406PF2Err                  = 2;   ")
+cpp_quote("const int      c_iSatInfoMI406AgeoutMin               = 30;  ")
+cpp_quote("const float    c_fSatInfoMI406CNR1Threshold_dBHz      = 20;  ")
+cpp_quote("const float    c_fSatInfoMI406CNR2Threshold_dBHz      = 30;  ")
+cpp_quote("const double   c_dSatInfoMI406SarrFreqOffsetThreshold = 10.0;")
+cpp_quote("const double   c_dSatInfoMI406SummaryInterval         = 60.0;")
+cpp_quote("const int      c_dSatInfoMI406QMSOutputRate           = 20;")
+cpp_quote("")
+cpp_quote("const	BOOL	c_bSatInfoCalib406SarrSarpCombine = FALSE;")
+cpp_quote("const	double	c_dSatInfoCalib406SarrSarpAgeOutDays = 7.0;")
+cpp_quote("const	double	c_dSatInfoCalib406SarrSarpFreqDiffHz = 500.0;")
+cpp_quote("const	double	c_dSatInfoCalib406SarrSarpTimeDiffSecs = 2.0;")
+cpp_quote("const	int 	c_nSatInfoCalib406SarrSarpMinCount = 250;")
+cpp_quote("const	double	c_dSatInfoCalib406RealTimeDelaySecs = 15.0;")
+
+import "unknwn.idl";
+import "emstypex.idl";
+import "emsicfg.idl";
+
+#define _EMS_RPC_VERSION 1
+#define __RPC_FAR 
+
+[
+	object, uuid(F17394E2-4D52-11d5-8BB5-009027912866),
+	helpstring("IEMSSatelliteInfo Interface"),
+	pointer_default(unique)
+]
+
+interface IEMSSatelliteInfo : IEMSConfigSettings
+{
+	typedef enum _tagEMSSATELLITETYPE
+	{
+		EMSSatTypeLEOCospas = 0x0,
+		EMSSatTypeLEOSarsat = 0x1,
+		EMSSatTypeGEO = 0x2,
+		EMSSatTypeMEO = 0x4,
+		EMSSatTypeUNKNOWN = 0x8000
+	} EMSSATELLITETYPE, *LPEMSSATELLITETYPE; 
+
+	typedef struct _tagEMS406SIGNALDATA
+	{
+	  unsigned short  uProfile;            // Profile number
+    EMSTIME			updateTime;               // Time of last update
+//    unsigned short  uProcessFlag;        // Process flag (bits 0=GSARP,1=SARP,2=121,3=243,4=406,5=PSD, 6=Track,7=Audio)
+    unsigned short  uReserved;       		 // was the process flag 
+//    unsigned short  uMonitorFlag;        // Monitor flag (bits 0 - 8 are FR,C1,S1,C2,S2,C4,DI,MI,PD)
+    unsigned short  uDelete1;        // Monitor flag (bits 0 - 8 are FR,C1,S1,C2,S2,C4,DI,MI,PD)
+    float           fCentreFreq121;      // Centre frequency of baseband 121 channel (Hz)
+    float           fCentreFreq243;      // Centre frequency of baseband 243 channel (Hz)
+    float           fCentreFreq406;      // Centre frequency of baseband 406 channel (Hz)
+    float           fBandwidth121;       // Frequency bandwidth of baseband 121 channel (Hz)
+    float           fBandwidth243;       // Frequency bandwidth of baseband 243 channel (Hz)    float           Bandwidth406;       // Frequency bandwidth of baseband 406 channel (Hz)
+    float           fBandwidth406;       // Frequency bandwidth of baseband 406 channel (Hz)
+    float           fDetectThres;        // Detection threshold (multiplier of average power)
+    float           fDetectThres406;     // 406 detection threshold (multiplier of average power)
+    unsigned short  uMaxNumBPP;          // Maximum number of BPP detections per second
+    float           fMinFreqBPP;         // Minimum frequency of BPP band (Hz)
+    float           fMaxFreqBPP;         // Maximum frequency of BPP band (Hz)
+    float           fDetectThresBPP;     // BPP detection threshold (multiplier of average power)
+    float           fMinCNRBPP;          // BPP minimum CNR level output (dB-Hz)
+    unsigned short  uMaxFSerrBPP;        // Maximum number of BPP frame synch bit errors allowed
+    unsigned short  uModeMI;             // Message integration mode of operation
+    unsigned short  uRestartMI;          // Message Integration restart after each valid output (on/off flag)
+    float           fAgeoutMI;           // Message integration ageout time  (minutes)
+    float           fPartialAgeoutMI;    // Message integration partial ageout time  (minutes)
+    float           fWindFreqMI;         // Frequency bandwidth for beacon message match (Hz)
+    float           fWindTimeMI;         // Time duration window for beacon message match (seconds)
+    unsigned short  uWindBitMI;          // Maximum number of bit differences for beacon message match
+    unsigned short  uMaxFSerrMI;         // Maximum number of frame synch errors (output threshold)
+    unsigned short  uMaxPF1MI;           // Maximum number of 1st protected field errors (output threshold)
+    unsigned short  uMaxPF2MI;           // Maximum number of 2nd protected field errors (output threshold)
+    float           fMinCNRMI;           // Message integration minimum CNR level output (dB-Hz)
+    float           fMinCNRPF2MI;        // Message integration minimum CNR level for 2nd P.F. output (dB-Hz)
+    unsigned short  uShortMsgFillMI;     // Short Message zero fill (on/off flag)
+    float           fBitRatePDS;         // PDS bit rate (bits per second)
+    unsigned short  uSARPtypePDS;        // SARP type (0,1,2)
+    unsigned short  uPlaybackPDS;        // PDS dump data enabled for output
+    long            lNfloorDet0;         //
+	long            lNfloorDet1;         //
+	long            lDetTestMsg;         //
+	float           fOnDet406;           //
+	float           fOffDet406;          //
+	float           fCoeffDet;           //
+	unsigned short  uDetTestMsgMI;       //
+	unsigned short  uNumPartialOutMI;    //
+	float           fTimePartialOutMI;   //
+	float           fFreqOffset406;      //
+  double 				dSarrPowerConstant;
+	}	EMS406SIGNALDATA, *LPEMS406SIGNALDATA;
+
+	typedef struct _tagEMSCBCSIGNALDATA
+	{
+    int             nfloor0;
+    int             nfloor1;
+    int             nsmooth0;
+    int             nsmooth1;
+    float           fpkfak[3];
+    float           fAmp[3];
+    float           fIncoherentOffset;
+	float           fDetectThres;
+	float           fMinFreq[3];
+	float           fMaxFreq[3];
+	float           fDetFreq;
+    unsigned short  uDataC1;
+    unsigned short  uDataC2;
+    unsigned short  uDataC4;
+	}	EMSCBCSIGNALDATA, *LPEMSCBCSIGNALDATA;
+
+// note to self:  Look at wideband code to confirm Rollover calcs, etc
+
+	typedef struct _tagEMSPDSSIGNALDATA
+	{
+//	char  cRolloverTime[25];
+	char  cReserved1[25];
+  EMSTIME		timeUpdate;               // Time of last update
+	double		dReserved2;					// was dRefFreq
+	INT64			i64RolloverPeriod;
+	EMSTIME		timeRollover;
+	float fReserved3;							// was fRefFreqOffset
+   float                       fBaudRate;
+   float                       fBaudWindow;
+   float                       fBaudStep;
+   unsigned short				uBaudDuration;
+   float                       fBaudStart;
+   float                       fBaudStop;
+   unsigned short            uBaudElapsed;
+	unsigned	short						uSarpSatellite;
+	unsigned	short						uSarpProcessor;
+	unsigned	short						uSarpPlayback;
+   unsigned short              uSarpType;
+   unsigned short              uPlaybackPDS;
+   unsigned short              uDataPD;
+   unsigned short              uDataRP;
+   unsigned short              uDataTI;
+   unsigned short              uDataRPO;
+                               // Control the output of raw_pds_msg
+                               // DataRPO = 0: Not output; =1: Output
+	}	EMSPDSSIGNALDATA, *LPEMSPDSSIGNALDATA;
+
+	HRESULT GetName( [in] ULONG ulSatelliteID,
+		[out, size_is(cb), length_is(*pcbRead)]	BYTE *pv,
+		[in] ULONG cb,
+		[out] ULONG *pcbRead);
+
+	HRESULT GetNoradID( [in] ULONG ulSatelliteID, [out] ULONG *lpulNoradID );
+	HRESULT GetSatelliteID( [in] ULONG ulNoradID, [out] ULONG *lpulSatelliteID );
+	HRESULT GetFreqBandwidth( [in] ULONG ulSatelliteID, [out] LONG *lplBandwidth );
+	HRESULT GetCaps( [in] ULONG ulSatelliteID, [out] ULONG *lpulCapabilities );
+	HRESULT Get406SignalData( [in] ULONG ulSatelliteID, [out] EMS406SIGNALDATA *lpSignalData);
+	HRESULT GetCBCSignalData( [in] ULONG ulSatelliteID, [out] EMSCBCSIGNALDATA *lpSignalData);
+	HRESULT GetPDSSignalData( [in] ULONG ulSatelliteID, [out] EMSPDSSIGNALDATA *lpSignalData);
+
+	HRESULT GetRolloverPeriod( [in] ULONG ulSatelliteID, [out] INT64 *lpi64Period );
+	HRESULT SetRolloverPeriod( [in] ULONG ulSatelliteID, [in] INT64 i64Period );
+	HRESULT GetRolloverTime( [in] ULONG ulSatelliteID, [out] EMSTIME *lpTimeRollover );
+	HRESULT SetRolloverTime( [in] ULONG ulSatelliteID, [in] EMSTIME timeRollover );
+	HRESULT GetRefFreq( [in] ULONG ulSatelliteID, [out] double *lpdFreq );
+	HRESULT SetRefFreq( [in] ULONG ulSatelliteID, [in] double dFreq );
+
+	HRESULT SetSarrFreqOffset( [in] ULONG ulSatelliteID, [in] double dFreqOffset );
+	HRESULT GetSarrFreqOffset( [in] ULONG ulSatelliteID, [out] double *lpdFreqOffset );
+	HRESULT SetSarrTimeOffset( [in] ULONG ulSatelliteID, [in] INT64 i64TimeOffset ) ;
+	HRESULT GetSarrTimeOffset( [in] ULONG ulSatelliteID, [out] INT64 *lpi64TimeOffset );
+	HRESULT SetSarpFreqOffset( [in] ULONG ulSatelliteID, [in] double dFreqOffset );
+	HRESULT GetSarpFreqOffset( [in] ULONG ulSatelliteID, [out] double *lpdFreqOffset );
+	HRESULT SetSarpTimeOffset( [in] ULONG ulSatelliteID, [in] INT64 i64TimeOffset ) ;
+	HRESULT GetSarpTimeOffset( [in] ULONG ulSatelliteID, [out] INT64 *lpi64TimeOffset );
+
+};
+
+typedef [unique] IEMSSatelliteInfo *LPEMSSATELLITEINFO;
+
+[
+	object, uuid(7607D4F0-56D5-4ff6-8CDC-B54C5909E99F),
+	helpstring("IEMSSatelliteInfo2 Interface"),
+	pointer_default(unique)
+]
+
+interface IEMSSatelliteInfo2 : IEMSSatelliteInfo
+{
+	HRESULT GetPhaseDemodSetting( [in] ULONG ulSatelliteID, [out] ULONG *lpulPhaseDemod );
+};
+
+typedef [unique] IEMSSatelliteInfo2 *LPEMSSATELLITEINFO2;
+
+[
+	object, uuid(EE8C892B-B6BB-4d4e-A747-D9D4793B55D8),
+	helpstring("IEMSSatelliteInfo3 Interface"),
+	pointer_default(unique)
+]
+
+interface IEMSSatelliteInfo3 : IEMSSatelliteInfo2
+{
+	#define EMSSATCONFIGAUDIO_MAX_BANDS (5)
+
+	typedef struct _tagEMSSATCONFIGBOOLDATAPROP
+	{
+		BOOL 				bSpectrum;
+		BOOL 				bAudio;
+		BOOL 				bSarr;
+		BOOL 				bSarp;
+		BOOL 				bCbc121;
+		BOOL 				bCbc243;
+		BOOL 				bCbc406;
+		BOOL 				bMI406;
+		BOOL 				bLeoGeo;
+		BOOL 				bLeoLeo;
+		BOOL 				bGeoGeo;
+	}	EMSSATCONFIGBOOLDATAPROP, *LPEMSSATCONFIGBOOLDATAPROP;
+
+	typedef struct _tagEMSSATCONFIGDOUBLEDATAPROP
+	{
+		DOUBLE 				dSpectrum;
+		DOUBLE 				dAudio;
+		DOUBLE 				dSarr;
+		DOUBLE 				dSarp;
+		DOUBLE 				dCbc121;
+		DOUBLE 				dCbc243;
+		DOUBLE 				dCbc406;
+		DOUBLE 				dMI406;
+		DOUBLE 				dLeoGeo;
+		DOUBLE 				dLeoLeo;
+		DOUBLE 				dGeoGeo;
+	}	EMSSATCONFIGDOUBLEDATAPROP, *LPEMSSATCONFIGDOUBLEDATAPROP;
+
+	typedef struct _tagEMSSATCONFIGINTDATAPROP
+	{
+		INT 				nSpectrum;
+		INT 				nAudio;
+		INT 				nSarr;
+		INT 				nSarp;
+		INT 				nCbc121;
+		INT 				nCbc243;
+		INT 				nCbc406;
+		INT 				nMI406;
+		INT 				nLeoGeo;
+		INT 				nLeoLeo;
+		INT 				nGeoGeo;
+	}	EMSSATCONFIGINTDATAPROP, *LPEMSSATCONFIGINTDATAPROP;
+
+	typedef struct _tagEMSSATCONFIGMCCFILTERLEOGEO
+	{
+		int				nWindowFactor;
+		int				nNumPts;
+		double			dMinCrossTrackAngle;
+		double			dMaxCrossTrackAngle;
+	} EMSSATCONFIGMCCFILTERLEOGEO, *LPEMSSATCONFIGMCCFILTERLEOGEO;
+
+	typedef struct _tagEMSSATCONFIGMCCSUPPRESS
+	{
+		EMSSATCONFIGBOOLDATAPROP	Located;	 
+		EMSSATCONFIGBOOLDATAPROP	UnLocated;	 
+		EMSSATCONFIGBOOLDATAPROP	UnLocated1;	 
+		EMSSATCONFIGBOOLDATAPROP	UnLocated2;	 
+		EMSSATCONFIGMCCFILTERLEOGEO LeoGeo;
+	} EMSSATCONFIGMCCSUPPRESS, *LPEMSSATCONFIGMCCSUPPRESS;
+
+	typedef struct _tagEMSSATCONFIGPROCESS
+	{
+		EMSSATCONFIGBOOLDATAPROP	Normal;
+		EMSSATCONFIGBOOLDATAPROP	MultiPass;	
+		EMSSATCONFIGBOOLDATAPROP	MultiSat;	
+	} EMSSATCONFIGPROCESS, *LPEMSSATCONFIGPROCESS;
+
+	typedef struct _tagEMSSATCONFIGAUDIO
+	{
+		double			dFileDuration;			// max mins in a single file
+		double			dArchiveDuration;	      	// max age of archive
+		ULONG 			ulFileSize;		 	// max number of bytes in a single file
+		ULONG 			ulArchiveSize;	  		// max number of bytes in archive of files
+		int		      	nBands;
+		struct	
+		{
+			double		dMinFreq;
+			double		dMaxFreq;
+		} band[ EMSSATCONFIGAUDIO_MAX_BANDS ];
+	} EMSSATCONFIGAUDIO, *LPEMSSATCONFIGAUDIO;
+
+	typedef struct _tagEMSSATCONFIGTCAL
+	{
+		int				nMinPts;
+		double			dThresholdTime;
+		double			dThresholdFrequency;
+	} EMSSATCONFIGTCAL, *LPEMSSATCONFIGTCAL;
+
+	typedef struct _tagEMSSATCONFIGORBIT
+	{
+		double			dThresholdPosition;
+		double			dThresholdVelocity;
+		int				nMinPtsDownlink;
+		int				nMinPtsBeacon;
+		EMSTIME			refTime;
+	} EMSSATCONFIGORBIT, *LPEMSSATCONFIGORBIT;
+
+	HRESULT GetMCCSuppressInfo( [in] ULONG ulSatelliteID, [out] EMSSATCONFIGMCCSUPPRESS *lpMCCSUPPRESSInfo );
+
+	HRESULT GetTCALInfo( [in] ULONG ulSatelliteID, [out] EMSSATCONFIGTCAL *lpTCALInfo );
+
+	HRESULT GetOrbitInfo( [in] ULONG ulSatelliteID, [out] EMSSATCONFIGORBIT *lpOrbitInfo );
+
+	HRESULT GetAudioInfo( [in] ULONG ulSatelliteID, [out] EMSSATCONFIGAUDIO *lpAudioInfo );
+
+	HRESULT GetProcessInfo( [in] ULONG ulSatelliteID, [out] EMSSATCONFIGPROCESS *lpProcessInfo );
+
+	HRESULT GetCollectInfo( [in] ULONG ulSatelliteID, [out] EMSSATCONFIGBOOLDATAPROP *lpCollectInfo );
+
+	HRESULT GetPassSchedulePriority( [in] ULONG ulSatelliteID, [out] ULONG *lpulPriority );
+
+	HRESULT SetSarpCalibration( [in] ULONG ulSatelliteID, [in] EMSTIME timeRollover, [in] double dRefFreq );
+
+	HRESULT GetSarpCalibration( [in] ULONG ulSatelliteID, [out] EMSTIME *lpTimeStamp, [out] EMSTIME *lpTimeRollover, [out] double * lpdRefFreq );
+
+	HRESULT GetDownlinkFreq( [in] ULONG ulSatelliteID, [out] double *lpdDownlinkFreq );
+};
+
+typedef [unique] IEMSSatelliteInfo3 *LPEMSSATELLITEINFO3;
+
+
+cpp_quote("// {1892B319-9DB3-4cdc-A78B-728EF2F8CBB2}")
+
+[
+	object, uuid(1892B319-9DB3-4cdc-A78B-728EF2F8CBB2),
+	helpstring("IEMSSatelliteInfo4 Interface"),
+	pointer_default(unique)
+]
+
+interface IEMSSatelliteInfo4 : IEMSSatelliteInfo3
+{
+
+	typedef struct _tagEMSSATCONFIGBOOLDATAPROPEX
+	{
+		BOOL 				bSpectrum;
+		BOOL 				bAudio;
+		BOOL 				bSarr;
+		BOOL 				bSarp;
+		BOOL 				bCbc121;
+		BOOL 				bCbc243;
+		BOOL 				bCbc406;
+		BOOL 				bMI406;
+		BOOL 				bLeoGeo;
+		BOOL 				bLeoLeo;
+		BOOL 				bGeoGeo;
+		BOOL 				bReserved;
+//		BOOL 				bInvalidProtocol;
+	}	EMSSATCONFIGBOOLDATAPROPEX, *LPEMSSATCONFIGBOOLDATAPROPEX;
+
+	typedef struct _tagEMSSATCONFIGMCCSUPPRESSEX
+	{
+		EMSSATCONFIGBOOLDATAPROPEX	Located;	 
+		EMSSATCONFIGBOOLDATAPROPEX	UnLocated;	 
+		EMSSATCONFIGBOOLDATAPROPEX	UnLocated1;	 
+		EMSSATCONFIGBOOLDATAPROPEX	UnLocated2;	 
+		EMSSATCONFIGMCCFILTERLEOGEO LeoGeo;
+	} EMSSATCONFIGMCCSUPPRESSEX, *LPEMSSATCONFIGMCCSUPPRESSEX;
+
+	HRESULT GetMCCSuppressInfoEx( [in] ULONG ulSatelliteID, [out] EMSSATCONFIGMCCSUPPRESSEX *lpMCCSUPPRESSInfo );
+
+	HRESULT SetSarrCalibration( [in] ULONG ulSatelliteID, [in] INT64 i64TimeOffset, [in] double dFreqOffset );
+
+	HRESULT GetSarrCalibration( [in] ULONG ulSatelliteID, [out] EMSTIME *lpTimeStamp, 
+					[out] INT64 *lpi64TimeOffset, [out] double * lpdFreqOffset );
+
+	HRESULT GetForwardingInfo( [in] ULONG ulSatelliteID, [out] EMSSATCONFIGBOOLDATAPROP *lpForwardingInfo );
+
+};
+
+typedef [unique] IEMSSatelliteInfo4 *LPEMSSATELLITEINFO4;
+
+[
+	object, uuid(6C426984-DCA1-4b55-9C07-6F45322073A0),
+	helpstring("IEMSSatelliteInfo5 Interface"),
+	pointer_default(unique)
+]
+
+interface IEMSSatelliteInfo5 : IEMSSatelliteInfo4
+{
+#pragma pack(1)
+
+	typedef enum _tagEMSSATBEHAVIOURTYPE
+	{
+		EMS_SBT_InPlaneManoeuvre=1,
+		EMS_SBT_OutPlaneManoeuvre=2,
+		EMS_SBT_OutOfService=3,
+		EMS_SBT_Unknown=0
+	} EMSSATBEHAVIOURTYPE;
+
+	typedef enum _tagEMSSATBEHAVIOURSTATUS
+	{
+		EMS_SBS_Planned=1,
+		EMS_SBS_Executed=2,
+		EMS_SBS_Cancelled=3,
+		EMS_SBS_Unknown=0
+	} EMSSATBEHAVIOURSTATUS;
+
+	typedef struct _tagEMSSATBEHAVIOUR
+	{
+		ULONG						ulSatID;
+		EMSTIME					timeBegin;
+		double					dDurationSeconds;
+		EMSSATBEHAVIOURTYPE	type;
+		EMSSATBEHAVIOURSTATUS	status;
+	} EMSSATBEHAVIOUR, *LPEMSSATBEHAVIOUR;
+
+	typedef struct _tagEMSSATORBITINFO
+	{
+		ULONG						ulSatID;
+		EMSTIME					timeModified;
+		EMSTIME					timeEffective;
+		EMSTIME					timeEpoch;
+	} EMSSATORBITINFO, *LPEMSSATORBITINFO;
+
+#pragma pack()
+
+	HRESULT SetSatBehaviourMaxCount( [in] ULONG ulSatelliteID, [in] WORD wCount );
+	HRESULT SetSatBehaviourCount( [in] ULONG ulSatelliteID, [in] WORD wCount );
+	HRESULT SetSatBehaviour( [in] ULONG ulSatelliteID, [in] WORD wIndex, [in] EMSSATBEHAVIOUR *lpBehaviour );
+
+	HRESULT GetSatBehaviourMaxCount( [in] ULONG ulSatelliteID, [out] WORD *lpwCount );
+	HRESULT GetSatBehaviourCount( [in] ULONG ulSatelliteID, [out] WORD *lpwCount );
+	HRESULT GetSatBehaviour( [in] ULONG ulSatelliteID, [in] WORD wIndex, [out] EMSSATBEHAVIOUR *lpBehaviour );
+
+	HRESULT SetSatOrbitInfoMaxCount( [in] ULONG ulSatelliteID, [in] WORD wCount );
+	HRESULT SetSatOrbitInfoCount( [in] ULONG ulSatelliteID, [in] WORD wCount );
+	HRESULT SetSatOrbitInfo( [in] ULONG ulSatelliteID, [in] WORD wIndex, [in] EMSSATORBITINFO *lpOrbit );
+
+	HRESULT GetSatOrbitInfoMaxCount( [in] ULONG ulSatelliteID, [out] WORD *lpwCount );
+	HRESULT GetSatOrbitInfoCount( [in] ULONG ulSatelliteID, [out] WORD *lpwCount );
+	HRESULT GetSatOrbitInfo( [in] ULONG ulSatelliteID, [in] WORD wIndex, [out] EMSSATORBITINFO *lpOrbit );
+};
+
+typedef [unique] IEMSSatelliteInfo5 *LPEMSSATELLITEINFO5;
+
+[
+	object, uuid(52D3FE92-2255-4f37-9846-56BD322B4282),
+	helpstring("IEMSSatelliteInfo6 Interface"),
+	pointer_default(unique)
+]
+interface IEMSSatelliteInfo6 : IEMSSatelliteInfo5
+{
+	typedef struct _tagEMSCALIBCBCCONFIGDATA
+	{
+		BYTE    bAmplitudeMinimum;     //      (0)
+		double  dTimeResolution;       // Secs (3.0)
+		double  dFrequencyResolution;  // Hz   (100.0)
+		double  dFrequencyBandwidth;   // Hz   (400.0)
+		double  dCorrelationThreshold; //        (20184002)
+		long    lTemplateNumber;       //        (64)
+		double  dTemplateDuration;     // Secs (600.0)
+	} EMSCALIBCBCCONFIGDATA, *LPEMSCALIBCBCCONFIGDATA;
+
+	typedef struct _tagEMSTCALCONFIGDATA
+	{
+		double  dUpdatePeriod;         // Days  (0.5)
+		double  dDuration;             // Days  (10.0)
+		long    lMinPts;               //       (200)
+		double  dTimeThreshold;        // Secs  (0.100)
+		double  dFrequencyThreshold;   // Hz    (0.100)
+	} EMSTCALCONFIGDATA, *LPEMSTCALCONFIGDATA;
+
+	typedef struct _tagEMSMI406CONFIGDATA
+	{
+		BOOL    bRestart;
+		double  dWindowFreq;
+		double  dWindowTime;
+		DWORD   dwWindowBits;
+		INT		nOutOfSpecWindowBits;
+		double	dMsgTimeoutMinutes;
+		BOOL	bMsgForceUpdate;
+		DWORD   dwFSErrMax;
+		DWORD   dwPF1ErrMax;
+		DWORD   dwPF2ErrMax;
+		DWORD   dwAgeout;
+		double  dCNR1Threshold;
+		double  dCNR2Threshold;
+		double	dSarrFreqOffsetThreshold;	
+		double	dSummaryInterval;
+	} EMSMI406CONFIGDATA, *LPEMSMI406CONFIGDATA;
+
+	typedef struct _tagEMSCALIB406CONFIGDATA
+	{
+		EMSTIME	timeLastMsg;			// Time of last message processed
+		double	dRealTimeDelaySecs;	// Real-time satellite relay delay
+		double	dSarrSarpHistoryAgeoutDays;	// Days to keep SarrSarp history
+		double	dSarrSarpFreqDiffHz; // Acceptable Freq Diff between Sarr-Sarp
+		double	dSarrSarpTimeDiffSecs; // Acceptable Time Diff
+		INT		nSarrSarpMinCount;		//
+		BOOL	bSarrSarpCombine;			// Merge same Sarr Sarp pairs
+	} EMSCALIB406CONFIGDATA, *LPEMSCALIB406CONFIGDATA;
+
+	typedef struct _tagEMSORBITDETCONFIGDATA
+    {
+		double  dPositionThreshold;
+		double  dVelocityThreshold;
+		double  dDurationMaximum;
+		int     iIterationMinimum;
+		int     iIterationMaximum;
+		double  dResidualMinimum;
+		double  dResidualMaximum;
+		BOOL    bDownlink;
+		ULONG   ulBeaconMinPts;
+    } EMSORBITDETCONFIGDATA, *LPEMSORBITDETCONFIGDATA;
+
+	typedef struct _tagEMSLOCATECBCCONFIGDATA
+    {
+		ULONG   ulDetectMinimum;
+		BYTE    cAmplitudeRangeMin;
+		BYTE    cAmplitudeRangeMax;
+		ULONG   ulIterationsMaximum;
+		double  dThreshold;
+		double  dCorrelationMaximum;
+		BOOL    bDrift;
+		double  dEEScaleFactors[3];
+		double  dEEAdjustments[3];
+		double  dSweepThreshold;
+		ULONG   ulSweepMinPoints;
+    } EMSLOCATECBCCONFIGDATA, *LPEMSLOCATECBCCONFIGDATA;
+
+	typedef struct _tagEMSLOCATE406CONFIGDATA
+    {
+		ULONG   ulIterationsMaximum;
+		double  dThreshold;
+		double  dCorrelationMaximum;
+		BOOL    bDrift;
+		BOOL    bAltitude;
+		double  dEEScaleFactors[3];
+		double  dEEAdjustments[3];
+    } EMSLOCATE406CONFIGDATA, *LPEMSLOCATE406CONFIGDATA;
+
+	HRESULT GetCalibCbcConfigData( [in] ULONG ulSatelliteID, [out] LPEMSCALIBCBCCONFIGDATA lpCalibCbcConfigData );
+	HRESULT GetTcalConfigData( [in] ULONG ulSatelliteID, [out] LPEMSTCALCONFIGDATA lpTcalConfigData ); 
+	HRESULT GetMI406ConfigData( [in] ULONG ulSatID, [out] LPEMSMI406CONFIGDATA lpMI406ConfigData ); 
+	HRESULT GetCalib406ConfigData( [in] ULONG ulSatID, [out] LPEMSCALIB406CONFIGDATA lpCalib406ConfigData ); 
+	HRESULT	GetOrbitDetConfigData( [in] ULONG ulSatID, [out] LPEMSORBITDETCONFIGDATA lpOrbitDetConfigData );
+	HRESULT GetLocateCBCConfigData( [in] ULONG ulSatID, [out] LPEMSLOCATECBCCONFIGDATA lpLocateCbcConfigData );
+	HRESULT GetLocate406ConfigData( [in] ULONG ulSatID, [out] LPEMSLOCATE406CONFIGDATA lpLocate406ConfigData );
+
+};
+
+typedef [unique] IEMSSatelliteInfo6 *LPEMSSATELLITEINFO6;
+
+cpp_quote("//Bit assigns for dwFlags field ")
+cpp_quote("#define EMS_TESTCFG_SarpSarrTestLocations ( 0x1 )")
+cpp_quote("#define EMS_TESTCFG_SuppressInvertedFrameSynch ( 0x2 )")
+cpp_quote("#define EMS_TESTCFG_GeoRestrictIntegrationCount ( 0x4 )")
+cpp_quote("#define EMS_TESTCFG_PostManoeuvreUseEffectiveTime ( 0x8 )")
+cpp_quote("#define EMS_TESTCFG_IgnoreConfirmationRules ( 0x10 )")
+cpp_quote("#define EMS_TESTCFG_SuppressCombinationMessage ( 0x20 )")
+cpp_quote(" ")
+
+[
+	object, uuid(D0591B7D-1AD9-4f23-BFF7-ACF4BC3C2B5C),
+	helpstring("IEMSSatelliteInfo7 Interface"),
+	pointer_default(unique)
+]
+interface IEMSSatelliteInfo7 : IEMSSatelliteInfo6
+{
+	typedef struct _tagEMSTESTCONFIGDATA
+    {
+	  	DWORD dwFlags;
+		double dMaxOrbitVectorAge;	// max days
+		double dReserved2;
+		double dReserved3;
+		double dReserved4;
+		INT	nReserved5;
+		INT	nReserved6;
+		INT	nReserved7;
+		INT	nReserved8;
+    } EMSTESTCONFIGDATA, *LPEMSTESTCONFIGDATA;
+
+	HRESULT GetTestConfigData( [in] ULONG ulSatID, [out] LPEMSTESTCONFIGDATA lpTestConfigData );
+
+};
+
+typedef [unique] IEMSSatelliteInfo7 *LPEMSSATELLITEINFO7;
+
+
+[
+	object, uuid(A2ECC7CD-1D08-4fd8-908F-376B4536B6E1),
+	helpstring("IEMSSatelliteInfo8 Interface"),
+	pointer_default(unique)
+]
+
+interface IEMSSatelliteInfo8 : IEMSSatelliteInfo7
+{
+typedef struct _tagEMSMI406CONFIGDATA2
+	{
+		BOOL    bRestart;
+		double  dWindowFreq;
+		double  dWindowTime;
+		DWORD   dwWindowBits;
+		INT		nOutOfSpecWindowBits;
+		BOOL	bMsgForceUpdate;
+		double  dCNR1Threshold;
+		double  dCNR2Threshold;
+		double	dSarrFreqOffsetThreshold;	
+		double	dSummaryInterval;
+		double	dMinUpdateInterval;			// min number of Minutes between any updates
+		double	dMaxUpdateInterval;			// max number of Minutes between any updates ( 0.0 = never )
+		double	dMinValidInterval;			// min number of minutes to withhold a valid msg
+		WORD   wFSErrMaxIntegration;
+		WORD   wPDF1ErrMaxIntegration;
+		WORD   wPDF2ErrMaxIntegration;
+		WORD   wPDF1ErrMaxValid;			 	// specs for valid msg to MCC
+		WORD   wPDF2ErrMaxValid;
+		WORD   wFSErrMaxValid;
+		WORD   wPDF1ErrMaxConfirm;			// specs for confirmed to MCC
+		WORD   wPDF2ErrMaxConfirm;
+		WORD   wFSErrMaxConfirm;
+		double dIntegrationAgeout;			// minutes to age out integration bin
+		double dActiveBeaconAgeout;		// minutes to age out active beacon list
+	} EMSMI406CONFIGDATA2, *LPEMSMI406CONFIGDATA2;
+
+	HRESULT GetMI406ConfigData2( [in] ULONG ulSatID, [out] LPEMSMI406CONFIGDATA2 lpMI406ConfigData ); 
+
+};
+typedef [unique] IEMSSatelliteInfo8 *LPEMSSATELLITEINFO8;
+
+[
+	object, uuid(8E742C5A-0B5F-4b10-A037-CED8E88B5507),
+	helpstring("IEMSSatelliteInfo9 Interface"),
+	pointer_default(unique)
+]
+interface IEMSSatelliteInfo9 : IEMSSatelliteInfo8
+{
+	typedef struct _tagEMSTCALCONFIGDATA2
+	{
+		double  dUpdatePeriod;         // Days  (0.5)
+		double  dDuration;             // Days  (10.0)
+		long    lMinPts;               //       (200)
+		double  dTimeThreshold;        // Secs  (0.100)
+		double  dFrequencyThreshold;   // Hz    (0.100)
+		long		lFreqAverageNumber;	// freq = average of # measurements
+		long		lTimeOffset;				// Time Offset ( correction ) nanoseconds
+		double	dMaxAge;					// Days (0.0) max allowed age ( 0 means don't care )
+	} EMSTCALCONFIGDATA2, *LPEMSTCALCONFIGDATA2;
+
+	typedef struct _tagEMSEECOEFFICIENT
+	{
+		double dScaleFactor;
+		double dAdjustment;
+	} EMSEECOEFFICIENT, *LPEMSEECOEFFICIENT;
+
+	typedef struct _tagEMS406EECOEFFICIENTS
+	{
+		EMSEECOEFFICIENT cfSarp;
+		EMSEECOEFFICIENT cfSarr;
+		EMSEECOEFFICIENT cfSarrSarp;
+	} EMS406EECOEFFICIENTS, *LPEMS406EECOEFFICIENTS;
+
+	typedef struct _tagEMSCBCEECOEFFICIENTS
+	{
+		EMSEECOEFFICIENT cf121;
+		EMSEECOEFFICIENT cf243;
+		EMSEECOEFFICIENT cf406;
+	} EMSCBCEECOEFFICIENTS, *LPEMSCBCEECOEFFICIENTS;
+
+	typedef struct _tagEMSEECOEFFICIENTS
+	{
+		EMSCBCEECOEFFICIENTS typeCBC;
+		EMS406EECOEFFICIENTS type406;
+		EMS406EECOEFFICIENTS typeFDOA;
+		EMS406EECOEFFICIENTS typeTDOA;
+	} EMSEECOEFFICIENTS, *LPEMSEECOEFFICIENTS;
+
+	typedef struct _tagEMSEECONFIGDATA
+	{
+		EMSEECOEFFICIENTS	nominal;
+		EMSEECOEFFICIENTS	marginal;
+		long					lReserved1;				// reserved = 0
+		double				dReserved2;				// reserved = 0.0
+	} EMSEECONFIGDATA, *LPEMSEECONFIGDATA;
+
+	HRESULT GetTcalConfigData2( [in] ULONG ulSatID, [out] LPEMSTCALCONFIGDATA2 lpTcalConfigData ); 
+	HRESULT GetErrorEllipseConfigData( [in] ULONG ulSatID, [out] LPEMSEECONFIGDATA lpData ); 
+	HRESULT SetErrorEllipseConfigData( [in] ULONG ulSatID, [in] LPEMSEECONFIGDATA lpData ); 
+};
+
+typedef [unique] IEMSSatelliteInfo9 *LPEMSSATELLITEINFO9;
+
+[
+	object, uuid(8FB9583E-9E07-4d64-9501-796154B263FD),
+	helpstring("IEMSSatelliteInfo10 Interface"),
+	pointer_default(unique)
+]
+
+interface IEMSSatelliteInfo10 : IEMSSatelliteInfo9
+{
+	typedef struct _tagEMSCALIBCBCCONFIGDATA2
+	{
+		BYTE    bAmplitudeMinimum;     //      (0)
+		double  dTimeResolution;       // Secs (3.0)
+		double  dFrequencyResolution;  // Hz   (100.0)
+		double  dFrequencyBandwidth;   // Hz   (400.0)
+		double  dCorrelationThreshold; //        (20184002)
+		long    lTemplateNumber;       //        (64)
+		double  dTemplateDuration;     // Secs (600.0)
+		double	dAudioDuration;			// seconds of Audio
+		double	dAudioBandwidth;		// hertz Audio Bandwidth
+		double	dReserved1;				// RFU
+		double	dReserved2;				// RFU
+		double	dReserved3;				// RFU
+		ULONG	ulReserved4;			// RFU
+		ULONG	ulReserved5;			// RFU
+	} EMSCALIBCBCCONFIGDATA2, *LPEMSCALIBCBCCONFIGDATA2;
+
+	HRESULT GetCalibCbcConfigData2( [in] ULONG ulSatelliteID, [out] LPEMSCALIBCBCCONFIGDATA2 lpCalibCbcConfigData );
+};
+
+typedef [unique] IEMSSatelliteInfo10 *LPEMSSATELLITEINFO10;
+
+[
+	object, uuid(DD309AAC-DF15-48f7-9382-C48E4D52D1A8),
+	helpstring("IEMSSatelliteInfo11 Interface"),
+	pointer_default(unique)
+]
+interface IEMSSatelliteInfo11 : IEMSSatelliteInfo10
+{
+	typedef struct _tagEMSLOCATECBCCONFIGDATA2
+    {
+		ULONG   ulDetectMinimum;
+		BYTE    cAmplitudeRangeMin;
+		BYTE    cAmplitudeRangeMax;
+		ULONG   ulIterationsMaximum;
+		double  dThreshold;
+		double  dCorrelationMaximum;
+		BOOL    bDrift;
+		double  dEEScaleFactors[3];
+		double  dEEAdjustments[3];
+		double  dSweepThreshold;
+		ULONG   ulSweepMinPoints;
+		double	dMaxNoise;
+		ULONG	ulMinPtsVisible;
+		double	dReserved1;
+		double	dReserved2;
+		double	dReserved3;
+		ULONG	ulReserved4;
+		ULONG	ulReserved5;
+    } EMSLOCATECBCCONFIGDATA2, *LPEMSLOCATECBCCONFIGDATA2;
+
+	typedef struct _tagEMSLOCATE406CONFIGDATA2
+    {
+		ULONG   ulIterationsMaximum;
+		double  dThreshold;
+		double  dCorrelationMaximum;
+		BOOL    bDrift;
+		BOOL    bAltitude;
+		double  dEEScaleFactors[3];
+		double  dEEAdjustments[3];
+		double	dMaxNoise;
+		ULONG	ulMinPtsVisible;
+		double	dReserved1;
+		double	dReserved2;
+		double	dReserved3;
+		ULONG	ulReserved4;
+		ULONG	ulReserved5;
+    } EMSLOCATE406CONFIGDATA2, *LPEMSLOCATE406CONFIGDATA2;
+
+	HRESULT GetLocateCBCConfigData2( [in] ULONG ulSatID, [out] LPEMSLOCATECBCCONFIGDATA2 lpLocateCbcConfigData );
+	HRESULT GetLocate406ConfigData2( [in] ULONG ulSatID, [out] LPEMSLOCATE406CONFIGDATA2 lpLocate406ConfigData );
+};
+
+typedef [unique] IEMSSatelliteInfo11 *LPEMSSATELLITEINFO11;
+
+
+[
+	object, uuid(A18342E2-9189-40b0-A477-DEE313BC67D8),
+	helpstring("IEMSSatelliteInfo12 Interface"),
+	pointer_default(unique)
+]
+interface IEMSSatelliteInfo12 : IEMSSatelliteInfo11
+{
+	HRESULT GetSARPCalibTimeThreshold( [in] const ULONG culSatID, [out] double* pdThreshold );
+	HRESULT SetSARPCalibTimeThreshold( [in] const ULONG culSatID, [in] const double cdThreshold );
+	HRESULT GetSARPUSOFreqThreshold( [in] const ULONG culSatID, [out] double* pdThreshold );
+	HRESULT SetSARPUSOFreqThreshold( [in] const ULONG culSatID, [in] const double cdThreshold );
+};
+
+typedef [unique] IEMSSatelliteInfo12 *LPEMSSATELLITEINFO12;
+
+[
+	object, uuid(9B683CBB-D88A-4e5b-8290-B1FC2CA60FB6),
+	helpstring("IEMSSatelliteInfo13 Interface"),
+	pointer_default(unique)
+]
+interface IEMSSatelliteInfo13 : IEMSSatelliteInfo12
+{
+	HRESULT Get406HistoryDataStartTime( [in] const ULONG culSatID, [out] EMSTIME *lpStartTime );
+	HRESULT Set406HistoryDataStartTime( [in] const ULONG culSatID, [in] const EMSTIME startTime );
+};
+
+typedef [unique] IEMSSatelliteInfo13 *LPEMSSATELLITEINFO13;
+
+[
+	object, uuid(CE538E71-CA9D-43fe-BAB1-F188209645FF),
+	helpstring("IEMSSatelliteInfo14 Interface"),
+	pointer_default(unique)
+]
+interface IEMSSatelliteInfo14 : IEMSSatelliteInfo13
+{
+	typedef struct _tagEMSMI406CONFIGDATA3
+	{
+		EMSMI406CONFIGDATA2	configData2;
+		double	dQMSOutputRateMinutes;
+	} EMSMI406CONFIGDATA3, *LPEMSMI406CONFIGDATA3;
+
+	HRESULT GetMI406ConfigData3( [in] const ULONG culSatID, [out] LPEMSMI406CONFIGDATA3 lpMI406ConfigData ); 
+};
+
+typedef [unique] IEMSSatelliteInfo14 *LPEMSSATELLITEINFO14;
+

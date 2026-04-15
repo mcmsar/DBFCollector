@@ -1,0 +1,157 @@
+//cpp_quote("// {47C5A1B1-B987-11d5-8C6D-009027912866}")
+//cpp_quote("DEFINE_GUID( CLSID_EMSLeoLut600SiteInfo, 0x47c5a1b1, 0xb987, 0x11d5, 0x8c, 0x6d, 0x0, 0x90, 0x27, 0x91, 0x28, 0x66);")
+
+cpp_quote("// {47C5A1B2-B987-11d5-8C6D-009027912866}")
+cpp_quote("DEFINE_GUID( IID_IEMSLeoLut600SiteInfo, 0x47C5A1B2, 0xB987, 0x11d5, 0x8c, 0x6d, 0x0, 0x90, 0x27, 0x91, 0x28, 0x66);")
+
+import "unknwn.idl";
+import "emstypex.idl";
+import "emsiteif.idl";
+
+#define _EMS_RPC_VERSION 1
+#define __RPC_FAR 
+
+	typedef struct _tagEMSLEOARCHIVEINFO
+	{
+		double dRawCBCDataDays;			// days
+		double dRaw406DataDays;			// days
+		double dSpectrumDataDays;		// days
+		double dCalibCBCDataDays;		// days
+		double dCalib406DataDays;		// days
+		double dStatsDataDays;			// days
+		double dAlarmDataDays;			// days
+		double dTLEDataDays;				// days	
+		double dLocationDataDays; 		// days	
+		double dPassDataDays; 			// days	
+		double dPassSchedDays; 			// days	
+		double dCommsDataDays; 			// days	
+		double dLogDataDays; 			// days	
+		double dSensorDataDays; 			// days	
+		double dEnvironDataDays; 			// days	
+	} EMSLEOARCHIVEINFO, *LPEMSLEOARCHIVEINFO;
+
+cpp_quote("")
+cpp_quote("// default values for LEOALARMTHRESHOLDS fields")
+cpp_quote("")
+cpp_quote("static const int c_nEMSAlarmMinReport = 1;")
+cpp_quote("static const int c_nEMSAlarmMaxReport = 5;")
+cpp_quote("static const double c_dEMSAlarmFreqReport = 60.0;")
+cpp_quote("static const int c_nEMSWarnMinReport = 1;")
+cpp_quote("static const int c_nEMSWarnMaxReport = 5;")
+cpp_quote("static const double c_dEMSAlarmMinElevation = 5.0;")
+cpp_quote("static const double c_dEMSWarnMinElevation = 5.0;")
+cpp_quote("static const double c_dEMSAlarmAntennaBeamAngle = 5.0;")
+cpp_quote("static const double c_dEMSAlarmAntennaMinAngle = 5.0;")
+cpp_quote("static const double c_dEMSAlarmAntennaDelay = 10.0; // seconds")
+cpp_quote("static const double c_dEMSAlarmCommsContactFreq = 0.0; // mins")
+cpp_quote("static const int c_nEMSAlarmCommsMaxRetries = 3;")
+cpp_quote("static const int c_nEMSAlarmMinCBC121Counts = 0;")
+cpp_quote("static const int c_nEMSAlarmMinCBC243Counts = 0;")
+cpp_quote("static const int c_nEMSAlarmMinCBC406Counts = 0;")
+cpp_quote("static const int c_nEMSAlarmMinSARR406Counts = 0;")
+cpp_quote("static const int c_nEMSAlarmMinSARP406Counts = 0;")
+cpp_quote("static const double c_dEMSAlarmMinCBC121Time = 600.0;")
+cpp_quote("static const double c_dEMSAlarmMinCBC243Time = 600.0;")
+cpp_quote("static const double c_dEMSAlarmMinCBC406Time = 1200.0;")
+cpp_quote("static const double c_dEMSAlarmMinSARR406Time = 600.0;")
+cpp_quote("static const double c_dEMSAlarmMinSARP406Time = 600.0;")
+cpp_quote("static const double c_dEMSAlarmMinOutsideTemp = -55.0;")
+cpp_quote("static const double c_dEMSAlarmMaxOutsideTemp = +45.0;")
+cpp_quote("static const double c_dEMSAlarmMinInsideTemp = -1.0;")
+cpp_quote("static const double c_dEMSAlarmMaxInsideTemp = +45.0;")
+cpp_quote("static const double c_dEMSAlarmMinEquipTemp = -55.0;")
+cpp_quote("static const double c_dEMSAlarmMaxEquipTemp = +80.0;")
+cpp_quote("static const int c_nEMSAlarmMaxWidebandSyncLosses = 10;")
+cpp_quote("static const double c_dEMSAlarmMaxCollectorModIndex = 1.75;")
+cpp_quote("static const double c_dEMSAlarmMinCollectorADCRMC = 100.0;")
+cpp_quote("static const int c_nEMSAlarmMinCBC121Solns = 0;")
+cpp_quote("static const int c_nEMSAlarmMinCBC243Solns = 0;")
+cpp_quote("static const int c_nEMSAlarmMinCBC406Solns = 0;")
+cpp_quote("static const int c_nEMSAlarmMinSARR406Solns = 0;")
+cpp_quote("static const int c_nEMSAlarmMinSARP406Solns = 0;")
+cpp_quote("")
+
+	typedef struct _tagEMSLEOALARMTHRESHOLDS
+	{
+		int		nMinReport;
+		int		nMaxReport;
+		double	dFreqReport;			// seconds between alarms
+		double	dMinElevation;			// Minimum angle for check signal processing
+//		double	dCheckAfterAOS; 		// secs after AOS to start checking signals
+		double	dAntennaMinAngle;		// Minimum angle to restrict checks above
+		double	dAntennaDelay;			// seconds delay allowed before movement
+		double	dAntennaBeamAngle;	// degrees different from desired to actual
+		int		nCommsRetries;			// max number of communications retries
+		double	dCommsContactFreq;	// max minutes to allow without contact
+		int		nMinCBC121Counts;
+		int		nMinCBC243Counts;
+		int		nMinCBC406Counts;
+		int		nMinSARR406Counts;
+		int		nMinSARP406Counts;
+		double 	dMinCBC121Time;
+		double 	dMinCBC243Time;
+		double 	dMinCBC406Time;
+		double 	dMinSARR406Time;
+		double 	dMinSARP406Time;
+		int		nMinCBC121Solns;
+		int		nMinCBC243Solns;
+		int		nMinCBC406Solns;
+		int		nMinSARR406Solns;
+		int		nMinSARP406Solns;
+		int		nWidebandSyncLosses;
+		double 	dCollectorModIndex;
+		double	dCollectorADCRMC;
+		double	dMinOutsideTemp;
+		double	dMaxOutsideTemp;
+		double	dMinInsideTemp;
+		double	dMaxInsideTemp;
+		double	dMinEquipTemp;
+		double	dMaxEquipTemp;
+
+	} EMSLEOALARMTHRESHOLDS, *LPEMSLEOALARMTHRESHOLDS;
+
+	typedef struct _tagEMSLEOALARMINFO
+	{
+		EMSLEOALARMTHRESHOLDS	alarm;
+		EMSLEOALARMTHRESHOLDS	warn;
+	} EMSLEOALARMINFO, *LPEMSLEOALARMINFO;
+
+	typedef enum _tagEMSSCHEDULEFLAGS
+	{
+		EMSSchedFlag_None		= 0x0,
+		EMSSchedFlag_Automatic = 0x1,		
+		EMSSchedFlag_AcceptMCC = 0x2,
+		EMSSchedFlag_AcceptTruncated = 0x4,
+		EMSSchedFlag_Default = EMSSchedFlag_Automatic + EMSSchedFlag_AcceptTruncated
+	} EMSSCHEDULEFLAGS;
+
+	typedef struct _tagEMSSCHEDULEINFO
+	{
+		double dDuration;			// Duration of schedule ( hours )
+		double dFrequency;		// Frequency of schedule regeneration ( hours )
+		double dScheduleTolerance; // seconds difference allowed in AOS and LOS
+		double dPrePassDuration;		// seconds of prepass time
+		EMSSCHEDULEFLAGS flags;	// automatic, acceptMCC
+	} EMSSCHEDULEINFO, *LPEMSSCHEDULEINFO;
+
+[
+	object, uuid(47C5A1B2-B987-11d5-8C6D-009027912866),
+	helpstring("IEMSLeoLut600SiteInfo Interface"),
+	pointer_default(unique)
+]
+
+interface IEMSLeoLut600SiteInfo : IEMSSiteInfo
+{	
+	HRESULT GetSatellites( 
+		[out, size_is(ulMax), length_is(*ulActual)]	ULONG *lpulSatellites,
+		[in] ULONG ulMax,	[out] ULONG *ulActual );
+
+	HRESULT GetScheduleInfo( [ out ] EMSSCHEDULEINFO *lpInfo );
+
+	HRESULT GetLeoAlarmInfo( [ out ] EMSLEOALARMINFO *lpInfo );
+
+	HRESULT GetLeoArchiveInfo( [ out ] EMSLEOARCHIVEINFO *lpInfo );
+};
+
+typedef [unique] IEMSLeoLut600SiteInfo *LPEMSLEOLUT600SITEINFO;
+

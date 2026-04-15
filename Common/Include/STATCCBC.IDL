@@ -1,0 +1,47 @@
+cpp_quote("// {ACB9B762-F181-11d5-8D38-009027912866}")
+cpp_quote("DEFINE_GUID( IID_IEMSCalibrateCBCStatus, 0xacb9b762, 0xf181, 0x11d5, 0x8d, 0x38, 0x0, 0x90, 0x27, 0x91, 0x28, 0x66);")
+cpp_quote(" " )
+
+import "unknwn.idl";
+import "emstypex.idl";
+import "emstatus.idl";
+
+#define _EMS_RPC_VERSION 1
+#define __RPC_FAR 
+
+[
+	object, uuid(ACB9B762-F181-11d5-8D38-009027912866),
+	helpstring("IEMSCalibrateCBCStatus Interface"),
+	pointer_default(unique)
+]
+
+interface IEMSCalibrateCBCStatus : IEMSStatus
+{
+	typedef [v1_enum] enum _tagEMSCALIBCBCSTATE
+	{
+		EMS_CCBCS_Idle = 0,
+		EMS_CCBCS_Initialized = 1,
+		EMS_CCBCS_Processing = 2
+	} EMSCALIBCBCSTATE;
+
+#pragma pack(1)
+	typedef struct _tagEMSCALIBRATECBCINFO
+	{
+		WORD 					wStatus;       // CalibrateCBC status
+//		EMSCALIBCBCSTATE	state;
+//		ULONG				  	ulSatID;
+		ULONG				  	ulBufferedRecords;
+		ULONG				  	ulCalibratedRecords;
+		ULONG					ulNumBeacons;
+	} EMSCALIBRATECBCINFO, *LPEMSCALIBRATECBCINFO;
+#pragma pack()
+
+	HRESULT ResetCalibrateCBCInfo( void );
+
+	HRESULT SetCalibrateCBCInfo( [in] EMSCALIBRATECBCINFO *lpInfo );
+	HRESULT GetCalibrateCBCInfo( [out] EMSCALIBRATECBCINFO *lpInfo );
+};
+
+typedef [unique] IEMSCalibrateCBCStatus *LPEMSCALIBRATECBCSTATUS;
+
+

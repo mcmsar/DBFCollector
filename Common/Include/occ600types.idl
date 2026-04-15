@@ -1,0 +1,51 @@
+
+import "unknwn.idl";
+import "locate.idl";
+import "emstle.idl";
+
+typedef enum
+{
+	SITCLASS_UNKNOWN = 0,
+	SITCLASS_ORBIT = 1,
+	SITCLASS_CALIB = 2,
+	SITCLASS_ALERT = 3
+} EMSSITCLASS;
+
+typedef struct tagEMSSIT
+{
+	EMSTIME	timestamp;
+	ULONG ulLutID;		// that created the record.
+
+	EMSSITCLASS eType;
+	ULONG	ulMsgNum;
+	ULONG	ulOrigMsgNum;
+	ULONG	ulSenderID;
+	ULONG	ulDestID;
+	ULONG	ulSitType;
+    EMSTIME timeTransmit;
+	EMSTIME	timeReceive;
+	char	szFileName[36];
+	char	cValidation;    // P=pass F=fail O=failed orbit X=not applicable *=TO BE UPDATED
+	char	cInputType;    // L=LEO LUT G=GEO LUT M=MEO LUT F=foreign MCC
+	char	cNodeTest;     // T=node under test  blank=normal
+	char	szInfo[40];
+	[string] wchar_t*	wszContent;
+} EMSSIT;      
+
+typedef struct tagEMSSolutionSIT
+{
+	EMSSIT sit;
+	ULONG ulRecs;
+	[size_is(ulRecs)] EMSLOCATE* aLocate;
+} EMSSOLUTIONSIT;
+
+typedef struct tagEMSOrbitSIT
+{
+	EMSTIME	timestamp;
+	ULONG ulLutID;		// that created the record.
+	EMSSIT sit;
+	ULONG ulRecs;
+	[size_is(ulRecs)] EMSTLERECORD* aTLE;
+} EMSORBITSIT;
+
+

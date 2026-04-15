@@ -1,0 +1,49 @@
+cpp_quote("// {FCD595EC-2F09-4a49-8DF5-690D06600997}")
+cpp_quote("DEFINE_GUID( CLSID_EMSAlertGen, 0xfcd595ec, 0x2f09, 0x4a49, 0x8d, 0xf5, 0x69, 0xd, 0x6, 0x60, 0x9, 0x97 );")
+cpp_quote("")
+cpp_quote("// {81577DE2-6F2A-4a74-99B0-DB9740D6ADED}")
+cpp_quote("DEFINE_GUID( IID_IEMSAlertGen, 0x81577de2, 0x6f2a, 0x4a74, 0x99, 0xb0, 0xdb, 0x97, 0x40, 0xd6, 0xad, 0xed );")
+
+import "unknwn.idl";
+import "EMSTYPEX.IDL";
+import "locate.idl";
+import "emsauthorization.idl";
+
+const ULONG MAX_DESTINATIONS = 32;
+
+typedef struct _tagEMSLocateEx
+{
+   EMSLOCATE locate;
+   DWORD dwFlags;
+   ULONG ulNumDestinations;
+   ULONG aulDestinations[MAX_DESTINATIONS];
+   [string] char szUserID[EMS_MAX_USER_NAME];
+} EMSLOCATEEX;
+
+const ULONG EMSLOCATEEX_FLAG_MORE = 0x00000001;
+const ULONG EMSLOCATEEX_FLAG_FIRST = 0x00000002;
+const ULONG EMSLOCATEEX_FLAG_LAST = 0x00000004;
+
+typedef EMSLOCATEEX *LPEMSLOCATEEX;
+
+[
+	uuid(81577DE2-6F2A-4a74-99B0-DB9740D6ADED),
+	helpstring("IEMSAlertGen"),
+	pointer_default(unique)
+]
+
+interface IEMSAlertGen : IUnknown
+{
+   HRESULT GenerateAlerts( [in] ULONG ulSourceID,
+                           [in] ULONG ulNumDestinations,
+                           [in,size_is(ulNumDestinations)] ULONG *ulDestinationIDs,
+                           [in] ULONG ulLocations,
+                           [in,size_is(ulLocations)] EMSLOCATE *pLocations,
+                           [in,unique,string] char szUserID[EMS_MAX_USER_NAME] );
+
+   HRESULT GenerateSolutionsResponse( [in] ULONG ulSourceID,
+                                      [in] ULONG ulLocations,
+                                      [in,size_is(ulLocations)] EMSLOCATE *pLocations );
+}
+
+typedef IEMSAlertGen *LPEMSALERTGEN;

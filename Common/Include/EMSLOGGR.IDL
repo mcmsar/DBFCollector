@@ -1,0 +1,127 @@
+cpp_quote( " " )
+cpp_quote( "#include \"emserror.h\"" )
+cpp_quote( "#include \"loggrcat.h\"" )
+cpp_quote( " " )
+
+cpp_quote("// {73FF4561-01F2-11d6-8D67-009027912866}")
+cpp_quote("DEFINE_GUID( CLSID_EMSLeo600Logger, 0x73ff4561, 0x1f2, 0x11d6, 0x8d, 0x67, 0x0, 0x90, 0x27, 0x91, 0x28, 0x66);")
+
+cpp_quote("// {A6C83E4F-B831-417d-8A9C-0FEF53C4182C}")
+cpp_quote("DEFINE_GUID( IID_IEMS600LoggerEx, 0xa6c83e4f, 0xb831, 0x417d, 0x8a, 0x9c, 0x0f, 0xef, 0x53, 0xc4, 0x18, 0x2c );")
+
+cpp_quote("//*** The following interfaces are deprecated. Use IEMS600LoggerEx instead.")
+cpp_quote("// {73FF4562-01F2-11d6-8D67-009027912866}")
+cpp_quote("DEFINE_GUID( IID_IEMSLeo600Logger, 0x73ff4562, 0x1f2, 0x11d6, 0x8d, 0x67, 0x0, 0x90, 0x27, 0x91, 0x28, 0x66);")
+
+cpp_quote("// {50C0ED6D-39DE-4751-B0C1-CCAFA14AD41D}")
+cpp_quote("DEFINE_GUID( IID_IEMS600Logger, 0x50c0ed6d, 0x39de, 0x4751, 0xb0, 0xc1, 0xcc, 0xaf, 0xa1, 0x4a, 0xd4, 0x1d );")
+cpp_quote("//*** End of deprecated interaces")
+
+cpp_quote( " " )
+cpp_quote("#define EMS_LOGGER_MAX_STRINGS (32)")
+cpp_quote( " " )
+
+cpp_quote("// ")
+cpp_quote("// cMsgType & 0x80 == set of msgs ")
+cpp_quote("#define EMS_LOGMSG_MORE_FLAG      (0x80)")
+
+import "unknwn.idl";
+import "emstypex.idl";
+
+#define _EMS_RPC_VERSION 1
+#define __RPC_FAR 
+
+typedef const enum
+{
+	EMSLogMsgMoreFlag = 0x80,
+	EMSLogMsgTrace = 0, 
+	EMSLogMsgDebug = 1, 
+	EMSLogMsgStatus = 2, 
+	EMSLogMsgMoreStatus = ( EMSLogMsgStatus + EMSLogMsgMoreFlag ), 
+	EMSLogMsgInfo = 3, 
+	EMSLogMsgWarn = 4,
+	EMSLogMsgAlarm = 5, 
+	EMSLogMsgFatal = 6,
+	EMSLogMsgStartup = 7
+} EMSLOGMSGTYPE;
+
+cpp_quote(" ")
+cpp_quote("//*** Note that the ReportLogEvent methods belong to the deprecated interfaces.")
+cpp_quote("//*** Use Report() instead.")
+cpp_quote(" ")
+cpp_quote("#ifdef UNICODE")
+cpp_quote("#define ReportLogEvent     ReportLogEventW")
+cpp_quote("#else")
+cpp_quote("#define ReportLogEvent     ReportLogEventA")
+cpp_quote("#endif // UNICODE")
+
+[
+	object, uuid(73FF4562-01F2-11d6-8D67-009027912866),
+	helpstring("IEMSLeo600Logger Interface"),
+	pointer_default(unique)
+]
+interface IEMSLeo600Logger : IUnknown
+{	
+	HRESULT Initialize( [in] ULONG ulLutID, [in] WORD wProcessID );
+
+	HRESULT ReportLogEventW( [in] EMSLOGMSGTYPE msgType , [in] DWORD dwEvent ,
+		[in, size_is( ulLength )] LPWSTR const lpszStrings,
+		[in] ULONG ulLength );
+	
+	HRESULT ReportLogEventA( [in] EMSLOGMSGTYPE msgType , [in] DWORD dwEvent,
+		[in, size_is( ulLength )] LPSTR const lpszStrings,
+		[in] ULONG ulLength );
+};
+
+[
+	object, uuid(50C0ED6D-39DE-4751-B0C1-CCAFA14AD41D),
+	helpstring("IEMS600Logger Interface"),
+	pointer_default(unique)
+]
+
+interface IEMS600Logger : IEMSLeo600Logger
+{	
+	HRESULT SetRaceSuppressionInterval( [in] double dSeconds );
+};
+
+cpp_quote(" ")
+cpp_quote("//*** End of deprecated interfaces ***")
+cpp_quote(" ")
+
+[
+	object, uuid(A6C83E4F-B831-417d-8A9C-0FEF53C4182C),
+	helpstring("IEMS600LoggerEx Interface"),
+	pointer_default(unique)
+]
+interface IEMS600LoggerEx : IEMS600Logger
+{	
+	HRESULT Init( [in] ULONG ulLutID, [in] WORD wProcessID );
+	HRESULT Report( 
+		[in] const EMSLOGMSGTYPE	msgType , 
+		[in] const DWORD			dwEventStringID,
+		[in] const WORD				wParamCount, 
+		[in, string, size_is(wParamCount)] const wchar_t** awszParams );
+	HRESULT RaceSuppressionInterval( [in] double dSeconds );
+};
+typedef [unique] IEMS600LoggerEx *LPEMSLOGGER;
+typedef [unique] IEMS600LoggerEx *LPEMS600LOGGER;
+
+[
+	uuid(6CD1724E-570E-4ff7-897E-44CF5A7E0ACD),
+	version(1.0),
+	helpstring("EMSLeo600Logger 1.0 Type Library")
+]
+library EMSLEO600LOGGERLib
+{
+	importlib("stdole32.tlb");
+	importlib("stdole2.tlb");
+
+	[
+		uuid(73FF4561-01F2-11d6-8D67-009027912866),
+		helpstring("EMSLeo600Logger Class")
+	]
+	coclass EMSLeo600Logger 
+	{
+		[default] interface IEMS600LoggerEx;
+	};
+};

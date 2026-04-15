@@ -1,0 +1,99 @@
+cpp_quote("// {B88A5C0C-96AD-4db4-9210-11657A1E1266}")
+cpp_quote("DEFINE_GUID( IID_IEMSSensorStatus, 0xb88a5c0c, 0x96ad, 0x4db4, 0x92, 0x10, 0x11, 0x65, 0x7a, 0x1e, 0x12, 0x66);")
+cpp_quote(" " )
+
+cpp_quote(" // {D9F292BA-0083-4d1e-9AB3-DDD1EDCB8FFC}")
+cpp_quote("DEFINE_GUID( IID_IEMSSensorStatusEx, 0xd9f292ba, 0x83, 0x4d1e, 0x9a, 0xb3, 0xdd, 0xd1, 0xed, 0xcb, 0x8f, 0xfc);")
+cpp_quote(" " )
+
+
+import "unknwn.idl";
+import "emstypex.idl";
+import "emstatus.idl";
+
+#define _EMS_RPC_VERSION 1
+#define __RPC_FAR 
+
+[
+	object, uuid(B88A5C0C-96AD-4db4-9210-11657A1E1266),
+	helpstring("IEMSSensorStatus Interface"),
+	pointer_default(unique)
+]
+
+interface IEMSSensorStatus : IEMSStatus
+{
+#pragma pack(1)
+
+	typedef struct _tagEMSSENSORINFO
+	{
+		double dTempA;
+		double dTempB;
+		double dTempC;
+		double dTempD;
+		double dTempE;
+		double dTempF;
+		double dTempG;
+		double dTempH;
+		double dTempI;
+		double dTempJ;
+		double dHumidityA;
+		double dHumidityB;
+		double dVoltageA;
+		double dVoltageB;
+		double dVoltageC;
+		double dVoltageD;
+		DWORD dwDoorA;
+		DWORD dwDoorB;
+		DWORD dwDoorC;
+		DWORD dwDoorD;
+	} EMSSENSORINFO, *LPEMSSENSORINFO;
+
+
+#pragma pack()
+
+	HRESULT ResetSensorInfo( void );
+
+	HRESULT SetSensorInfo( [in] EMSSENSORINFO *lpInfo );
+	HRESULT GetSensorInfo( [out] EMSSENSORINFO *lpInfo );
+};
+
+typedef [unique] IEMSSensorStatus *LPEMSSENSORSTATUS;
+
+[
+	object, uuid(D9F292BA-0083-4d1e-9AB3-DDD1EDCB8FFC),
+	helpstring("IEMSSensorStatusEx Interface"),
+	pointer_default(unique)
+]
+
+interface IEMSSensorStatusEx : IEMSStatus
+{
+#pragma pack(1)
+
+	typedef struct _tagEMSSENSORINFOEX
+	{
+		WORD		wDoorStatus;
+		float		fACUTemp;
+		float		fAUXTemp;
+		float		fServoTemp;
+		float		fLNCTemp;
+		float		fRadomeTemp;
+		float		fRackTemp;
+		float		fRackAmbientTemp;
+		float		fRadomeHumidity;
+		float		fACUHumidity;
+		float		fAGCVoltage;
+		WORD		wWindSpeed;	
+		WORD		wWindDirection;
+		WORD		wPowerAlarm;
+		WORD		wSpare;
+	} EMSSENSORINFOEX, *LPEMSSENSORINFOEX;
+
+#pragma pack()
+
+	HRESULT ResetSensorInfoEx( void );
+
+	HRESULT SetSensorInfoEx( [in] EMSSENSORINFOEX *lpInfo );
+	HRESULT GetSensorInfoEx( [out] EMSSENSORINFOEX *lpInfo );
+};
+
+typedef [unique] IEMSSensorStatusEx *LPEMSSENSORSTATUSEX;

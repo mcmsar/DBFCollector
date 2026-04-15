@@ -1,0 +1,60 @@
+import "unknwn.idl";
+import "emsaudio.idl";
+
+cpp_quote("")
+cpp_quote("// {E027FBBF-A988-4863-825B-4D080E93572C}")
+cpp_quote("DEFINE_GUID( CLSID_EMSAudioManager, 0xe027fbbf, 0xa988, 0x4863, 0x82, 0x5b, 0x4d, 0x8, 0xe, 0x93, 0x57, 0x2c);")
+cpp_quote("")
+cpp_quote("// {D4F86CA8-617F-4967-97A0-EF122E0FBF95}")
+cpp_quote("DEFINE_GUID( IID_IEMSAudioManager, 0xd4f86ca8, 0x617f, 0x4967, 0x97, 0xa0, 0xef, 0x12, 0x2e, 0xf, 0xbf, 0x95);")
+cpp_quote("")
+
+[
+	object, uuid(D4F86CA8-617F-4967-97A0-EF122E0FBF95),
+	pointer_default(unique)
+]
+
+interface IEMSAudioManager : IUnknown
+{
+	typedef [unique] IEMSAudioManager *LPEMSAUDIOMANAGER;
+
+	HRESULT AudioConnect( [in,out] unsigned long* ulSession );
+
+	HRESULT AudioGetData( [in] const unsigned long culSession,
+					 [in,out,size_is(*pLen)] unsigned char* pData,
+					 [in,out] unsigned int* pLen );
+
+	HRESULT AudioSetParameters( [in] const unsigned long culSession,
+						   [in] const float fCenterFreq, 
+						   [in] const float fBandwidth);
+
+	HRESULT AudioDisconnect( [in] const unsigned long culSession );
+
+	HRESULT MakeFreeRequest( [in] EMSAUDIOREQUEST audreq,
+	                         [in,out] unsigned long* pulSessionID );
+
+	HRESULT GetFreeRequestData( [in] unsigned long ulSessionID,
+								[in,out] EMSAUDIODATARECORD_RIFF* audrec );
+
+	HRESULT CancelFreeRequest( [in] unsigned long ulSessionID);
+};
+
+[
+	uuid(90FB5531-CAA1-44a6-A3FA-68D17BA0A662),
+	version(1.0),
+	helpstring("EMSAudioManager 1.0 Type Library")
+]
+library EMSAudioManagerLib
+{
+	importlib("stdole32.tlb");
+	importlib("stdole2.tlb");
+
+	[
+		uuid(E027FBBF-A988-4863-825B-4D080E93572C),
+		helpstring("EMSAudioManagerClass")
+	]
+	coclass EMSAudioManager
+	{
+		interface IEMSAudioManager;
+	};
+};

@@ -1,0 +1,50 @@
+/*********************************************************************
+*	              Copyright (c) 2007 by EMS Technologies, Inc.,
+*										All rights reserved
+*	This program is unpublished software and contains the trade secrets
+*	and confidential information of EMS Technologies, Inc.  It may not be 
+* reproduced in whole or in part, in any form or by any means whatsoever 
+* without the express written permission of EMS Technologies, Inc.
+*
+********************************************************************/
+
+/*******************************************************************
+
+  Revision Record
+
+	$Log:
+	$
+********************************************************************/
+
+cpp_quote("// {20124F41-2963-47fa-B82E-3E5DF5AD15E6}")
+cpp_quote("DEFINE_GUID(IID_IEMSBREngine, 0x20124f41, 0x2963, 0x47fa, 0xb8, 0x2e, 0x3e, 0x5d, 0xf5, 0xad, 0x15, 0xe6);")
+
+
+import "unknwn.idl";
+
+[
+	uuid(20124F41-2963-47fa-B82E-3E5DF5AD15E6),
+	helpstring("IEMSBREngine"),
+	pointer_default(unique)
+]
+interface IEMSBREngine : IUnknown
+{
+	HRESULT Insert406Registration( [in,string] const wchar_t* cwszRecords );
+
+	HRESULT Update406Registration( [in,string] const wchar_t* cwszRecords );
+
+	HRESULT Delete406Registration( [in,string] const wchar_t* cwszBeacons );
+
+	HRESULT Select406Registration( [in] const ULONG culBeacons,
+								[in,size_is(culBeacons)] const __int64* cai64BeaconID, 
+								[in] const ULONG culCountries,
+								[in,size_is(culCountries)] const short* casCountryCodes, 
+								[in] const ULONG culStatus,
+								[in,string,size_is(culStatus)] const wchar_t** cawszStatus,
+								[in] const ULONG culBeaconTypes,
+								[in,string,size_is(culBeaconTypes)] const wchar_t** cawszBeaconTypes,
+								[in] const ULONG culVehicleNames,
+								[in,string,size_is(culVehicleNames)] const wchar_t** cawszVehicleNames,
+								[out,string] wchar_t** pwszRecords );
+
+}

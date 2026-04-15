@@ -1,0 +1,47 @@
+cpp_quote( " " )
+cpp_quote( "#include \"emserror.h\"" )
+cpp_quote( " " )
+
+cpp_quote( "// {917364D3-8F4C-4024-A252-7444713283EB}" )
+cpp_quote( "DEFINE_GUID(IID_IEMSWindDirectionGauge, 0x917364d3, 0x8f4c, 0x4024, 0xa2, 0x52, 0x74, 0x44, 0x71, 0x32, 0x83, 0xeb);" )
+
+cpp_quote( "// {C4C093DD-9A98-4cc1-8F0C-B3D68C1F05AE}" )
+cpp_quote( "DEFINE_GUID(IID_IEMSWindSpeedGauge, 0xc4c093dd, 0x9a98, 0x4cc1, 0x8f, 0xc, 0xb3, 0xd6, 0x8c, 0x1f, 0x5, 0xae);" )
+
+cpp_quote( "// {8D6A7F46-F940-4e4b-961A-FE9C9BC218A6}" )
+cpp_quote( "DEFINE_GUID(IID_IEMSWindSpeedDevice, 0x8d6a7f46, 0xf940, 0x4e4b, 0x96, 0x1a, 0xfe, 0x9c, 0x9b, 0xc2, 0x18, 0xa6);" )
+
+import "unknwn.idl";
+import "emstypex.idl";
+import "objidl.idl";
+import "EMSDEVICES.idl";
+
+const DWORD GAUGETYPE_WINDDIR = 0x00000008;
+
+[
+	object, uuid(917364D3-8F4C-4024-A252-7444713283EB),
+	helpstring("IEMSWindDirectionGauge Interface"),
+	pointer_default(unique)
+]
+
+interface IEMSWindDirectionGauge : IEMSSubDevice
+{
+	HRESULT GetWindDirection( [out]double *lpdWindDir );
+};
+
+typedef [unique] IEMSWindDirectionGauge *LPEMSWINDDIRGAUGE;
+
+const DWORD GAUGETYPE_WINDSPD = 0x00000010;
+
+[
+	object, uuid(C4C093DD-9A98-4cc1-8F0C-B3D68C1F05AE),
+	helpstring("IEMSWindSpeedGauge Interface"),
+	pointer_default(unique)
+]
+
+interface IEMSWindSpeedGauge : IEMSSubDevice
+{
+	HRESULT GetWindSpeed( [out]double *lpdWindSpeed );
+};
+
+typedef [unique] IEMSWindSpeedGauge *LPEMSWINDSPDGAUGE;

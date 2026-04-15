@@ -1,0 +1,96 @@
+// iconfigmanagertypes.idl : IDL source for configuration manager type definitions
+//
+
+// This file will be processed by the MIDL tool to
+// produce the type library (cm.tlb) and marshalling code.
+
+import "unknwn.idl";
+import "emstypex.idl";
+
+typedef enum _tagEMSVARITYPE_DATATYPE
+{
+   EMSVARITYPE_DATATYPE_UNINITIALIZED  = 0,
+   EMSVARITYPE_DATATYPE_BOOL           = 1,
+   EMSVARITYPE_DATATYPE_STRING         = 2,
+   EMSVARITYPE_DATATYPE_TIME           = 3,
+   EMSVARITYPE_DATATYPE_BIGINT         = 4, 
+   EMSVARITYPE_DATATYPE_INT            = 5, 
+   EMSVARITYPE_DATATYPE_INTRANGE       = 6, 
+   EMSVARITYPE_DATATYPE_UINT           = 7, 
+   EMSVARITYPE_DATATYPE_UINTRANGE      = 8, 
+   EMSVARITYPE_DATATYPE_DOUBLE         = 9, 
+   EMSVARITYPE_DATATYPE_DOUBLERANGE    = 10,
+   EMSVARITYPE_DATATYPE_FLOAT          = 11,
+   EMSVARITYPE_DATATYPE_FLOATRANGE     = 12
+
+} EMSVARITYPE_DATATYPE;
+
+typedef struct _tagEMSVARITYPE
+{
+   EMSVARITYPE_DATATYPE    dataType;
+
+   [switch_type(EMSVARITYPE_DATATYPE), switch_is((EMSVARITYPE_DATATYPE)dataType)]
+   union
+   {
+      [ case( EMSVARITYPE_DATATYPE_BOOL ) ]
+         boolean     bVal;
+      [ case( EMSVARITYPE_DATATYPE_STRING ) ]
+         [string] wchar_t*    pwcsVal;
+      [ case( EMSVARITYPE_DATATYPE_TIME ) ]
+         EMSTIME     tmVal;
+      [ case( EMSVARITYPE_DATATYPE_BIGINT ) ]
+         INT64       i64Val;
+      [ case( EMSVARITYPE_DATATYPE_INT ) ]
+         int         iVal;
+      [ case( EMSVARITYPE_DATATYPE_INTRANGE ) ]
+         struct
+         {
+            int      iMaxVal;
+            int      iMinVal;
+            
+         } iRange;
+      [ case( EMSVARITYPE_DATATYPE_UINT ) ]
+         unsigned int      uiVal;
+      [ case( EMSVARITYPE_DATATYPE_UINTRANGE ) ]
+         struct
+         {
+            unsigned int   uiMaxVal;
+            unsigned int   uiMinVal;
+            
+         } uiRange;
+      [ case( EMSVARITYPE_DATATYPE_DOUBLE ) ]
+         double      dVal;
+      [ case( EMSVARITYPE_DATATYPE_DOUBLERANGE ) ]
+         struct
+         {
+            double   dMaxVal;
+            double   dMinVal;
+            
+         } dRange;
+      [ case( EMSVARITYPE_DATATYPE_FLOAT ) ]
+         float       fVal;
+      [ case( EMSVARITYPE_DATATYPE_FLOATRANGE ) ]
+         struct
+         {
+            float    fMaxVal;
+            float    fMinVal;
+            
+         } fRange;
+      [default]
+      ;
+   };
+
+} EMSVARITYPE, *LPEMSVARITYPE;
+
+typedef struct _tagEMSCONFIGURATIONITEM
+{
+   [string] wchar_t* pwcsKeyName;
+
+   unsigned short uiValues;
+
+   [size_is(uiValues)]
+   EMSVARITYPE*      ValueList;
+
+} EMSCONFIGURATIONITEM, *LPEMSCONFIGURATIONITEM;
+
+

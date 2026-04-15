@@ -1,0 +1,198 @@
+/*********************************************************************
+*	              Copyright (c) 2009 by EMS Technologies, Inc.,
+*										All rights reserved
+*	This program is unpublished software and contains the trade secrets
+*	and confidential information of EMS Technologies, Inc.  It may not be 
+* reproduced in whole or in part, in any form or by any means whatsoever 
+* without the express written permission of EMS Technologies, Inc.
+*
+********************************************************************/
+
+/*******************************************************************
+
+  Revision Record
+
+	$Log$
+********************************************************************/
+#pragma warning(disable:4786)
+
+#include "calib406exdata.h"
+#include "emsdbfieldnames.h"
+#include "sqlbuilder.h"
+#include "LutDBSchemaInfo.h"
+#include "convutility.h"
+#include "rawdatarecordreader.h"
+#include "recordmetadata.h"
+#include "rawdatarecord.h"
+#include "emsbeacon.h"
+
+
+CEMSCalib406ExData::CEMSCalib406ExData()
+{
+}
+
+CEMSCalib406ExData::CEMSCalib406ExData( const CEMSCalib406ExData& x )
+{
+}
+
+CEMSCalib406ExData::~CEMSCalib406ExData()
+{
+}
+
+CEMSObjectList<INT64> 
+CEMSCalib406ExData::GetUniqueBeacons( const EMSTIME ctimeOldest )
+{
+	CEMSObjectList<INT64> olstRet;
+
+	CEMSRawDataRecordReader* pReader = NULL;
+
+	try
+	{
+		CSQLBuilder oSQLBuilder;
+		oSQLBuilder.AddSelectDistinctColumns( 1, &cwszCalib406BeaconID );
+		oSQLBuilder.AddFrom();
+		oSQLBuilder.AddTable( CEMSLUTDBSchemaInfo::GetTableName( EMSRT_CALIB406_EXT, EMSDBVERSION_LEO_20 ).c_str() );
+		oSQLBuilder.AddWhere();
+		oSQLBuilder += cwszTimestamp;
+		oSQLBuilder.AddGT();
+		oSQLBuilder += CEMSConversionUtil::ConvertToString( ctimeOldest.intTime ).c_str();
+
+		CEMSPointerList<CEMSRawDataRecordReader> olstRawData;
+		std::wstring owszSQL = oSQLBuilder;
+		olstRawData = _GetData( 0L, owszSQL.c_str() );
+		
+		olstRawData.MoveFirst();
+
+		while( pReader = olstRawData.GetNext() )
+		{
+			INT64 i64BeaconID = pReader->GetFieldAsI64( 0L );
+
+			olstRet.Add( i64BeaconID );
+
+			pReader->Release();
+			pReader = NULL;
+		}
+	}
+	catch( ... )
+	{
+		if( pReader )
+		{
+			pReader->Release();
+			pReader = NULL;
+		}
+
+		throw;
+	}
+
+	return olstRet;
+}
+
+CEMSObjectList<EMSCALIB406DATAEXT> 
+CEMSCalib406ExData::GetBeacons( const INT64 ci64BeaconID, const EMSTIME ctimeOldest, const bool cbExcludeSelfTest )
+{
+	CEMSObjectList<EMSCALIB406DATAEXT> olstRet;
+
+	CEMSRawDataRecordReader* pReader = NULL;
+
+	try
+	{
+		CSQLBuilder oSQLBuilder;
+
+		const short csColumns = 21;
+		const LPCWSTR cawszColumns[ csColumns ] = { 
+									cwszTimestamp, cwszLutID, cwszSatID, cwszType, 
+									cwszCalib4062AntennaID, cwszPassID, cwszCalib406Status, cwszCalib406BeaconID,
+									cwszCalib406TimeMsg, cwszCalib406TimeOffset, cwszCalib406Frequency, cwszCalib4062FreqOffset,
+									cwszCalib4062CarrierPower, cwszCalib406BitErrorField1, cwszCalib406BitErrorField2, cwszCalib406BitErrorFrameSynch,
+									cwszCalib406DuplicateMsgCount, cwszCalib406Msg, cwszCalib4062BitRate, cwszCalib4062DataFlags,
+									cwszCalib4062ResolutionFlags
+								 };
+
+		oSQLBuilder.AddSelectColumns( csColumns, (const wchar_t**) cawszColumns );
+		oSQLBuilder.AddFrom();
+		oSQLBuilder.AddTable( CEMSLUTDBSchemaInfo::GetTableName( EMSRT_CALIB406_EXT, EMSDBVERSION_LEO_20 ).c_str() );
+		oSQLBuilder.AddWhere();
+		oSQLBuilder += cwszCalib406BeaconID;
+		oSQLBuilder.AddEQ();
+		oSQLBuilder += CEMSConversionUtil::ConvertToString( ci64BeaconID ).c_str();
+		oSQLBuilder.AddAnd();
+		oSQLBuilder += cwszTimestamp;
+		oSQLBuilder.AddGT();
+		oSQLBuilder += CEMSConversionUtil::ConvertToString( ctimeOldest.intTime ).c_str();
+		oSQLBuilder.AddOrderBy();
+		oSQLBuilder += cwszTimestamp;
+		oSQLBuilder.AddDescending();
+
+		CEMSPointerList<CEMSRawDataRecordReader> olstRawData;
+		std::wstring owszSQL = oSQLBuilder;
+		olstRawData = _GetData( 0L, owszSQL.c_str() );
+		
+		olstRawData.MoveFirst();
+
+		while( pReader = olstRawData.GetNext() )
+		{
+			EMSCALIB406DATAEXT beaconRec;
+			memset( &beaconRec, 0, sizeof(EMSCALIB406DATAEXT) );
+
+			pReader->GetFieldAsFixedBinaryArray( 17, sizeof( beaconRec.calib406.cBeaconMsg ),
+									(unsigned char*) beaconRec.calib406.cBeaconMsg );
+
+			bool bInclude = true;
+
+			if( cbExcludeSelfTest )
+			{
+				CBeaconMsg bcnMsg(  beaconRec.calib406.cBeaconMsg );
+				
+				CBeaconMsgBase::Preamble rPreamble;
+				bcnMsg.CheckFSError( rPreamble );
+
+				if( CBeaconMsgBase::PREAMBLE_INVERTED_FS == rPreamble )
+				{
+					bInclude = false;
+				}
+			}
+
+
+			if( bInclude )
+			{
+				beaconRec.calib406.hdr.id.time = pReader->GetFieldAsTime( 0L );
+				beaconRec.calib406.hdr.id.ulLutID = pReader->GetFieldAsULong( 1 );
+				beaconRec.calib406.hdr.id.ulSatID = pReader->GetFieldAsULong( 2 );
+				beaconRec.calib406.hdr.wType = pReader->GetFieldAsUShort( 3 );
+				beaconRec.calib406.wAntennaID = pReader->GetFieldAsUShort( 4 );
+				beaconRec.calib406.ulPassID = pReader->GetFieldAsULong( 5 );
+				beaconRec.calib406.wStatus = pReader->GetFieldAsUShort( 6 );
+				beaconRec.calib406.i64BeaconID = pReader->GetFieldAsI64( 7 );
+				beaconRec.calib406.timeMsg = pReader->GetFieldAsTime( 8 );
+				beaconRec.calib406.i64TimeOffset = pReader->GetFieldAsI64( 9 );
+				beaconRec.calib406.dFrequency = pReader->GetFieldAsDouble( 10 );
+				beaconRec.calib406.dFreqOffset = pReader->GetFieldAsDouble( 11 );
+				beaconRec.calib406.dCarrierPower = pReader->GetFieldAsDouble( 12 );
+				beaconRec.calib406.wBitErrorField1 = pReader->GetFieldAsUShort( 13 );
+				beaconRec.calib406.wBitErrorField2 = pReader->GetFieldAsUShort( 14 );
+				beaconRec.calib406.wBitErrorFrameSynch = pReader->GetFieldAsUShort( 15 );
+				beaconRec.calib406.wDuplicateMsgCount = pReader->GetFieldAsUShort( 16 );
+				beaconRec.calib406.dBitRate = pReader->GetFieldAsDouble( 18 );
+				beaconRec.calib406.dwDataFlags = pReader->GetFieldAsULong( 19 );
+				beaconRec.calib406.dwResolutionFlags = pReader->GetFieldAsULong( 20 );
+
+				olstRet.Add( beaconRec );
+			}
+
+			pReader->Release();
+			pReader = NULL;
+		}
+	}
+	catch( ... )
+	{
+		if( pReader )
+		{
+			pReader->Release();
+			pReader = NULL;
+		}
+
+		throw;
+	}
+
+	return olstRet;
+}

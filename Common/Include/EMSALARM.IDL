@@ -1,0 +1,137 @@
+cpp_quote("/********************************************************************")
+cpp_quote("*	Module:			emsalarm.h ")
+cpp_quote("*	Process ID:")
+cpp_quote("*	S/W Platforms:")
+cpp_quote("*	H/W Platforms:")
+cpp_quote("*	Compiler:")
+cpp_quote("*	Description: 	data structure used to describe alarm states")
+cpp_quote("*")
+cpp_quote("*	Usage:")
+cpp_quote("*	Entry Point:")
+cpp_quote("*	Input Files:")
+cpp_quote("*	Output Files:")
+cpp_quote("*	Comments:")
+cpp_quote("*")
+cpp_quote("*********************************************************************")
+cpp_quote("*	              Copyright (c) 2001 by EMS Technologies, Inc.,")
+cpp_quote("*										All rights reserved")
+cpp_quote("*	This program is unpublished software and contains the trade secrets")
+cpp_quote("*	and confidential information of EMS Technologies, Inc.  It may not be ")
+cpp_quote("* reproduced in whole or in part, in any form or by any means whatsoever ")
+cpp_quote("* without the express written permission of EMS Technologies, Inc.")
+cpp_quote("*")
+cpp_quote("********************************************************************/")
+cpp_quote("")
+cpp_quote("/*******************************************************************")
+cpp_quote("")
+cpp_quote("  Revision Record")
+cpp_quote("")
+cpp_quote("	Rev	Date			Auth	Changes")
+cpp_quote("	===	====			====	=======")
+cpp_quote("")
+cpp_quote("	0.0	02/01/18		rvw	start")
+cpp_quote("")
+cpp_quote("********************************************************************/")
+cpp_quote("#ifndef INC_EMSALARM")
+cpp_quote("#define INC_EMSALARM")
+
+import "unknwn.idl";
+import "emstypex.idl";
+import "emstatus.idl";
+
+cpp_quote("// {CE2EFB3E-82EE-46f7-88C5-255C6AD4A95D}")
+cpp_quote("DEFINE_GUID( IID_IEMSAlarmStatus, 0xce2efb3e, 0x82ee, 0x46f7, 0x88, 0xc5, 0x25, 0x5c, 0x6a, 0xd4, 0xa9, 0x5d);")
+cpp_quote(" ")
+cpp_quote("// {86B46CFF-1921-4060-A5B6-E2D153834938}")
+cpp_quote("DEFINE_GUID( IID_IEMSAlarmStatus2, 0x86b46cff, 0x1921, 0x4060, 0xa5, 0xb6, 0xe2, 0xd1, 0x53, 0x83, 0x49, 0x38);")
+cpp_quote(" ")
+
+#define _EMS_RPC_VERSION 1
+#define __RPC_FAR 
+
+[
+	object, uuid(CE2EFB3E-82EE-46f7-88C5-255C6AD4A95D),
+	helpstring("IEMSALARMdata"),
+	pointer_default(unique)
+]
+
+interface IEMSAlarmStatus : IEMSStatus
+{
+	#pragma pack(1)
+
+	typedef enum _tagEMSALARMSTATE
+	{
+		EMSALARM_Okay = 0,			// Green
+		EMSALARM_Warning = 1,		// Amber
+		EMSALARM_Severe = 2			// Red
+	} EMSALARMSTATE;
+
+	typedef struct _tagEMSALARMDATA
+	{
+		EMSTIME		time;
+		ULONG			ulLutID;	
+		DWORD			dwStatus;
+		BYTE			cSummary;
+		BYTE			cEnvironment;
+		BYTE			cAntenna;
+		BYTE			cCollector;
+		BYTE			cWideband;
+		BYTE			cComms;
+		BYTE			cPass;
+		BYTE			cPower;
+		BYTE			cAlarm;
+		BYTE			cHardware;
+		BYTE			cLocate;
+		BYTE			cCalibrate;
+	} EMSALARMDATA, *LPEMSALARMDATA;
+
+	typedef struct _tagEMSALARMINSTANCE
+	{
+		EMSTIME		timeLast;
+		HRESULT		hrLast;
+		int			nCount;
+	} EMSALARMINSTANCE, *LPEMSALARMINSTANCE;
+
+	typedef struct _tagEMSALARMELEMENT
+	{
+		EMSALARMINSTANCE 	alarm;
+		EMSALARMINSTANCE 	warn;
+	} EMSALARMELEMENT, *LPEMSALARMELEMENT;
+
+	typedef struct _tagEMSALARMDATAEX
+	{
+		EMSALARMDATA		data;
+		EMSALARMELEMENT	environment;	
+		EMSALARMELEMENT	antenna;
+		EMSALARMELEMENT	collector;
+		EMSALARMELEMENT	wideband;
+		EMSALARMELEMENT	comms;
+		EMSALARMELEMENT	pass;
+	} EMSALARMDATAEX, *LPEMSALARMDATAEX;
+
+#pragma pack()
+
+	HRESULT ResetAlarmStatusInfo( void );
+	HRESULT SetAlarmStatusInfo( [in] EMSALARMDATAEX *lpInfo );
+	HRESULT GetAlarmStatusInfo( [out] EMSALARMDATAEX *lpInfo );
+
+};
+
+typedef [unique] IEMSAlarmStatus *LPEMSALARMSTATUS;
+
+[
+	object, uuid(86B46CFF-1921-4060-A5B6-E2D153834938),
+	helpstring("IEMSAlarmStatus2 Interface"),
+	pointer_default(unique)
+]
+
+interface IEMSAlarmStatus2 : IEMSAlarmStatus
+{
+	HRESULT CheckStatus( void );
+};
+
+typedef [unique] IEMSAlarmStatus2 *LPEMSALARMSTATUS2;
+
+cpp_quote("#endif //INC_EMSALARM")
+
+

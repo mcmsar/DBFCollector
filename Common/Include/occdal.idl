@@ -1,0 +1,30 @@
+cpp_quote("// {23212F55-AF1E-423a-A145-4BB4BC074A99}")
+cpp_quote("DEFINE_GUID(IID_IEMSOCCDAL, 0x23212f55, 0xaf1e, 0x423a, 0xa1, 0x45, 0x4b, 0xb4, 0xbc, 0x7, 0x4a, 0x99);")
+
+
+import "unknwn.idl";
+import "occ600types.idl";
+
+// Visual FORTRAN wizard needs a type library to import.
+[
+	uuid(7B99BAAB-4103-4d0f-84E1-D2437C8141E2),
+	version(1.0),
+	helpstring("OCCDALWSProxyLIB 1.0 Type Library")
+]
+library OCCDALWSProxyLIB
+{
+	importlib("stdole32.tlb");
+	importlib("stdole2.tlb");
+
+	[
+		uuid(23212F55-AF1E-423a-A145-4BB4BC074A99),
+		helpstring("IEMSOCCDAL"),
+		pointer_default(unique)
+	]
+	interface IEMSOCCDAL : IUnknown
+	{
+		HRESULT InsertSolutionSITs( [in] const ULONG culRecs, [in,size_is(culRecs)] const EMSSOLUTIONSIT caSits[] );
+
+	}
+};
+

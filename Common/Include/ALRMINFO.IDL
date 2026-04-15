@@ -1,0 +1,32 @@
+cpp_quote( " " )
+cpp_quote( "#include \"emserror.h\"" )
+cpp_quote( " " )
+
+cpp_quote("// {B0292FF7-F151-48a0-AD23-40ABBDD2652A}")
+cpp_quote("DEFINE_GUID( IID_IEMSAlarmSuppressionInfo, 0xb0292ff7, 0xf151, 0x48a0, 0xad, 0x23, 0x40, 0xab, 0xbd, 0xd2, 0x65, 0x2a);")
+
+import "unknwn.idl";
+import "emstypex.idl";
+
+#define _EMS_RPC_VERSION 1
+#define __RPC_FAR 
+
+[
+	object, uuid(B0292FF7-F151-48a0-AD23-40ABBDD2652A),
+	helpstring("IEMSAlarmSuppressionInfo Interface"),
+	pointer_default(unique)
+]
+
+interface IEMSAlarmSuppressionInfo : IUnknown
+{	
+	HRESULT GetAlarmCodesForDestination( [in] int nDest,
+		[out, size_is(ulMax), length_is(*ulActual)]	HRESULT *lphrAlarmCodes,
+		[in] ULONG ulMax,	[out] ULONG *ulActual );
+
+	HRESULT GetWarningCodesForDestination( [in] int nDest,
+		[out, size_is(ulMax), length_is(*ulActual)]	HRESULT *lphrWarningCodes,
+		[in] ULONG ulMax,	[out] ULONG *ulActual );
+};
+
+typedef [unique] IEMSAlarmSuppressionInfo *LPEMSALARMSUPPRESSIONINFO;
+

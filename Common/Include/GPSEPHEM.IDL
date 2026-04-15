@@ -1,0 +1,169 @@
+cpp_quote("/********************************************************************")
+cpp_quote("*	Module:			gpsephem.h")
+cpp_quote("*	Process ID:")
+cpp_quote("*	S/W Platforms:")
+cpp_quote("*	H/W Platforms:")
+cpp_quote("*	Compiler:")
+cpp_quote("*	Description: 	Interface definition for GPS Ephemeris data")
+cpp_quote("*						")
+cpp_quote("*						")
+cpp_quote("*						")
+cpp_quote("*")
+cpp_quote("*	Usage:")
+cpp_quote("*	Entry Point:")
+cpp_quote("*	Input Files:")
+cpp_quote("*	Output Files:")
+cpp_quote("*	Comments:")
+cpp_quote("*")
+cpp_quote("*********************************************************************")
+cpp_quote("*	              Copyright (c) 2005 by EMS Technologies, Inc.,")
+cpp_quote("*										All rights reserved")
+cpp_quote("*	This program is unpublished software and contains the trade secrets")
+cpp_quote("*	and confidential information of EMS Technologies, Inc.  It may not be ")
+cpp_quote("* reproduced in whole or in part, in any form or by any means whatsoever ")
+cpp_quote("* without the express written permission of EMS Technologies, Inc.")
+cpp_quote("*")
+cpp_quote("********************************************************************/")
+cpp_quote("")
+cpp_quote("/*******************************************************************")
+cpp_quote("")
+cpp_quote("  Revision Record")
+cpp_quote("")
+cpp_quote("	Rev	Date			Auth	Changes")
+cpp_quote("	===	====			====	=======")
+cpp_quote("")
+cpp_quote("	0.0	2005/01/23	rvw	start")
+cpp_quote("")
+cpp_quote("********************************************************************/")
+cpp_quote("#ifndef INC_GPSEPHEM")
+cpp_quote("#define INC_GPSEPHEM")
+cpp_quote("")
+
+cpp_quote("// {E93E168D-B1CF-4499-8944-42531049A4E6}")
+cpp_quote("DEFINE_GUID( IID_IEMSGpsEphemeris, 0xe93e168d, 0xb1cf, 0x4499, 0x89, 0x44, 0x42, 0x53, 0x10, 0x49, 0xa4, 0xe6);")
+
+import "unknwn.idl";
+import "emstypex.idl";
+
+#define _EMS_RPC_VERSION 1
+#define __RPC_FAR 
+
+#pragma pack(1)
+
+typedef struct _tagEMSEPHEMERISDATA
+{
+	ULONG ulSatPRN;
+	double dTimeCollection;			
+	INT 	nWeekNum;	
+	BYTE	cCodeL2;
+	BYTE	cL2PData;
+	BYTE	cSVAccRaw;
+	BYTE	cSVHealth;
+	INT	nIODC;
+	double dTGD;
+	double dTOC;
+	double dAF2;
+	double dAF1;
+	double dAF0;
+	double dSVAcc;
+	BYTE	cIODE;
+	BYTE	cFitInterval;
+	double dCRS;
+	double dDeltaN;
+	double	dM0;
+	double dUC;
+	double dE;
+	double	dCUS;
+	double dSqrtA;
+	double dTOE;
+	double dCIC;
+ 	double dOmegaO;
+	double dCIS;
+	double dIO;
+	double dCrc;
+	double dOmega;
+	double dOmegaDot;
+	double dIDot;
+	double dAxis;
+	double dN;
+	double dR1ME2;
+	double dOmegaN;
+	double dODotN;
+} EMSEPHEMERISDATA, *LPEMSEPHEMERISDATA;
+
+typedef struct _tagUTCCONVERSION
+{
+	INT 	nA0;		// Constant term of polynomial
+	INT		nA1;		// 1st order term of polynomial
+	char	cDelTime;	// Delta time due to leap seconds
+	BYTE	cRefTime;	// Reference time for UTC data
+	BYTE	cUTCRef;	// UTC reference Week Number
+	BYTE	cWeekNb;	// Week Number of the Leap Second
+	BYTE	cDayNb;		// Day Number of the Leap Second
+	char	cLeapSec;	// Delta time due to leap second
+} EMSUTCCONVERSION, *LPEMSUTCCONVERSION;
+
+typedef struct _tagEMSSCALEDEPHEMERISDATA
+{
+	INT 	nWeekNum;	// Week number.
+	INT		nIODC;			// Ephemeris and clock correction (Galileo)
+	BYTE	cIODE;		// Issue of data (GPS)
+	INT64	i64DeltaN;	// Mean motin difference from computed value
+	INT64	i64M0;		// Mean anomaly
+	INT64	i64UC;		// Amplitude of the cosine harmonic correction term to the argument of latitude.
+	INT64	i64E;			// Eccentricity
+	INT64	i64CUS;		// Amplitude of the sine harmonic correction term to the argument of latitude.
+	INT64	i64CRC;		// Amplitude of the consine harmonic correction term to the orbit radius.
+	INT64	i64CRS;		// Amplitude of the sine harmonic correction term to the orbit radius
+	INT64	i64SqrtA;		// Square root of the semi-major axis
+	ULONG	ulTOE;		// Ephmeris reference time.
+	INT64	i64CIC;		// Amplitude of the cosine harmonic correction term to the angle of inclination.
+ 	INT64	i64OmegaO;		// Longitude of ascending node of orbit plane at weekly epoch.
+	INT64	i64CIS;		// Amplitude of the sine harmonic correction term to the angle of inclination.
+	INT64	i64IO;			// Inclination angle at reference time.
+	INT64	i64Omega;		// Argument of perigee.
+	INT64	i64OmegaDot;	// Rate of right ascension.
+	INT64	i64IDot;		// Rate of inclination angle.
+	INT64	i64N;			// Mean motion difference
+} EMSSCALEDEPHEMERISDATA, *LPEMSSCALEDEPHEMERISDATA;
+
+typedef enum _tagCONSTELLATION
+{
+	EMS_CONSTELLATION_UNKNOWN = 0,
+	EMS_CONSTELLATION_DASS = 1,
+	EMS_CONSTELLATION_GALILEO = 2,
+	EMS_CONSTELLATION_GLONASS = 3
+} EMSCONSTELLATION;
+
+typedef struct _tagEMSEPHEMERISDATA2
+{
+	ULONG ulSatID;
+	EMSCONSTELLATION constellation;
+	EMSEPHEMERISDATA baseData;
+} EMSEPHEMERISDATA2, *LPEMSEPHEMERISDATA2;
+
+typedef struct _tagEMSSCALEDEPHEMERISDATAEX
+{
+	ULONG ulSatID;
+	EMSCONSTELLATION constellation;
+	EMSSCALEDEPHEMERISDATA baseData;
+} EMSSCALEDEPHEMERISDATAEX, *LPEMSSCALEDEPHEMERISDATAEX;
+
+
+#pragma pack()
+
+[
+	uuid(E93E168D-B1CF-4499-8944-42531049A4E6),
+	helpstring("IEMSGpsEphemeris"),
+	pointer_default(unique)
+]
+
+interface IEMSGpsEphemeris : IUnknown
+{
+	HRESULT GetGpsEphemerisData( [in] ULONG ulSatPRN, [out] EMSEPHEMERISDATA *lpData );
+};
+
+typedef [unique] IEMSGpsEphemeris *LPEMSGPSEPHEMERIS;
+
+cpp_quote("#endif // INC_GPSEPHEM")
+

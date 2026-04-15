@@ -1,0 +1,71 @@
+cpp_quote("/********************************************************************")
+cpp_quote("*	Module:			emslog.h ")
+cpp_quote("*	Process ID:")
+cpp_quote("*	S/W Platforms:")
+cpp_quote("*	H/W Platforms:")
+cpp_quote("*	Compiler:")
+cpp_quote("*	Description: 	data structure used to describe the logger output")
+cpp_quote("*")
+cpp_quote("*	Usage:")
+cpp_quote("*	Entry Point:")
+cpp_quote("*	Input Files:")
+cpp_quote("*	Output Files:")
+cpp_quote("*	Comments:")
+cpp_quote("*")
+cpp_quote("*********************************************************************")
+cpp_quote("*	              Copyright (c) 2001 by EMS Technologies, Inc.,")
+cpp_quote("*										All rights reserved")
+cpp_quote("*	This program is unpublished software and contains the trade secrets")
+cpp_quote("*	and confidential information of EMS Technologies, Inc.  It may not be ")
+cpp_quote("* reproduced in whole or in part, in any form or by any means whatsoever ")
+cpp_quote("* without the express written permission of EMS Technologies, Inc.")
+cpp_quote("*")
+cpp_quote("********************************************************************/")
+cpp_quote("")
+cpp_quote("/*******************************************************************")
+cpp_quote("")
+cpp_quote("  Revision Record")
+cpp_quote("")
+cpp_quote("	Rev	Date			Auth	Changes")
+cpp_quote("	===	====			====	=======")
+cpp_quote("")
+cpp_quote("	0.0	01/03/22		rvw	start")
+cpp_quote("")
+cpp_quote("********************************************************************/")
+cpp_quote("#ifndef INC_EMSLOG")
+cpp_quote("#define INC_EMSLOG")
+
+import "unknwn.idl";
+import "emstypex.idl";
+
+#define _EMS_RPC_VERSION 1
+#define __RPC_FAR 
+
+[
+	uuid(F83F4B71-EA53-11d5-8D21-009027912866),
+	helpstring("IEMSLOGdata"),
+	pointer_default(unique)
+]
+
+interface IEMSLOGdata
+{
+	#pragma pack(1)
+
+	#define EMS_MAX_LOG_MSGLEN ( 256 )
+
+	typedef struct _tagEMSLOGDATA
+	{
+		EMSTIME		time;
+		ULONG			ulLutID;	
+		ULONG			ulProcessID;
+		DWORD			dwMsgNumber;		
+		BYTE			cTaskID;
+		BYTE			cMsgType;			// warnings, alarm etc
+		BYTE			cMsg[ EMS_MAX_LOG_MSGLEN ];
+	} EMSLOGDATA, *LPEMSLOGDATA;
+
+#pragma pack()
+}
+
+cpp_quote("#endif //INC_EMSLOG")
+

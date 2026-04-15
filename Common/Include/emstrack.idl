@@ -1,0 +1,142 @@
+cpp_quote( " " )
+cpp_quote( "#include \"emserror.h\"" )
+cpp_quote( " " )
+
+cpp_quote( "// {91B43291-D5F2-11d5-8CD6-009027912866}" )
+cpp_quote( "DEFINE_GUID( CLSID_EMSTrackSchedule, 0x91b43291, 0xd5f2, 0x11d5, 0x8c, 0xd6, 0x0, 0x90, 0x27, 0x91, 0x28, 0x66);" )
+cpp_quote( " " )
+
+cpp_quote( "// {91B43292-D5F2-11d5-8CD6-009027912866}" )
+cpp_quote( "DEFINE_GUID( IID_IEMSTrackSchedule, 0x91b43292, 0xd5f2, 0x11d5, 0x8c, 0xd6, 0x0, 0x90, 0x27, 0x91, 0x28, 0x66);" )
+cpp_quote( " " )
+
+cpp_quote("// {CE7DA97A-E3C4-41e7-806A-E7B01C7B5118}")
+cpp_quote("DEFINE_GUID( IID_IEMSTrackSchedule2, 0xce7da97a, 0xe3c4, 0x41e7, 0x80, 0x6a, 0xe7, 0xb0, 0x1c, 0x7b, 0x51, 0x18);")
+cpp_quote( " " )
+
+cpp_quote("// {0C075ADB-E623-4326-949B-43A6B35D622E}")
+cpp_quote("DEFINE_GUID(IID_IEMSTrackSchedule3, 0xc075adb, 0xe623, 0x4326, 0x94, 0x9b, 0x43, 0xa6, 0xb3, 0x5d, 0x62, 0x2e);")
+
+
+//cpp_quote("//Definitions for Flags")
+//cpp_quote("#define EMS_PASSFLAG_TAKE 			0x02")
+
+cpp_quote("// Maximum Number of Optimized Satellite Passes")
+cpp_quote("#define EMS_MAX_NUM_OPT_SAT_PASSES (8192)")
+cpp_quote( " " )
+
+import "unknwn.idl";
+import "emstypex.idl";
+import "emspass.idl";
+
+[
+	object, uuid(253F24D7-11F4-4aee-BF13-89836E28598C),
+	helpstring("IEMSTrackSchedule Interface"),
+	pointer_default(unique)
+]
+
+interface IEMSTrackSchedule : IEMSPassSchedule
+{
+#pragma pack(1)
+
+	typedef struct _tagEMSSATELLITETRACK
+	{
+		ULONG ulLutID;
+		EMSSATELLITEPASS PassInfo;
+		EMSTIME actualStartTime;
+		EMSTIME actualEndTime;
+		double dWeight;
+	} EMSSATELLITETRACK, *LPEMSSATELLITETRACK;
+
+	typedef struct _tagEMSSATTRACKRECORD
+	{
+		EMSTIME timeSched;
+		WORD	wSeq;
+		WORD	wCount;
+		EMSSATELLITETRACK track;
+	}	EMSSATTRACKRECORD, *LPEMSSATTRACKRECORD;
+
+#pragma pack()
+
+	HRESULT SetLuts( [in] ULONG cbCount,
+					[in, size_is(cbCount)]  ULONG const *pulLutID );
+
+	HRESULT GetOptSchedule( [in] ULONG cbCount, 
+		[in] ULONG ulLutID,
+		[out, size_is(cbCount), length_is(*pcbResult) ] EMSSATELLITETRACK *pvPass,
+		[out] ULONG *pcbResult, 
+		[ out ] EMSTIME *lpStartTime, [ out ] EMSTIME *lpStopTime );
+
+	HRESULT SetPassProcessingTime(	[in] ULONG ulPrePass,
+									[in] ULONG ulPostPass );
+};
+
+typedef [unique] IEMSTrackSchedule *LPEMSTRACKSCHEDULE;
+
+[
+	object, uuid(CE7DA97A-E3C4-41e7-806A-E7B01C7B5118),
+	helpstring("IEMSTrackSchedule2 Interface"),
+	pointer_default(unique)
+]
+
+interface IEMSTrackSchedule2 : IEMSTrackSchedule
+{
+#pragma pack(1)
+
+	typedef struct _tagEMSSATELLITETRACK2
+	{
+		ULONG ulLutID;
+		ULONG ulAntennaID;
+		EMSSATELLITEPASS PassInfo;
+		EMSTIME actualStartTime;
+		EMSTIME actualEndTime;
+		double dWeight;
+	} EMSSATELLITETRACK2, *LPEMSSATELLITETRACK2;
+
+	typedef struct _tagEMSSATTRACKRECORD2
+	{
+		EMSTIME timeSched;
+		WORD	wSeq;
+		WORD	wCount;
+		EMSSATELLITETRACK2 track;
+	}	EMSSATTRACKRECORD2, *LPEMSSATTRACKRECORD2;
+
+#pragma pack()
+
+	HRESULT SetFlags( DWORD dwFlags );
+
+	HRESULT GetFlags( DWORD *lpdwFlags);
+
+	HRESULT SetPassLimits( DWORD dwCount, EMSSATPASSLIMITS *lpLimits );
+
+	HRESULT SetPassLimit( DWORD dwMinSatID, DWORD dwMaxSatID, double dMinutes );
+
+	HRESULT SetTrackingLimits( DWORD dwCount, EMSSATPASSLIMITS *lpLimits );
+
+	HRESULT SetTrackingLimit( DWORD dwMinSatID, DWORD dwMaxSatID, double dMinutes );
+
+	HRESULT GetOptSchedule2( [in] ULONG cbCount, 
+		[in] ULONG ulLutID, 
+		[out, size_is(cbCount), length_is(*pcbResult) ] EMSSATELLITETRACK2 *pvPass,
+		[out] ULONG *pcbResult, 
+		[ out ] EMSTIME *lpStartTime, [ out ] EMSTIME *lpStopTime );
+};
+
+typedef [unique] IEMSTrackSchedule2 *LPEMSTRACKSCHEDULE2;
+
+//
+[
+	object, uuid(0C075ADB-E623-4326-949B-43A6B35D622E),
+	helpstring("IEMSTrackSchedule3 Interface"),
+	pointer_default(unique)
+]
+
+interface IEMSTrackSchedule3 : IEMSTrackSchedule2
+{
+	HRESULT SetMinElevationAngle( [in] const double cdMinEl );
+
+	HRESULT GetMinElevationAngle( [out] double* pdMinEl );
+
+};
+
+typedef [unique] IEMSTrackSchedule3 *LPEMSTRACKSCHEDULE3;

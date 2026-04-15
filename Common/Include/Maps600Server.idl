@@ -1,0 +1,16 @@
+cpp_quote("// {73AD1875-D110-4a7d-BC5F-965EEDCB96E6}")
+cpp_quote("DEFINE_GUID(IID_IEMS600MapsWS, 0x73ad1875, 0xd110, 0x4a7d, 0xbc, 0x5f, 0x96, 0x5e, 0xed, 0xcb, 0x96, 0xe6);")
+
+
+import "unknwn.idl";
+
+[
+	uuid(73AD1875-D110-4a7d-BC5F-965EEDCB96E6),
+	helpstring("IEMS600MapsWS"),
+	pointer_default(unique)
+]
+interface IEMS600MapsWS : IUnknown
+{
+	//! Set the value retrieved from a URL.
+	HRESULT	 Set( [in,string] const wchar_t* cwszValue );
+};

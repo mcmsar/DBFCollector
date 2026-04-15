@@ -1,0 +1,1 @@
+This file is obsolete.  Use common\include\wbdtypes.h

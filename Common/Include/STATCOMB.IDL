@@ -1,0 +1,51 @@
+cpp_quote("// {2D7FABF8-D55B-4b8d-8B50-E0BB6234177F}")
+cpp_quote("DEFINE_GUID( IID_IEMSCombine406Status, 0x2d7fabf8, 0xd55b, 0x4b8d, 0x8b, 0x50, 0xe0, 0xbb, 0x62, 0x34, 0x17, 0x7f);")
+cpp_quote(" ")
+
+import "unknwn.idl";
+import "emstypex.idl";
+import "emstatus.idl";
+
+#define _EMS_RPC_VERSION 1
+#define __RPC_FAR 
+
+[
+	object, uuid(2D7FABF8-D55B-4b8d-8B50-E0BB6234177F),
+	helpstring("IEMSCombine406Status Interface"),
+	pointer_default(unique)
+]
+
+interface IEMSCombine406Status : IEMSStatus
+{
+	typedef [v1_enum] enum _tagEMSCOMBINE406STATE
+	{
+		EMS_CMB406_Idle = 0,
+		EMS_CMB406_Initialized = 1,
+		EMS_CMB406_Processing = 2,
+		EMS_CMB406_EndOfPass = 3,
+		EMS_CMB406_WaitingToProcess = 4
+	} EMSCOMBINE406STATE;
+
+	#define EMS_COMBINE406_MSG_LENGTH ( 15 )
+
+	typedef struct _tagEMSCOMBINE406INFO
+	{
+		WORD 		wStatus;
+		ULONG		ulGeoSarrHistoryRecordsCurrent;
+		ULONG		ulGeoSarrHistoryRecordsInput;
+		ULONG		ulGeoSarrHistoryRecordsOutput;
+		ULONG		ulLeoCalib406RecordsInput;
+		ULONG		ulCombinedRecordsOutput;
+		ULONG		ulCombinedUniqueBeacons;
+	} EMSCOMBINE406INFO, *LPEMSCOMBINE406INFO;
+
+	HRESULT ResetCombine406Info( void );
+
+	HRESULT SetCombine406Info( [in] EMSCOMBINE406INFO *lpInfo );
+	HRESULT GetCombine406Info( [out] EMSCOMBINE406INFO *lpInfo );
+};
+
+typedef [unique] IEMSCombine406Status *LPEMSCOMBINE406STATUS;
+
+
+

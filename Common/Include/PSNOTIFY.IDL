@@ -1,0 +1,105 @@
+cpp_quote("/********************************************************************")
+cpp_quote("*	Module:			psnotify.h")
+cpp_quote("*	Process ID:")
+cpp_quote("*	S/W Platforms:")
+cpp_quote("*	H/W Platforms:")
+cpp_quote("*	Compiler:")
+cpp_quote("*	Description: 	Interface and data structures to access IEMSPassStatusNotify")
+cpp_quote("*")
+cpp_quote("*	Usage:")
+cpp_quote("*	Entry Point:")
+cpp_quote("*	Input Files:")
+cpp_quote("*	Output Files:")
+cpp_quote("*	Comments:")
+cpp_quote("*")
+cpp_quote("*********************************************************************")
+cpp_quote("*	              Copyright (c) 2001 by EMS Technologies, Inc.,")
+cpp_quote("*										All rights reserved")
+cpp_quote("*	This program is unpublished software and contains the trade secrets")
+cpp_quote("*	and confidential information of EMS Technologies, Inc.  It may not be ")
+cpp_quote("* reproduced in whole or in part, in any form or by any means whatsoever ")
+cpp_quote("* without the express written permission of EMS Technologies, Inc.")
+cpp_quote("*")
+cpp_quote("********************************************************************/")
+cpp_quote("")
+cpp_quote("/*******************************************************************")
+cpp_quote("")
+cpp_quote("  Revision Record")
+cpp_quote("")
+cpp_quote("	Rev	Date			Auth	Changes")
+cpp_quote("	===	====			====	=======")
+cpp_quote("")
+cpp_quote("	0.0	01/03/22		rvw	start")
+cpp_quote(" 0.1 2005/08/10		rvw add Summary interface")
+cpp_quote("")
+cpp_quote("********************************************************************/")
+cpp_quote("#ifndef INC_PSNOTIFY")
+cpp_quote("#define INC_PSNOTIFY")
+cpp_quote("")
+cpp_quote("// {34E90721-211F-11d6-8DBD-009027912866}")
+cpp_quote("DEFINE_GUID( IID_IEMSPassStatusNotify, 0x34e90721, 0x211f, 0x11d6, 0x8d, 0xbd, 0x0, 0x90, 0x27, 0x91, 0x28, 0x66);")
+cpp_quote(" " )
+
+cpp_quote("// {05DC2160-FDDF-4535-A9C6-277B8ABE4625}")
+cpp_quote("DEFINE_GUID( IID_IEMSPassAlarmCountNotify, 0x5dc2160, 0xfddf, 0x4535, 0xa9, 0xc6, 0x27, 0x7b, 0x8a, 0xbe, 0x46, 0x25);")
+cpp_quote(" " )
+
+cpp_quote("// {926EDDBA-36E0-4d18-A6BD-0DCBB4264BA9}")
+cpp_quote("DEFINE_GUID( IID_IEMSSummaryPeriodNotify, 0x926eddba, 0x36e0, 0x4d18, 0xa6, 0xbd, 0xd, 0xcb, 0xb4, 0x26, 0x4b, 0xa9);")
+cpp_quote(" " )
+
+import "unknwn.idl";
+import "emstypex.idl";
+import "emstatus.idl";
+import "emstrack.idl";
+
+#define _EMS_RPC_VERSION 1
+#define __RPC_FAR 
+
+[
+	object, uuid(05DC2160-FDDF-4535-A9C6-277B8ABE4625),
+	helpstring("IEMSPassAlarmCountNotify Interface"),
+	pointer_default(unique)
+]
+
+interface IEMSPassAlarmCountNotify : IUnknown
+{
+	HRESULT IncrAlarmCount( void );
+	HRESULT IncrWarningCount( void );
+	HRESULT SetAlarmCount( [in] ULONG ulCount );
+	HRESULT SetWarningCount( [in] ULONG ulCount );
+	HRESULT ResetAlarmWarningCounts( void );
+	HRESULT GetAlarmWarningCounts( [out] ULONG *lpulAlarmCount, [out] ULONG *lpulWarningCount );
+};
+
+typedef [unique] IEMSPassAlarmCountNotify *LPEMSPASSALARMCOUNTNOTIFY;
+
+[
+	object, uuid(34E90721-211F-11d6-8DBD-009027912866),
+	helpstring("IEMSPassStatusNotify Interface"),
+	pointer_default(unique)
+]
+
+interface IEMSPassStatusNotify : IUnknown
+{
+	HRESULT StartPass( ULONG ulSatID, ULONG ulPassID, EMSTIME timeAOS, EMSTIME timeLOS );
+	HRESULT EndPass( ULONG ulSatID );
+};
+
+typedef [unique] IEMSPassStatusNotify *LPEMSPASSSTATUSNOTIFY;
+
+[
+	object, uuid(926EDDBA-36E0-4d18-A6BD-0DCBB4264BA9),
+	helpstring("IEMSSummaryPeriodNotify Interface"),
+	pointer_default(unique)
+]
+
+interface IEMSSummaryPeriodNotify : IUnknown
+{
+	HRESULT SetSummaryPeriod( [in] EMSTIME timeStart, [in] double dDuration );
+	HRESULT GetSummaryPeriod( [out] EMSTIME *lpTimeStart, [out] double *lpdDuration );
+};
+
+typedef [unique] IEMSSummaryPeriodNotify *LPEMSSUMMARYPERIODNOTIFY;
+
+cpp_quote("#endif //INC_PSNOTIFY")

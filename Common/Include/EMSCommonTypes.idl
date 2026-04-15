@@ -1,0 +1,148 @@
+
+
+import "unknwn.idl";
+import "emsauthorization.idl";
+import "dal.idl";
+
+
+	
+typedef enum eTrigger
+{
+	EMSTRG_UNKNOWN = 0,
+	EMSTRG_MANUAL = 1,		// Data generated as result of manual/operator invocation
+	EMSTRG_AUTO = 2,		// Data generated automatically.
+	EMSTRG_LAST
+} EMSTRIGGER;
+
+typedef enum eOperatorCmd
+{
+	OPCMD_UNKNOWN = 0,
+	OPCMD_RESTART_COLD = 1,
+	OPCMD_RESTART_WARM = 2,
+	OPCMD_GENPASS = 3,
+	OPCMD_PROCPASS = 4,
+	OPCMD_SUPPASS = 5,
+	OPCMD_SYSTEST = 6,
+	OPCMD_GETCFG = 7,
+	OPCMD_SETCFG = 8,
+	OPCMD_SEND_DATA = 9,
+	OPCMD_GET_FILE = 10,
+	OPCMD_LAST
+} EMSOPERATORCMDTYPE;
+
+typedef struct tagPass
+{
+	unsigned long ulLutID;
+	unsigned long ulSatID;
+	unsigned long ulPassID;
+	EMSTIME	timeAOS;
+} EMSPASSDEF;
+
+#define MAX_CONFIG_IDENTIFIER 256
+#define MAX_CONFIG_LHS	256
+#define MAX_CONFIG_RHS 1024
+
+typedef struct tagConfigSetting
+{
+	wchar_t wszConfigID[ MAX_CONFIG_IDENTIFIER ];
+	wchar_t wszLHS[ MAX_CONFIG_LHS ];
+	wchar_t wszRHS[ MAX_CONFIG_RHS ];
+	EMSAUTHORIZATIONINFO authInfo;
+} EMSCONFIGSETTING;
+
+
+typedef struct tagPassSchedParams
+{
+	EMSTIME timeStartTime;
+	double dDuration;	// in days
+} EMSSCHEDPARAMS;
+
+typedef enum tagCriteriaType
+{
+	CRITERIA_UNKNOWN = 0,
+	CRITERIA_C = 1,
+	CRITERIA_S = 2,
+	CRITERIA_P = 3,
+	CRITERIA_T = 4,
+	CRITERIA_X = 5,
+	CRITERIA_B = 6,
+	CRITERIA_LAST
+} EMSCRITERIATYPE;
+
+typedef enum tagLUTType
+{
+	LUTTYPE_UNKNOWN = 0,
+	LUTTYPE_LEO = 1,
+	LUTTYPE_GEO = 2,
+	LUTTYPE_LAST
+} EMSLUTTYPE;
+
+typedef struct tagSendDataParams
+{
+	EMSRECORDTYPE eDataType;
+	EMSCRITERIATYPE eCriteriaType;
+	unsigned long ulSatID;
+	unsigned long ulPassID;
+	EMSTIME time1;
+	EMSTIME time2;
+	double dDuration;
+	__int64 i64BeaconID;
+	[switch_type(EMSRECORDTYPE), switch_is((EMSRECORDTYPE)eDataType)]
+	union
+	{
+		[ case( EMSRT_CALIB406, EMSRT_PASS_STATS ) ]
+			EMSLUTTYPE eLutType;
+		[ case( EMSRT_LOG ) ]
+			boolean bLog;
+		[ case( EMSRT_AUDIO ) ]
+			EMSAUDIOSPEC audioSpec;
+		[default]
+				;
+	} exData;
+	boolean bGeo;
+} EMSSENDDATAPARAMS;
+
+#define MAX_GETFILE_FILENAME 256
+#define MAX_GETFILE_CHILDDIR 256
+
+typedef struct tagGetFileParams
+{
+	wchar_t wszFileName[ MAX_GETFILE_FILENAME ];
+	wchar_t wszChildDir[ MAX_GETFILE_CHILDDIR ];
+	boolean bDelete;
+} EMSGETFILEPARAMS;
+
+typedef struct tagOperatorCmd
+{
+	EMSOPERATORCMDTYPE eCmdType;
+	[switch_type(EMSOPERATORCMDTYPE), switch_is((EMSOPERATORCMDTYPE)eCmdType)]
+	union
+	{
+		[ case( OPCMD_PROCPASS, OPCMD_SUPPASS ) ]
+			EMSPASSDEF pass;
+		[ case( OPCMD_SETCFG, OPCMD_GETCFG ) ]
+			EMSCONFIGSETTING cfg;
+		[ case( OPCMD_GENPASS ) ]
+			EMSSCHEDPARAMS sched;
+		[ case( OPCMD_SEND_DATA ) ]
+			EMSSENDDATAPARAMS sendData;
+		[ case( OPCMD_GET_FILE ) ]
+			EMSGETFILEPARAMS getFile;
+		[default]
+				;
+	} cmdData;
+} EMSOPERATORCMD;
+
+// These are the Control Data Values that may appear in a SIT message.
+// See the National C-S Network Interface Spec. for details.
+typedef enum tagControlDataValue
+{
+	EMSCONTROL_UNKNOWN = 0,
+	EMSCONTROL_INFO = 1,
+	EMSCONTROL_VALD = 2,
+	EMSCONTROL_EXEC = 3,
+	EMSCONTROL_VALI = 4,
+	EMSCONTROL_INST = 5,
+	EMSCONTROL_APND = 6,
+	EMSCONTROL_LAST
+} EMSCONTROLDATAVALUE;

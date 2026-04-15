@@ -1,0 +1,98 @@
+/*********************************************************************
+*	              Copyright (c) 2005 by EMS Technologies, Inc.,
+*										All rights reserved
+*	This program is unpublished software and contains the trade secrets
+*	and confidential information of EMS Technologies, Inc.  It may not be 
+* reproduced in whole or in part, in any form or by any means whatsoever 
+* without the express written permission of EMS Technologies, Inc.
+*
+********************************************************************/
+
+/*******************************************************************
+
+  Revision Record
+
+	$Log:
+	$
+********************************************************************/
+
+cpp_quote("// {09570D2E-5232-4d72-82BE-4C6864BB22FA}")
+cpp_quote("DEFINE_GUID(IID_IEMSSARRConversionPlugin, 0x9570d2e, 0x5232, 0x4d72, 0x82, 0xbe, 0x4c, 0x68, 0x64, 0xbb, 0x22, 0xfa);")
+cpp_quote(" ")
+
+cpp_quote("// {980EDA8E-33A8-4e8f-86B0-C74EFCC705B3}")
+cpp_quote("DEFINE_GUID(IID_IEMSMIPlugin, 0x980eda8e, 0x33a8, 0x4e8f, 0x86, 0xb0, 0xc7, 0x4e, 0xfc, 0xc7, 0x5, 0xb3);")
+cpp_quote(" ")
+
+cpp_quote("// {242AC5DB-B70C-4e9a-913B-1440197A661C}")
+cpp_quote("DEFINE_GUID(IID_IEMSCorrelationPlugin, 0x242ac5db, 0xb70c, 0x4e9a, 0x91, 0x3b, 0x14, 0x40, 0x19, 0x7a, 0x66, 0x1c);")
+cpp_quote(" ")
+
+cpp_quote("// {45F85859-15FE-4777-834E-0005DB35569F}")
+cpp_quote("DEFINE_GUID(IID_IEMSSARRToCalib406Plugin, 0x45f85859, 0x15fe, 0x4777, 0x83, 0x4e, 0x0, 0x5, 0xdb, 0x35, 0x56, 0x9f);")
+cpp_quote(" ")
+
+
+
+import "unknwn.idl";
+import "sarrplugin.idl";
+import "calib406.idl";
+
+
+[
+	object, uuid(09570D2E-5232-4d72-82BE-4C6864BB22FA),
+	helpstring("IEMSSARRConversionPlugin Interface"),
+	pointer_default(unique)
+]
+interface IEMSSARRConversionPlugin : IUnknown
+{
+	HRESULT Init( [in,string,unique] const wchar_t* cwszConfig );
+
+	HRESULT Convert( [in] const EMSSARRDATA* cpSarrData,
+					[in,out] EMSSARRDATAEX* pSarrData );
+};
+
+[
+	object, uuid(980EDA8E-33A8-4e8f-86B0-C74EFCC705B3),
+	helpstring("IEMSMIPlugin Interface"),
+	pointer_default(unique)
+]
+interface IEMSMIPlugin : IUnknown
+{
+	HRESULT Init( [in,string,unique] const wchar_t* cwszConfig );
+
+	HRESULT Process( [in] const EMSSARRDATAEX* cpSarrData );
+
+	HRESULT ProcessEx( [in] const ULONG culIn, [in,size_is(culIn)] const EMSSARRDATAEX* caSarrData );
+
+	HRESULT Get( [out] ULONG* pulOut, [out,size_is(,*pulOut)] EMSSARRDATAEX** paSarrIntegrated );
+};
+
+[
+	object, uuid(242AC5DB-B70C-4e9a-913B-1440197A661C),
+	helpstring("IEMSCorrelationPlugin Interface"),
+	pointer_default(unique)
+]
+interface IEMSCorrelationPlugin : IUnknown
+{
+	HRESULT Init( [in,string,unique] const wchar_t* cwszConfig );
+
+	HRESULT Process( [in] const ULONG culIn, [in,size_is(culIn)] const EMSSARRDATAEX* caSarrData,
+					[out] ULONG* pulOut, [out,size_is(,*pulOut)] EMSSARRDATAEX** paSarrData );
+};
+
+[
+	object, uuid(45F85859-15FE-4777-834E-0005DB35569F),
+	helpstring("IEMSSARRToCalib406Plugin Interface"),
+	pointer_default(unique)
+]
+interface IEMSSARRToCalib406Plugin : IUnknown
+{
+	HRESULT Init( [in,string,unique] const wchar_t* cwszConfig );
+
+	HRESULT Process( [in] const ULONG culIn, [in,size_is(culIn)] const EMSSARRDATAEX* caSarrData,
+					 [out] ULONG* pulOut, [out,size_is(,*pulOut)] EMSCALIB406DATA** paCalib406Data );
+
+	HRESULT ProcessEx( [in] const ULONG culIn, [in,size_is(culIn)] const EMSSARRDATAEX* caSarrData,
+					   [out] ULONG* pulOut, [out,size_is(,*pulOut)] EMSCALIB406DATA2** paCalib406Data );
+};

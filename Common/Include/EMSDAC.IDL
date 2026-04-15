@@ -1,0 +1,71 @@
+cpp_quote("// {D631FF4D-42AE-4221-98CF-A3FCE380ADE8}")
+cpp_quote("DEFINE_GUID( CLSID_EMSDAC, 0xd631ff4d, 0x42ae, 0x4221, 0x98, 0xcf, 0xa3, 0xfc, 0xe3, 0x80, 0xad, 0xe8 );")
+
+cpp_quote("// {62774C8B-CF8B-482b-B7E8-C329FFD1F1CA}")
+cpp_quote("DEFINE_GUID( IID_IEMSDACRecv, 0x62774c8b, 0xcf8b, 0x482b, 0xb7, 0xe8, 0xc3, 0x29, 0xff, 0xd1, 0xf1, 0xca );")
+
+cpp_quote("// {7A61A4BA-B02F-4a1e-A6B2-55ACA368FA53}")
+cpp_quote("DEFINE_GUID( IID_IEMSDACManager, 0x7a61a4ba, 0xb02f, 0x4a1e, 0xa6, 0xb2, 0x55, 0xac, 0xa3, 0x68, 0xfa, 0x53 );")
+
+cpp_quote("// {6BAF9AAA-2C00-4d4e-843A-4683C317A630}")
+cpp_quote("DEFINE_GUID( IID_IEMSDACRecv2, 0x6baf9aaa, 0x2c00, 0x4d4e, 0x84, 0x3a, 0x46, 0x83, 0xc3, 0x17, 0xa6, 0x30);")
+
+
+import "unknwn.idl";
+import "EMSTYPEX.IDL";
+import "IGATEWAY.IDL";
+
+[
+	uuid(62774C8B-CF8B-482b-B7E8-C329FFD1F1CA),
+	helpstring("IEMSDACRecv"),
+	pointer_default(unique)
+]
+
+interface IEMSDACRecv : IUnknown
+{
+   HRESULT OnData( [in,string] wchar_t *szFilePath );
+
+   HRESULT OnData2( ULONG ulSourceID,
+                    [in, size_is(ulNumRecords * sizeof(EMSVARIANTRECORD))] EMSVARIANTRECORD data[],
+                    ULONG ulNumRecords );
+}
+
+typedef IEMSDACRecv *LPEMSDACRECV;
+
+[
+	uuid(6BAF9AAA-2C00-4d4e-843A-4683C317A630),
+	helpstring("IEMSDACRecv2"),
+	pointer_default(unique)
+]
+interface IEMSDACRecv2 : IUnknown
+{
+   HRESULT OnData3( ULONG ulSourceID,
+                    [in, size_is(ulNumRecords * sizeof(EMSVARIANTRECORD2))] EMSVARIANTRECORD2 data[],
+                    ULONG ulNumRecords );
+}
+
+typedef IEMSDACRecv2 *LPEMSDACRECV2;
+
+[
+	uuid(7A61A4BA-B02F-4a1e-A6B2-55ACA368FA53),
+	helpstring("IEMSDACManager"),
+	pointer_default(unique)
+]
+
+interface IEMSDACManager : IUnknown
+{
+   HRESULT GetData( [in, size_is(ulNumLuts * sizeof(ULONG))] ULONG ulLutIDs[],
+                    ULONG ulNumLuts,
+                    [in, size_is(ulNumSources * sizeof(EMSRESOURCEIDENTIFIER))] EMSRECORDTYPE ulDataSources[],
+                    ULONG ulNumSources,
+                    EMSTIME starttime,
+                    EMSTIME endtime );
+
+   HRESULT GetAudio( ULONG ulLutID,
+                     float fMinFreq,
+                     float fMaxFreq,
+                     EMSTIME starttime,
+                     EMSTIME endtime );
+}
+
+typedef IEMSDACManager *LPEMSDACMANAGER;

@@ -1,0 +1,201 @@
+#pragma once
+#ifndef __HGT_QUEUEU_H__
+#define __HGT_QUEUEU_H__
+#include <queue>
+#include "criticalsection.h"
+
+struct DBFTrackingData
+{
+	EMSCOMPLEXD *dbfBeamVector;
+	float *prevBiasPhase;
+	int* schedulerSatIds;
+	int* predSatIDs;
+	int* predBeamIDs;
+	float* probability;
+	int numBeams;
+	DBFTrackingData()
+	{
+		dbfBeamVector = nullptr;
+		prevBiasPhase = nullptr;
+		schedulerSatIds = nullptr;
+		predBeamIDs = nullptr;
+		predSatIDs = nullptr;
+		probability = nullptr;
+		numBeams = 0;
+	}
+};
+
+template <typename T> class CEMSQueue
+{
+private:
+    std::deque<T> queue;
+	CEMSCriticalSection		m_csList;
+    
+public:
+	CEMSQueue(void) {
+		//queue.resize(1);
+	}
+
+	~CEMSQueue(void) {
+	}
+	void InsertAtFirst( const T& item )
+	{
+		try
+		{
+			/*if (item == nullptr) {
+				return;
+			}*/
+			/*pop();
+			push(item);*/
+			m_csList.Enter();
+			//queue[0]= item;
+			queue.insert( queue.begin(), item );			
+			m_csList.Leave();
+			/*std::stringstream str1;
+			str1 << " Timestamp: " << CEMSConversionUtil::ConvertToDateTimeHiResString2A( CEMSSystemClock::GetTime() )
+				<< "After inserting into q " << std::endl;
+			OutputDebugString( str1.str().c_str() );*/
+		}
+		catch(...)
+		{
+			m_csList.Leave();
+		}
+	}
+	T ReadFirst()
+	{
+		T elem ;
+		try
+		{
+			/*if (item == nullptr) {
+				return;
+			}*/
+			if( size() )
+			{
+				m_csList.Enter();
+				elem = queue[0];
+				m_csList.Leave();
+			}
+
+		}
+		catch(...)
+		{
+			m_csList.Leave();
+		}
+		return elem;
+
+	}
+    void push(const T& item) 
+	{
+        try
+		{
+			
+			m_csList.Enter();
+			queue.push_back(item);
+			m_csList.Leave();
+		}
+		catch( ... )
+		{
+			m_csList.Leave();
+			throw;
+		}
+    }
+    
+    void pop( ) 
+	{
+        try
+		{
+			if(IsEmpty()) return ;
+			m_csList.Enter();
+			//T* element = queue.front();
+			queue.pop_front();
+			m_csList.Leave();
+			//return element;
+		}
+		catch( ... )
+		{
+			m_csList.Leave();
+			throw;
+		}
+
+		//return nullptr;
+    }
+
+	
+
+	std::unique_ptr<T> get() 
+	{
+		try
+		{
+			m_csList.Enter();
+			T* elem = queue.front();
+			std::unique_ptr<T> res( elem);
+			queue.pop();
+			m_csList.Leave();
+			return res;
+		}
+		catch( ... )
+		{
+			m_csList.Leave();
+			throw;
+		}
+        return nullptr;
+    }
+    
+    int size() 
+	{
+		int size = 0;
+        try
+		{
+			m_csList.Enter();
+			size = queue.size();
+			m_csList.Leave();
+		}
+		catch( ... )
+		{
+			m_csList.Leave();
+			throw;
+		}
+		return size;
+    }
+	T next() 
+	{
+		try
+		{
+			T* elem = nullptr;
+
+			m_csList.Enter();
+
+			if(!queue.empty()) {
+				elem = queue.front();
+				queue.pop();
+			}
+			m_csList.Leave();
+			return elem;
+		}
+		catch( ... )
+		{
+			m_csList.Leave();
+			throw;
+		}		
+   
+		return elem;
+	}
+	bool IsEmpty() 
+	{
+		bool bRet = false;
+		try
+		{
+			m_csList.Enter();
+			bRet = queue.empty();
+			m_csList.Leave();
+		}
+		catch( ... )
+		{	
+			m_csList.Leave();		
+		}
+		return bRet;
+	}	
+	
+};
+
+#endif

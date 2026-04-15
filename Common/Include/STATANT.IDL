@@ -1,0 +1,46 @@
+cpp_quote("// {56628AF2-97FC-11d5-8C04-009027912866}")
+cpp_quote("DEFINE_GUID( IID_IEMSAntennaStatus, 0x56628af2, 0x97fc, 0x11d5, 0x8c, 0x4, 0x0, 0x90, 0x27, 0x91, 0x28, 0x66);")
+cpp_quote(" ")
+
+
+// Status flag definitions
+cpp_quote("#define EMSANTINFOFLAG_STATUS_TRACKING		0x001 // currently tracking a pass - actual motion")
+cpp_quote("#define EMSANTINFOFLAG_STATUS_INBEAM		0x002 // satellite in beam")
+cpp_quote("#define EMSANTINFOFLAG_STATUS_FAULT			0x004 // generic fault")
+cpp_quote("#define EMSANTINFOFLAG_STATUS_CALCTRACK		0x008 // trying to setup/calculate/track a pass")
+cpp_quote("#define EMSANTINFOFLAG_STATUS_HOMING		0x010 // currently homing")
+
+import "unknwn.idl";
+import "emstypex.idl";
+import "emstatus.idl";
+
+#define _EMS_RPC_VERSION 1
+#define __RPC_FAR 
+
+[
+	object, uuid(56628AF2-97FC-11d5-8C04-009027912866),
+	helpstring("IEMSAntennaStatus Interface"),
+	pointer_default(unique)
+]
+
+interface IEMSAntennaStatus : IEMSStatus
+{
+#pragma pack(1)
+	typedef struct _tagEMSANTENNAINFO
+	{
+		EMSAZEL				azelDesired;
+		EMSAZEL				azelActual;
+		float           fAzimuth;  	          // Antenna azimuth (deg) 
+		float           fElevation;           // Antenna elevation (deg) 
+		unsigned short  uAntennaStatus;       // antenna device status
+	} EMSANTENNAINFO, *LPEMSANTENNAINFO;
+#pragma pack()
+
+	HRESULT ResetAntennaInfo( void );
+
+	HRESULT SetAntennaInfo( [in] EMSANTENNAINFO *lpInfo );
+	HRESULT GetAntennaInfo( [out] EMSANTENNAINFO *lpInfo );
+};
+
+typedef [unique] IEMSAntennaStatus *LPEMSANTENNASTATUS;
+

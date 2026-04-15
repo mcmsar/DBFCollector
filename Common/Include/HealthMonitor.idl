@@ -1,0 +1,38 @@
+cpp_quote("/********************************************************************")
+cpp_quote("*	Module:			HealthMonitor.h ") 
+cpp_quote("*********************************************************************")
+cpp_quote("*	              Copyright (c) 2009 by EMS Technologies, Inc.,")
+cpp_quote("*										All rights reserved")
+cpp_quote("*	This program is unpublished software and contains the trade secrets")
+cpp_quote("*	and confidential information of EMS Technologies, Inc.  It may not be ")
+cpp_quote("* reproduced in whole or in part, in any form or by any means whatsoever ")
+cpp_quote("* without the express written permission of EMS Technologies, Inc.")
+cpp_quote("*")
+cpp_quote("********************************************************************/")
+cpp_quote("#ifndef INC_HEALTHMONITOR_IDL")
+cpp_quote("#define INC_HEALTHMONITOR_IDL")
+
+cpp_quote("// {C6C06E28-79B6-4fed-94F7-A248ED90294E}")
+cpp_quote("DEFINE_GUID(IID_IEMSHealthMonitor, 0xc6c06e28, 0x79b6, 0x4fed, 0x94, 0xf7, 0xa2, 0x48, 0xed, 0x90, 0x29, 0x4e);")
+
+cpp_quote("// {095D037A-7C85-4519-97D7-F4447F118E89}")
+cpp_quote("DEFINE_GUID(CLSID_EMSHealthMonitor, 0x95d037a, 0x7c85, 0x4519, 0x97, 0xd7, 0xf4, 0x44, 0x7f, 0x11, 0x8e, 0x89);")
+
+import "unknwn.idl";
+import "healthstatustypes.idl";
+
+#define _EMS_RPC_VERSION 1
+#define __RPC_FAR 
+
+
+[
+	uuid(C6C06E28-79B6-4fed-94F7-A248ED90294E),
+	helpstring("IEMSHealthMonitor"),
+	pointer_default(unique)
+]
+interface IEMSHealthMonitor : IUnknown
+{
+// TBD --- for future reference
+};
+
+cpp_quote("#endif //INC_HEALTHMONITOR_IDL")

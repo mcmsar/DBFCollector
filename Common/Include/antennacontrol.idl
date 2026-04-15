@@ -1,0 +1,112 @@
+cpp_quote("// {3D10E58E-0E6D-4a97-8349-7FDCFEA9C039}")
+cpp_quote("DEFINE_GUID( IID_IEMSAntenna, 0x3d10e58e, 0xe6d, 0x4a97, 0x83, 0x49, 0x7f, 0xdc, 0xfe, 0xa9, 0xc0, 0x39);")
+
+cpp_quote("// {F88292E3-3F93-425f-B488-67C5F93C55A0}")
+cpp_quote("DEFINE_GUID( IID_IEMSAntenna2, 0xf88292e3, 0x3f93, 0x425f, 0xb4, 0x88, 0x67, 0xc5, 0xf9, 0x3c, 0x55, 0xa0);")
+
+import "unknwn.idl";
+import "emstle.idl";
+import "emstypex.idl";
+import "emstrack.idl";
+
+[
+	uuid(3D10E58E-0E6D-4a97-8349-7FDCFEA9C039),
+	helpstring("IEMSAntenna"),
+	pointer_default(unique)
+]
+interface IEMSAntenna : IUnknown
+{
+	typedef enum tagEMSAntennaState
+	{
+		EMS_ANTENNA_STATE_UNKNOWN = 0,
+		EMS_ANTENNA_STATE_TRACKING = 1,
+		EMS_ANTENNA_STATE_NOTTRACKING = 2
+	} EMSANTENNASTATE;
+
+	//! Set the TLE for a satellite.
+	HRESULT SetOrbit( [in] const EMSTLERECORD cstrTLE );
+
+	//! Get the TLE for a satellite.
+	HRESULT GetOrbit(	[in] const ULONG culSatID, 
+						[out] EMSTLERECORD* pstrTLE );
+
+	//! Set the TLEs for multiple satellites.
+	HRESULT SetOrbits(	[in] const ULONG culOrbits, 
+						[in,size_is(culOrbits)] const EMSTLERECORD* castrTLE );
+
+	//! Get the TLEs for multiple satellites.
+	HRESULT GetOrbits(	[in] const ULONG culMaxOrbits, 
+						[out] ULONG* pulActualOrbits, 
+						[out,size_is(culMaxOrbits),length_is(*pulActualOrbits)] EMSTLERECORD* astrTLEs );
+
+	//! Have the given antanna start tracking the satellites listed.  
+	HRESULT Track(	[in] const ULONG culAntennaID, 
+					[in] const ULONG culSatellites, 
+					[in,size_is(culSatellites)] const ULONG* caulSatellitesToTrack );
+	
+	//! Stop all antennas from tracking.
+	HRESULT StopAll();
+
+	//! Stop an antenna from tracking.
+	HRESULT Stop( [in] const ULONG culAntennaID );
+
+	//! Set antennas to safe mode (i.e., stow).  Stop all processing and wait for commands.
+	HRESULT StowAll();
+
+	//! Set antenna to safe mode (i.e., stow).  Stop all processing and wait for commands.
+	HRESULT Stow( [in] const ULONG culAntennaID );
+
+	//! Start tracking current schedules with all antennas.
+	HRESULT StartAll();
+
+	//! Start tracking current schedule with given antenna.
+	HRESULT Start( [in] const ULONG culAntennaID );
+
+	//! Stop all processing and restart software.
+	HRESULT Restart();
+
+	//! Determine whether the antenna is currently tracking a pass.
+	HRESULT GetState( [in] const ULONG culAntennaID, [out] EMSANTENNASTATE* pePassStatus );
+	
+	// Add methods for retrieving status information?
+
+}
+
+
+
+[
+	uuid(F88292E3-3F93-425f-B488-67C5F93C55A0),
+	helpstring("IEMSAntenna2"),
+	pointer_default(unique)
+]
+interface IEMSAntenna2 : IEMSAntenna
+{
+	typedef enum tagEMSANTENNASTATUS
+	{
+		EMS_ANTENNA_STATUS_UNKNOWN = 0,
+		EMS_ANTENNA_STATUS_OK = 1,
+		EMS_ANTENNA_STATUS_ERROR = 2
+	} EMSANTENNASTATUS;
+
+	typedef enum tagEMSFESStatus
+	{
+		EMS_FES_STATUS_UNKNOWN = 0,
+		EMS_FES_STATUS_OK = 1,
+		EMS_FES_STATUS_ERROR = 2
+	} EMSFESSTATUS;
+
+	//! Returns the current antenna position
+	HRESULT GetPosition( [in] const ULONG culAntennaID, [out] float* pfAzimuth, 
+	                     [out] float* pfElevation );
+	
+	//! Returns the FES Status.
+	HRESULT GetAntennaStatus( [in] const ULONG culAntennaID, 
+	                          [out] EMSANTENNASTATUS* peAntennaStatus );
+	
+	//! Returns the FES Status.
+	HRESULT GetFESStatus( [out] EMSFESSTATUS* peFESStatus );
+	
+	//! Returns the flag whether to stop between passes or not.
+	HRESULT GetStopBetweenPassesFlag( [out] BOOL* pbStopBetweenPasses );
+	
+}

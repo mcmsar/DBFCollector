@@ -1,0 +1,12 @@
+#ifndef __SIT_FORMAT_CLASS_H__
+
+typedef enum tagSitFormatClass
+{
+	SIT_FMT_CLASS_UNKNOWN = 0,
+	SIT_FMT_CLASS_SIT = 1,
+	SIT_FMT_CLASS_XML = 2,
+	SIT_FMT_CLASS_CSV = 3
+	
+} EMSSITFORMATCLASS;
+
+#endif

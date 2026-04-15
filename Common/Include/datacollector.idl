@@ -1,0 +1,39 @@
+cpp_quote("// {2F2E8454-59CE-4626-9EDE-3D1DEB46D4BF}")
+cpp_quote("DEFINE_GUID( IID_IEMSDataCollector, 0x2f2e8454, 0x59ce, 0x4626, 0x9e, 0xde, 0x3d, 0x1d, 0xeb, 0x46, 0xd4, 0xbf);")
+
+import "unknwn.idl";
+import "emstypex.idl";
+
+[
+	uuid(2F2E8454-59CE-4626-9EDE-3D1DEB46D4BF),
+	helpstring("IEMSDataCollector"),
+	pointer_default(unique)
+]
+interface IEMSDataCollector : IUnknown
+{
+	//! Start collecting and transmitting data from the given ADBoard Channel.
+	HRESULT Start( [in] const ULONG culADBoardID, [in] const ULONG culChannelID );
+
+	//! Stop collecting and transmitting data from the given ADBoard Channel.
+	HRESULT Stop( [in] const ULONG culADBoardID, [in] const ULONG culChannelID );
+
+	//! Set the satellite ID for the ADBoard Channel.
+	HRESULT SetSatelliteID( [in] const ULONG culADBoardID, [in] const ULONG culChannelID, 
+						[in] const ULONG culSatID );
+
+	//! Get the satellite ID for the ADBoard Channel.
+	HRESULT GetSatelliteID( [in] const ULONG culADBoardID, [in] const ULONG culChannelID, 
+						[out] ULONG* pulSatID );
+
+	//! Set the Input ID for the ADBoard Channel.  This is the identifier of the device
+	//! attached to the channel.  E.g. for a tracking antenna input, it's the antenna's ID.  
+	//! For a DBF antenna, it's the face ID.
+	HRESULT SetInputDataID( [in] const ULONG culADBoardID, [in] const ULONG culChannelID, 
+						[in] const ULONG culInputDataID );
+
+	//! Get the Input ID for the ADBoard Channel.  This is the identifier of the device
+	//! attached to the channel.  E.g. for a tracking antenna input, it's the antenna's ID.  
+	//! For a DBF antenna, it's the face ID.
+	HRESULT GetInputDataID( [in] const ULONG culADBoardID, [in] const ULONG culChannelID, 
+						[out] ULONG* pulInputDataID );
+}

@@ -1,0 +1,51 @@
+cpp_quote( " " )
+cpp_quote( "#include \"emserror.h\"" )
+cpp_quote( " " )
+
+cpp_quote(  "// {3CF00255-D829-42cf-80BF-08B3E8C46053}")
+cpp_quote("DEFINE_GUID(CLSID_EMSAccessor, 0x3cf00255, 0xd829, 0x42cf, 0x80, 0xbf, 0x8, 0xb3, 0xe8, 0xc4, 0x60, 0x53);")
+
+cpp_quote( "// {F2496C3B-CA31-4e14-87DA-8E8B6B9310A2}" )
+cpp_quote( "DEFINE_GUID(IID_IEMSDBConnection, 0xf2496c3b, 0xca31, 0x4e14, 0x87, 0xda, 0x8e, 0x8b, 0x6b, 0x93, 0x10, 0xa2);")
+
+cpp_quote("// {A4256E86-AC4D-4082-BB76-6EA71A7BF6FE}")
+cpp_quote("DEFINE_GUID(IID_IEMSAccessor, 0xa4256e86, 0xac4d, 0x4082, 0xbb, 0x76, 0x6e, 0xa7, 0x1a, 0x7b, 0xf6, 0xfe);")
+
+import "leolut600dbs.idl";
+import "unknwn.idl";
+import "emstypex.idl";
+
+#define _EMS_RPC_VERSION 1
+#define __RPC_FAR 
+
+[
+	object, uuid(F2496C3B-CA31-4e14-87DA-8E8B6B9310A2),
+	helpstring("IEMSConnection Interface"),
+	pointer_default(unique)
+]
+interface IEMSDBConnection : IUnknown
+{
+	HRESULT Connect( [in,string] LPCWSTR szConnection );
+	HRESULT Disconnect();
+};
+
+typedef [unique] IEMSDBConnection *LPEMSDBCONNECTION;
+
+[
+	object, uuid(A4256E86-AC4D-4082-BB76-6EA71A7BF6FE),
+	helpstring("IEMSAccessor Interface"),
+	pointer_default(unique)
+]
+interface IEMSAccessor : IUnknown
+{
+	HRESULT get_spectrumDataSet( [in] EMSSELECTCRITERIA* pCriteria,
+								 [in,out] long* plCount,
+								 [out,size_is(,*plCount)] LPEMSSPECTRUM** papData );
+
+	HRESULT get_cbcDataSet(		[in] EMSSELECTCRITERIA* pCriteria,
+								[in,out] long* plCount,
+								[out,size_is(,*plCount)] LPEMSCBCDATA** papData );
+
+};
+
+typedef [unique] IEMSAccessor *LPEMSACCESSOR;

@@ -1,0 +1,34 @@
+/*********************************************************************
+*	              Copyright (c) 2009 by EMS Technologies, Inc.,
+*										All rights reserved
+*	This program is unpublished software and contains the trade secrets
+*	and confidential information of EMS Technologies, Inc.  It may not be 
+* reproduced in whole or in part, in any form or by any means whatsoever 
+* without the express written permission of EMS Technologies, Inc.
+*
+********************************************************************/
+
+/*******************************************************************
+
+  Revision Record
+
+	$Log:
+	$
+********************************************************************/
+
+cpp_quote("// {245C4398-13D3-4f89-ABDA-241CB156821D}")
+cpp_quote("DEFINE_GUID(IID_IEMSOCCAlertsProxy,0x245c4398, 0x13d3, 0x4f89, 0xab, 0xda, 0x24, 0x1c, 0xb1, 0x56, 0x82, 0x1d);")
+
+
+import "unknwn.idl";
+import "emstypex.idl";
+
+[
+	uuid(F424A67C-2DC9-4b11-B653-FE052CB7DB47),
+	helpstring("IEMSOCCAlertsProxy"),
+	pointer_default(unique)
+]
+interface IEMSOCCAlertsProxy : IUnknown
+{
+	HRESULT GetAlerts( [in] const EMSTIME startTime, [out,string] wchar_t** pwszAlerts );
+}

@@ -1,0 +1,114 @@
+cpp_quote("#ifndef _CHANGEMONITOR_IDL_H_")
+cpp_quote("#define _CHANGEMONITOR_IDL_H_")
+
+cpp_quote("// {900457F9-EFE3-4298-9755-FD430A113271}")
+cpp_quote("DEFINE_GUID(IID_IEMSDataChangeSink, 0x900457f9, 0xefe3, 0x4298, 0x97, 0x55, 0xfd, 0x43, 0xa, 0x11, 0x32, 0x71);")
+
+cpp_quote("// {C6307BFB-28C1-47c0-B630-30C665D66A0B}")
+cpp_quote("DEFINE_GUID(IID_IEMSChangeMonitor, 0xc6307bfb, 0x28c1, 0x47c0, 0xb6, 0x30, 0x30, 0xc6, 0x65, 0xd6, 0x6a, 0xb);")
+
+cpp_quote("// {EABC9150-CF98-4a61-AC45-AEEF30D79D3A}")
+cpp_quote("DEFINE_GUID(IID_IEMSChangeMonitor2, 0xeabc9150, 0xcf98, 0x4a61, 0xac, 0x45, 0xae, 0xef, 0x30, 0xd7, 0x9d, 0x3a);")
+
+cpp_quote("// {F13551B8-35AB-446c-924C-47E29D19E4E7}")
+cpp_quote("DEFINE_GUID(CLSID_EMSChangeMonitor, 0xf13551b8, 0x35ab, 0x446c, 0x92, 0x4c, 0x47, 0xe2, 0x9d, 0x19, 0xe4, 0xe7);")
+
+import "unknwn.idl";
+
+cpp_quote("")
+cpp_quote("// EMSDATACHANGE_DISPLAY_STATE = Any display state change")
+cpp_quote("// EMSDATACHANGE_LUT_STATUS_DATA triggered by new status record or online/offline transition")
+typedef enum tagLutEventEnum
+{
+	EMSDATACHANGE_MIN = 0,
+	EMSDATACHANGE_UNKNOWN = 0,
+	EMSDATACHANGE_DISPLAY_STATE = 1,
+	EMSDATACHANGE_DISPLAY_STATE_OFFLINE = 2,
+	EMSDATACHANGE_DISPLAY_STATE_IDLE = 3,
+	EMSDATACHANGE_DISPLAY_STATE_PASS = 4,	
+	EMSDATACHANGE_DISPLAY_STATE_POSTPASS = 5,
+	EMSDATACHANGE_DISPLAY_STATE_SYSTEM_TEST = 6,
+	EMSDATACHANGE_LUT_STATUS_DATA = 7,
+	EMSDATACHANGE_LOG_ENTRY = 8,
+	EMSDATACHANGE_MAX = 8,
+} EMSDATACHANGE;
+cpp_quote("#define EMSDATACHANGE_COUNT			(EMSDATACHANGE_MAX+1)")
+cpp_quote("#define VALID_EMSDATACHANGE(x)		(x>=EMSDATACHANGE_MIN && x<=EMSDATACHANGE_MAX)")
+
+// Specific display states
+typedef enum tagLutDisplayStateEnum
+{
+	LUTDISPLAYSTATE_MIN = 0,
+	LUTDISPLAYSTATE_UNKNOWN = 0,
+	LUTDISPLAYSTATE_OFFLINE = 1,
+	LUTDISPLAYSTATE_IDLE = 2,
+	LUTDISPLAYSTATE_PASS = 3,	
+	LUTDISPLAYSTATE_POSTPASS = 4,
+	LUTDISPLAYSTATE_SYSTEM_TEST = 5,
+	LUTDISPLAYSTATE_MAX = 5,
+} LUTDISPLAYSTATE;
+cpp_quote("#define LUTDISPLAYSTATE_COUNT	(LUTDISPLAYSTATE_MAX+1)")
+cpp_quote("#define VALID_LUTDISPLAYSTATE(x)	(x>=LUTDISPLAYSTATE_MIN && x<=LUTDISPLAYSTATE_MAX)")
+
+[
+	uuid(900457F9-EFE3-4298-9755-FD430A113271),
+	helpstring("IEMSDataChangeSink"),
+	pointer_default(unique)
+]
+interface IEMSDataChangeSink: IUnknown
+{
+	HRESULT OnChange( 
+			[in] const ULONG culLutID,
+			[in] const EMSDATACHANGE ceChange,
+			[in] const ULONG culUserDataSize,
+			[in, size_is(culUserDataSize)] const BYTE* cabyUserData );
+};
+
+[
+	uuid(C6307BFB-28C1-47c0-B630-30C665D66A0B),
+	helpstring("IEMSChangeMonitor"),
+	pointer_default(unique)
+]
+interface IEMSChangeMonitor : IUnknown
+{
+	HRESULT	Subscribe(
+			[in] IEMSDataChangeSink*	pSink, 
+			[in] const ULONG			culLutID, 
+			[in] const EMSDATACHANGE	ceDataChange,
+			[in] const ULONG			culUserDataSize,
+			[in, size_is(culUserDataSize)] 
+				 const BYTE*			cabyUserData );
+
+	HRESULT Unsubscribe(
+			[in] IEMSDataChangeSink*	pSink, 
+			[in] const ULONG			culLutID,
+			[in] const EMSDATACHANGE	ceDataChange );
+
+	HRESULT UnsubscribeAll( [in] IEMSDataChangeSink* pSink );
+};
+
+[
+	uuid(EABC9150-CF98-4a61-AC45-AEEF30D79D3A),
+	helpstring("IEMSChangeMonitor2"),
+	pointer_default(unique)
+]
+interface IEMSChangeMonitor2 : IEMSChangeMonitor
+{
+	HRESULT	SubscribeEx(
+			[in] IEMSDataChangeSink*	pSink, 
+			[in] const ULONG			culCalleeID, 
+			[in] const ULONG			culFilterLutID, 
+			[in] const EMSDATACHANGE	ceDataChange,
+			[in] const ULONG			culUserDataSize,
+			[in, size_is(culUserDataSize)] 
+				 const BYTE*			cabyUserData );
+
+	HRESULT UnsubscribeEx(
+			[in] IEMSDataChangeSink*	pSink, 
+			[in] const ULONG			culCalleeID, 
+			[in] const ULONG			culFilterLutID, 
+			[in] const EMSDATACHANGE	ceDataChange );
+};
+
+
+cpp_quote("#endif //_CHANGEMONITOR_IDL_H_")

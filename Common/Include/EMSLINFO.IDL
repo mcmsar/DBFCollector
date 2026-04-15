@@ -1,0 +1,149 @@
+cpp_quote( " " )
+cpp_quote( "#include \"emserror.h\"" )
+cpp_quote( " " )
+
+cpp_quote("// {7FBD4401-4EDE-11d5-8BB6-009027912866}")
+cpp_quote("DEFINE_GUID( CLSID_EMSLutInfo, 0x7fbd4401, 0x4ede, 0x11d5, 0x8b, 0xb6, 0x0, 0x90, 0x27, 0x91, 0x28, 0x66);")
+cpp_quote(" ")
+
+cpp_quote("// {7FBD4402-4EDE-11d5-8BB6-009027912866}")
+cpp_quote("DEFINE_GUID( IID_IEMSLutInfo, 0x7fbd4402, 0x4ede, 0x11d5, 0x8b, 0xb6, 0x0, 0x90, 0x27, 0x91, 0x28, 0x66);")
+cpp_quote(" " )
+
+cpp_quote("// {612A6FA4-ED98-4fb2-87D0-BEF1EBC8608D}")
+cpp_quote("DEFINE_GUID( IID_IEMSLutType, 0x612a6fa4, 0xed98, 0x4fb2, 0x87, 0xd0, 0xbe, 0xf1, 0xeb, 0xc8, 0x60, 0x8d);")
+
+cpp_quote("// {CE11BC87-66F2-4c53-93C4-FB2E956EC1EF}")
+cpp_quote("DEFINE_GUID(IID_IEMSTransfer, 0xce11bc87, 0x66f2, 0x4c53, 0x93, 0xc4, 0xfb, 0x2e, 0x95, 0x6e, 0xc1, 0xef);")
+cpp_quote(" " )
+
+cpp_quote("// {0CE3EE4B-4D0C-47fd-91E6-97C59F95D632}")
+cpp_quote("DEFINE_GUID( IID_IEMSLutInfo2, 0xce3ee4b, 0x4d0c, 0x47fd, 0x91, 0xe6, 0x97, 0xc5, 0x9f, 0x95, 0xd6, 0x32);")
+cpp_quote(" " )
+
+cpp_quote("// {17676BA9-605F-493a-BB3A-F66BC4795418}")
+cpp_quote("DEFINE_GUID( IID_IEMSLutInfo3, 0x17676ba9, 0x605f, 0x493a, 0xbb, 0x3a, 0xf6, 0x6b, 0xc4, 0x79, 0x54, 0x18);")
+cpp_quote(" " )
+
+import "unknwn.idl";
+import "emstypex.idl";
+import "emsicfg.idl";
+import "antennacfg.idl";
+
+#define _EMS_RPC_VERSION 1
+#define __RPC_FAR 
+
+typedef enum _tagEMSLUTTYPECODE
+{
+// 
+// 	Attributes
+//
+		EMSLut600Series		= 0x0800,
+		EMSLut500Series		= 0x0400,
+		EMSLutForeignSeries	= 0x0200,
+
+		EMSGeoLutType			= 0x0080,
+		EMSLeoLutType			= 0x0040,
+		EMSLutClopType			= 0x0020,
+		EMSOpIntType			= 0x0010,
+		EMSMeoLutType			= 0x0001,
+// 
+// 	Specific products
+//
+		EMSGeoLut600			= EMSLut600Series + EMSGeoLutType,
+		EMSLeoLut600			= EMSLut600Series + EMSLeoLutType,
+		EMSMeoLut600			= EMSLut600Series + EMSMeoLutType,
+		EMSATLut500				= EMSLut500Series + EMSLeoLutType,
+
+		EMSTSILeoLut			= EMSLutForeignSeries + EMSLeoLutType,
+
+		EMSLutTypeUnknown 		= 0x0000
+}	EMSLUTTYPECODE;
+
+[
+	object, uuid(7FBD4402-4EDE-11d5-8BB6-009027912866),
+	helpstring("IEMSLutInfo Interface"),
+	pointer_default(unique)
+]
+
+interface IEMSLutInfo : IEMSConfigSettings
+{
+	HRESULT GetName( [in] ULONG ulLutID,
+		[out, size_is(cbMaxLength), length_is(*pcbLength)] char *pv,
+		[in] ULONG cbMaxLength,	[out] ULONG *pcbLength);
+
+	HRESULT GetDescription( [in] ULONG ulLutID,
+		[out, size_is(cbMaxLength), length_is(*pcbLength)] char *pv,
+		[in] ULONG cbMaxLength,	[out] ULONG *pcbLength);
+
+	HRESULT GetSiteLocation( [in] ULONG ulLutID,
+		[out] EMSLOCATION *lpLocation );
+
+	HRESULT GetSiteProfile( [in] ULONG ulLutID,
+		[out, size_is(cb), length_is(*pcbReturned)] EMSAZEL *pAZEL,
+		[in] ULONG cb,
+		[out] ULONG *pcbReturned);
+};
+
+typedef [unique] IEMSLutInfo *LPEMSLUTINFO;
+
+[
+	object, uuid(0CE3EE4B-4D0C-47fd-91E6-97C59F95D632),
+	helpstring("IEMSLutInfo2 Interface"),
+	pointer_default(unique)
+]
+
+interface IEMSLutInfo2 : IEMSLutInfo
+{
+	HRESULT GetAntennaCount( [in] ULONG ulLutID, [out] ULONG *lpulAntennaCount );
+
+	HRESULT GetAntennaInfo( [in] ULONG ulLutID, [in] ULONG cb,
+		[out, size_is(cb), length_is(*pcbReturned)] EMSANTENNACONFIG *pInfo,
+		[out] ULONG *pcbReturned);
+};
+
+typedef [unique] IEMSLutInfo2 *LPEMSLUTINFO2;
+
+[
+	object, uuid(17676BA9-605F-493a-BB3A-F66BC4795418),
+	helpstring("IEMSLutInfo3 Interface"),
+	pointer_default(unique)
+]
+
+interface IEMSLutInfo3 : IEMSLutInfo2
+{
+	HRESULT SetSarrCalibration( [in] ULONG ulLutID, [in] ULONG ulSatelliteID, [in] INT64 i64TimeOffset, [in] double dFreqOffset );
+
+	HRESULT GetSarrCalibration( [in] ULONG ulLutID, [in] ULONG ulSatelliteID, [out] EMSTIME *lpTimeStamp, 
+					[out] INT64 *lpi64TimeOffset, [out] double * lpdFreqOffset );
+};
+
+typedef [unique] IEMSLutInfo3 *LPEMSLUTINFO3;
+
+[
+	object, uuid(612A6FA4-ED98-4fb2-87D0-BEF1EBC8608D),
+	helpstring("IEMSLutType Interface"),
+	pointer_default(unique)
+]
+
+interface IEMSLutType : IUnknown
+{
+	HRESULT GetLutType( [in] ULONG ulLutID, [out] LPWORD lpwLutType );
+	HRESULT GetLutVersion( [in] ULONG ulLutID, [out] LPWORD lpwLutVersion );
+};
+
+typedef [unique] IEMSLutType *LPEMSLUTTYPE;
+
+[
+	object, uuid(CE11BC87-66F2-4c53-93C4-FB2E956EC1EF),
+	helpstring("IEMSTransfer Interface"),
+	pointer_default(unique)
+]
+interface IEMSTransfer : IUnknown
+{
+	HRESULT GetTransferDirectory(	[out, size_is(cb), length_is(*pcbRead)]	BYTE *pv,
+									[in] ULONG cb,	
+									[out] ULONG *pcbRead );
+}
+
+typedef [unique] IEMSTransfer *LPEMSTRANSFER;

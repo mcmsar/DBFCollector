@@ -1,0 +1,41 @@
+cpp_quote("// {56628AF4-97FC-11d5-8C04-009027912866}")
+cpp_quote("DEFINE_GUID( IID_IEMSEnvironStatus, 0x56628af4, 0x97fc, 0x11d5, 0x8c, 0x4, 0x0, 0x90, 0x27, 0x91, 0x28, 0x66);")
+cpp_quote(" " )
+
+import "unknwn.idl";
+import "emstypex.idl";
+import "emstatus.idl";
+
+#define _EMS_RPC_VERSION 1
+#define __RPC_FAR 
+
+[
+	object, uuid(56628AF4-97FC-11d5-8C04-009027912866),
+	helpstring("IEMSEnvironStatus Interface"),
+	pointer_default(unique)
+]
+
+interface IEMSEnvironStatus : IEMSStatus
+{
+#pragma pack(1)
+
+	typedef struct _tagEMSENVIRONINFO
+	{
+		WORD wEnvironStatus;       // environment device status
+		DWORD dwEnvironStates;		// doors, etc
+		WORD wInsideTemp;
+		WORD wOutsideTemp;
+		WORD wWindSpeed;
+		WORD wWindDirection;
+	} EMSENVIRONINFO, *LPEMSENVIRONINFO;
+#pragma pack()
+
+	HRESULT ResetEnvironInfo( void );
+
+	HRESULT SetEnvironInfo( [in] EMSENVIRONINFO *lpInfo );
+	HRESULT GetEnvironInfo( [out] EMSENVIRONINFO *lpInfo );
+};
+
+typedef [unique] IEMSEnvironStatus *LPEMSENVIRONSTATUS;
+
+

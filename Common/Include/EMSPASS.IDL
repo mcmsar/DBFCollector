@@ -1,0 +1,172 @@
+cpp_quote( " " )
+cpp_quote( "#include \"emserror.h\"" )
+cpp_quote( " " )
+
+cpp_quote("// {999808E2-4C47-11d5-8BB5-009027912866} ")
+cpp_quote("DEFINE_GUID( CLSID_EMSPassSchedule, 0x999808e2, 0x4c47, 0x11d5, 0x8b, 0xb5, 0x0, 0x90, 0x27, 0x91, 0x28, 0x66); " )
+cpp_quote(" " )
+
+cpp_quote("// {999808E3-4C47-11d5-8BB5-009027912866} ")
+cpp_quote("DEFINE_GUID( IID_IEMSPassSchedule, 0x999808e3, 0x4c47, 0x11d5, 0x8b, 0xb5, 0x0, 0x90, 0x27, 0x91, 0x28, 0x66); ")
+cpp_quote(" " )
+
+
+cpp_quote("// {1D81BE81-3B9F-11d7-9D3F-000021FAA228}")
+cpp_quote("DEFINE_GUID( IID_IEMSPassSchedule2, 0x1d81be81, 0x3b9f, 0x11d7, 0x9d, 0x3f, 0x0, 0x0, 0x21, 0xfa, 0xa2, 0x28);")
+cpp_quote(" " )
+
+cpp_quote("// {A5E4261A-D9B8-4ff0-A1B1-E45DB22070C9}")
+cpp_quote("DEFINE_GUID( IID_IEMSPassSchedule3, 0xa5e4261a, 0xd9b8, 0x4ff0, 0xa1, 0xb1, 0xe4, 0x5d, 0xb2, 0x20, 0x70, 0xc9);")
+cpp_quote(" " )
+
+cpp_quote("// {84EADEB8-8626-4864-835F-95F43E40A639}")
+cpp_quote("DEFINE_GUID( IID_IEMSPassSchedule4, 0x84eadeb8, 0x8626, 0x4864, 0x83, 0x5f, 0x95, 0xf4, 0x3e, 0x40, 0xa6, 0x39);")
+cpp_quote(" ")
+
+cpp_quote("//")
+cpp_quote("//Definitions for Flags")
+cpp_quote("//")
+cpp_quote("// mask & 0x00F = status")
+cpp_quote("//")
+cpp_quote("#define EMS_PASSFLAG_STATUS_MASK	(0x00F)")
+cpp_quote("#define EMS_PASSFLAG_SUPPRESS		(0x001)")
+cpp_quote("#define EMS_PASSFLAG_SKIP 			EMS_PASSFLAG_SUPPRESS")
+cpp_quote("#define EMS_PASSFLAG_PROCESS		(0x002)")
+cpp_quote("#define EMS_PASSFLAG_REDUNDANT	(0x004)")
+cpp_quote("//")
+cpp_quote("// mask & 0x0F0 = origin")
+cpp_quote("//")
+cpp_quote("#define EMS_PASSFLAG_ORIGIN_MASK	(0x0F0)")
+cpp_quote("#define EMS_PASSFLAG_LUT			(0x010)")
+cpp_quote("#define EMS_PASSFLAG_MCC			(0x020)")
+cpp_quote("#define EMS_PASSFLAG_RCC			(0x040)")
+cpp_quote("#define EMS_PASSFLAG_OPERATOR		(0x080)")
+cpp_quote("//")
+cpp_quote("// mask & 0xF00 = disposition")
+cpp_quote("//")
+cpp_quote("#define EMS_PASSFLAG_RESULT_MASK	(0xF00)")
+cpp_quote("#define EMS_PASSFLAG_SUCCESS		(0x100)")
+cpp_quote("#define EMS_PASSFLAG_ABORT			(0x200)")
+cpp_quote("#define EMS_PASSFLAG_ERROR			(0x400)")
+
+// Processing Flags
+cpp_quote("// Process Flags " )
+cpp_quote("#define EMS_PASSFLAG_EXTPROCESSING	(0x0001) ")
+cpp_quote(" " )
+
+
+import "unknwn.idl";
+import "emstypex.idl";
+
+#define _EMS_RPC_VERSION 1
+#define __RPC_FAR 
+
+[
+	object, uuid(999808E3-4C47-11d5-8BB5-009027912866),
+	helpstring("IEMSPassSchedule Interface"),
+	pointer_default(unique)
+]
+
+interface IEMSPassSchedule : IUnknown
+{
+#pragma pack(1)
+
+	typedef struct _tagEMSSATELLITEPASS
+	{
+		ULONG		ulSatelliteID;
+		ULONG		ulFlags;
+		ULONG		ulOrbitNumber;
+		EMSTIME	timeAOS;
+		EMSTIME	timeLOS;	
+		EMSTIME	timePeak;
+		EMSDEGREES degMaxElevation;
+		EMSDEGREES degMinElevation;
+		EMSDEGREES degAzimuthAOS;
+		EMSDEGREES degAzimuthLOS;
+	} EMSSATELLITEPASS, *LPEMSSATELLITEPASS;
+
+#pragma pack()
+
+	HRESULT SetSatellites( [in] ULONG cbCount,
+					[in, size_is(cbCount)]  ULONG const *pulSatID );
+
+	HRESULT SetPrimaryLut( [in] ULONG const ulLutID );
+
+	HRESULT GenerateSchedule( [in] EMSTIME const startTime, 
+					[in] EMSTIME const stopTime );
+
+	HRESULT SetSchedule( [in] EMSTIME const startTime, 
+					[in] EMSTIME const stopTime, 
+		[in, size_is(cbCount) ] EMSSATELLITEPASS const *pvPass, [in] ULONG cbCount );
+
+	HRESULT GetSchedule( [in] ULONG cbCount, 
+		[out, size_is(cbCount), length_is(*pcbResult) ] EMSSATELLITEPASS *pvPass,
+		[out] ULONG *pcbResult, 
+		[ out ] EMSTIME *lpStartTime, [ out ] EMSTIME *lpStopTime );
+};
+
+typedef [unique] IEMSPassSchedule *LPEMSPASSSCHEDULE;
+
+[
+	object, uuid(1D81BE81-3B9F-11d7-9D3F-000021FAA228),
+	helpstring("IEMSPassSchedule2 Interface"),
+	pointer_default(unique)
+]
+
+interface IEMSPassSchedule2 : IEMSPassSchedule
+{
+	HRESULT SetLocation( [in] EMSLOCATION location );
+	HRESULT SetSiteProfile( [in] ULONG ulCount,
+					[in, size_is(ulCount)]  EMSAZEL const *lpProfile );
+	HRESULT Reset();
+};
+
+typedef [unique] IEMSPassSchedule2 *LPEMSPASSSCHEDULE2;
+
+
+[
+	object, uuid(A5E4261A-D9B8-4ff0-A1B1-E45DB22070C9),
+	helpstring("IEMSPassSchedule3 Interface"),
+	pointer_default(unique)
+]
+
+interface IEMSPassSchedule3 : IEMSPassSchedule2
+{
+
+#pragma pack(1)
+	typedef struct _tagEMSSATPASSLIMITS
+	{
+		ULONG ulMinSatID;
+		ULONG ulMaxSatID;
+		double	dMaxMinutes;
+	} EMSSATPASSLIMITS, *LPEMSSATPASSLIMITS;
+#pragma pack( )
+
+	HRESULT SetFlags( DWORD dwFlags );
+
+	HRESULT GetFlags( DWORD *lpdwFlags);
+
+	HRESULT SetPassLimits( DWORD dwCount, EMSSATPASSLIMITS *lpLimits );
+
+	HRESULT SetPassLimit( DWORD dwMinSatID, DWORD dwMaxSatID, double dMinutes );
+};
+
+typedef [unique] IEMSPassSchedule3 *LPEMSPASSSCHEDULE3;
+
+//
+[
+	object, uuid(84EADEB8-8626-4864-835F-95F43E40A639),
+	helpstring("IEMSPassSchedule4 Interface"),
+	pointer_default(unique)
+]
+interface IEMSPassSchedule4 : IEMSPassSchedule3
+{
+
+
+	HRESULT SetMinElevationAngle( [in] const double cdMinEl );
+
+	HRESULT GetMinElevationAngle( [out] double* pdMinEl );
+
+};
+
+typedef [unique] IEMSPassSchedule4 *LPEMSPASSSCHEDULE4;

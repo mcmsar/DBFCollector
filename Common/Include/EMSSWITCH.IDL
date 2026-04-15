@@ -1,0 +1,32 @@
+cpp_quote( " " )
+cpp_quote( "#include \"emserror.h\"" )
+cpp_quote( " " )
+
+cpp_quote("// {A5160908-2489-4d33-AE2B-E7709DB93EC9}")
+cpp_quote("DEFINE_GUID(IID_IEMSSwitch, 0xa5160908, 0x2489, 0x4d33, 0xae, 0x2b, 0xe7, 0x70, 0x9d, 0xb9, 0x3e, 0xc9);")
+cpp_quote( " " )
+
+import "unknwn.idl";
+import "emstypex.idl";
+import "EMSDEVICES.idl";
+
+[
+	object, uuid(A5160908-2489-4d33-AE2B-E7709DB93EC9),
+	helpstring("IEMSSwitch Interface"),
+	pointer_default(unique)
+]
+
+interface IEMSSwitch : IEMSSubDevice
+{
+	HRESULT Set( void );
+
+	HRESULT ReSet( void );
+
+	HRESULT Test( [out] BOOL *lpbSwitch );
+
+	HRESULT Latched( [out] BOOL *lpbLatched );
+	
+	HRESULT ClearLatch();
+};
+
+typedef [unique] IEMSSwitch *LPEMSSWITCH;

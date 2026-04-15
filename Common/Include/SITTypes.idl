@@ -1,0 +1,318 @@
+import "unknwn.idl";
+import "emstypex.idl";
+
+cpp_quote( "#define EMS_MAX_SATS_PER_ABL_ALERT 16" )
+cpp_quote( "#define EMS_MAX_LUTS_PER_ABL_ALERT 13" )
+
+#pragma pack(1)
+
+[
+	uuid(2B08F2F4-3DAA-428d-9C99-89FF2E009ECB),
+	helpstring("ISITTypes"),
+	pointer_default(unique)
+]
+interface ISITTypes : IUnknown
+{
+	/////////////////////// START Borrowed from sittypes.h -- Will need to be moved here or put in its own idl ////////
+	// MF618
+	typedef enum tagEMSSITSOLNTYPE
+	{
+		EMSSST_Unknown='U',
+		EMSSST_Beacon='C',
+		EMSSST_Interferer='I'
+	} EMSSITSOLNTYPE;
+
+	typedef enum tagEMSSITMSGTYPE
+	{
+		EMSSMT_Invalid=3,
+		EMSSMT_Normal=0,
+		EMSSMT_Test=1,
+		EMSSMT_Combination=2
+	} EMSSITMSGTYPE;
+
+	typedef enum tagEMSITCONTROLCODE
+	{
+		// Commands
+		EMSSCC_Info = 1,
+		EMSSCC_Validate = 2,
+		EMSSCC_Execute = 3,
+		EMSSCC_ValidateInstall = 4,
+		EMSSCC_Install = 5,
+		EMSSCC_Append = 6,
+		EMSSCC_InstallManoeuvre = 7,
+		// Response
+		EMSSCC_ValidData = 10,
+		EMSSCC_InvalidData = 11,
+		EMSSCC_CommandAccepted = 12,
+		EMSSCC_CommandRejected = 13,
+		EMSSCC_UnknownCommand = 14,
+		EMSSCC_ProcessOkay = 15,
+		EMSSCC_ProcessFailed = 16,
+		//
+		EMSSCC_Last,
+		EMSSCC_First = 1,
+		EMSSCC_Unknown = 0
+	} EMSSITCONTROLCODE;
+
+	typedef struct _tagEMSSITLOCALERTHEADER
+	{
+	/*MF07*/	ULONG		ulPass;
+	/*MF11*/	int		nPrimaryLutID;
+	/*MF12*/	BOOL		bLocalFlag;
+					int		nFreqBand;
+					WORD		wDataTypes;				// legacy MF117 field
+	/*MF18*/	int		nSecondaryLutID;
+	/*MF19*/	int		nSideBands;
+	/*MF20*/	int		nSweepPeriod;
+					int		nSweepPeriodSdev;
+	/*MF21B*/	int		nNumPoints;
+	/*MF22*/	INT64		i64BeaconID;
+	/*MF23*/	BYTE		cBeaconMsg[18];
+	/*MF618*/	EMSSITSOLNTYPE solnType; // BEacon : INterfer : UNknown
+	/*MF619*/	EMSSITMSGTYPE	msgType; // (N)ormal : (T)est : (C)ombination
+	/*MF626*/	int		nBitErrorsPreamble;
+					int		nBitErrorsField1;
+					int		nBitErrorsField2;
+	/*MF627*/	int		nDupCopyCount;
+	/*MF628*/	double	dPower;
+	/*MF647*/	double	dRecvFreq;
+					double	dLutFreqOffset;
+	/*MF648*/	EMSTIME	timeMsg;
+					double	dLutTimeOffset;
+	} EMSSITLOCALERTHEADER, *LPEMSSITLOCALERTHEADER;
+
+	typedef struct _tagEMSSITLOCALERTSIDESOLN
+	{
+	/*MF13*/	double	dBias;
+					double	dBSdev;
+					double	dDrift;
+	/*MF14*/	EMSTIME timeTCA;
+	/*MF15*/	WORD wWindowFactor;
+	/*MF16*/	WORD wIterations;
+	/*MF17*/	double dCTA;		
+	/*MF21*/	int nNumPoints;
+	/*MF24*/	int nServiceArea;
+					int nAmbiguityRes;
+	/*MF25*/	double dLatitude;
+	/*MF26*/	double dLongitude;
+	/*MF27*/	double dErrEllipseAngle;		// degrees 000-359 nnn
+					double dErrEllipseMajAxis;		// km nnn.n
+					double dErrEllipseMinAxis;		// km nnn.n
+	/*MF28*/	double dProbability;
+	/*MF29*/	EMSTIME timeNextVisibility;
+	/*MF30*/	double dConfidence;
+	/*MF31*/	double dDataResSdev;
+					double dDataResTrend;
+	/*MF622*/	double dLatLongCorrCoeff;
+
+	//Internal use, for SIT165 only				
+	/*MF121*/	double dLatCorrCoeff;
+	/*MF123*/	double dLongCorrCoeff;
+	} EMSSITLOCALERTSIDESOLN, *LPEMSSITLOCALERTSIDESOLN;
+
+	typedef struct _tagEMSSITLOCALERTSOLUTION
+	{
+		EMSSITLOCALERTHEADER hdr;
+		EMSSITLOCALERTSIDESOLN sideA, sideB;
+	} EMSSITLOCALERTSOLUTION, *LPEMSSITLOCALERTSOLUTION;
+
+	/////////////////////// END Borrowed from sittypes.h -- Will need to be moved here or put in its own idl ////////
+
+	//! struct tagEMS605AData
+	//! Holds data that comprises a SIT605A message.
+	struct tagEMS605AData
+	{
+		[string] wchar_t* wszType;
+		[string] wchar_t* wszSource;
+		[string] wchar_t* wszStatus;
+	};
+
+	//! @typedef struct tagEMS605AData EMS605ADATA;
+	//! Alias for tagEMS605AData
+	typedef struct tagEMS605AData EMS605ADATA;
+
+	//! @struct tagEMSSIT215DATA
+	//! NOTE that this is taken from emsit215.h and eventually needs to be in one place only.
+	struct tagEMSSIT215DATA
+	{
+		unsigned long	ulSatID;
+		unsigned long	ulOrbitNumber;
+		unsigned long	ulOrbitVectors;
+		EMSTIME timeOrbit;
+		EMSTIME timeEffective;
+		EMSVECTOR vOrbitPosition;
+		EMSVECTOR vOrbitVelocity;
+	};
+
+	typedef struct tagEMSSIT215DATA EMSSIT215DATA, *LPEMSSIT215DATA;
+
+	//! @struct tagEMSSIT255ADATA
+	//! NOTE that this is taken from emsit255.h and eventuallly needs to be in one place only.
+	struct tagEMSSIT255ADATA
+	{
+		ULONG	ulSatID;
+		ULONG ulOrbitNumber;
+		ULONG ulNoradNumber;
+		ULONG ulElementNumber;
+		EMSTIME timeEpoch;
+		double fXndt2o;
+		double fXndd6o;
+		double fBStar;
+		int nReserved;		// don't want this confused with ulOrbitNumber
+//		int nOrbitNumber;
+		double fInclination;
+		double fRightAscNode;
+		double fEccentricity;
+		double fArgPerigee;
+		double fMeanAnomaly;
+		double fMeanMotion;
+	};
+
+	typedef struct tagEMSSIT255ADATA EMSSIT255ADATA, *LPEMSSIT255ADATA;
+
+	//! @enum tagEMSSCHEDUSAGE
+	//! NOTE that this is taken from emsit260.h and eventually needs to be in one place only.
+	enum tagEMSSCHEDUSAGE
+	{
+		EMSSchedUsageUnknown = 0,
+		EMSSchedUsageInstall = 1,
+		EMSSchedUsageAppend = 2,
+		EMSSchedUsageInfo = 3,
+		EMSSchedUsageValidate = 4
+	};
+
+	typedef enum tagEMSSCHEDUSAGE EMSSCHEDUSAGE;
+
+	//! @struct _tagEMSSIT260DATA
+	//! NOTE that this is taken from emsit260.h and eventually needs to be in one place only.
+	struct  _tagEMSSIT260DATA
+	{
+		ULONG ulLutID;
+		ULONG ulSatID;
+		WORD wPassSchedOrigin;								
+		WORD wPassSchedStatus;
+		WORD wPassProcessStatus;
+		ULONG ulOrbitNumber;
+		EMSTIME timeAOS;
+		EMSTIME timeLOS;
+		double dPrePassOffset;		 		// seconds
+		double dStartDataCollectionOffset;	// seconds
+		double dStopDataCollectionOffset;	// seconds
+		EMSDEGREES degMaxElevation;
+		EMSDEGREES degAzimuthAOS;
+		EMSDEGREES degAzimuthPeak;
+		EMSDEGREES degAzimuthLOS;
+	};
+
+	typedef struct _tagEMSSIT260DATA EMSSIT260DATA, *LPEMSSIT260DATA;
+
+	//! @struct _tagEMSSIT260DATAEX
+	//! NOTE that this is used in a union with so initial fields MUST match EMSSIT260DATA
+	struct  _tagEMSSIT260DATAEX
+	{
+		ULONG ulLutID;
+		ULONG ulSatID;
+		WORD wPassSchedOrigin;								
+		WORD wPassSchedStatus;
+		WORD wPassProcessStatus;
+		ULONG ulOrbitNumber;
+		EMSTIME timeAOS;
+		EMSTIME timeLOS;
+		double dPrePassOffset;		 		// seconds
+		double dStartDataCollectionOffset;	// seconds
+		double dStopDataCollectionOffset;	// seconds
+		EMSDEGREES degMaxElevation;
+		EMSDEGREES degAzimuthAOS;
+		EMSDEGREES degAzimuthPeak;
+		EMSDEGREES degAzimuthLOS;
+		ULONG ulAntennaID;
+	};
+
+	typedef struct _tagEMSSIT260DATAEX EMSSIT260DATAEX, *LPEMSSIT260DATAEX;
+
+	//! @enum _tagEMSMANOEUVRETYPE
+	//! NOTE that this is taken from emsmanoeuvre.h and eventually needs to be in one place only.
+	enum _tagEMSMANOEUVRETYPE
+	{
+			 MANOEUVRETYPE_IP = 1,      // "in-plane" manoeuvre
+			 MANOEUVRETYPE_OP = 2       // "out-of-plane" manoeuvre
+	#define  MANOEUVRETYPE_INVALID 3    // MUST be the next unused value 
+
+	};
+
+	typedef enum _tagEMSMANOEUVRETYPE EMSMANOEUVRETYPE;
+
+	//! @enum _tagEMSMANOEUVRESTATUS
+	//! NOTE that this is taken from emsmanoeuvre.h and eventually needs to be in one place only.
+	enum _tagEMSMANOEUVRESTATUS
+	{
+			 MANOEUVRESTATUS_PL   = 1,  // planned (not yet performed)
+			 MANOEUVRESTATUS_AC   = 2,  // actual (has been performed)
+			 MANOEUVRESTATUS_XX   = 3   // cancelled (planned but not performed)
+	#define  MANOEUVRESTATUS_INVALID 4  // MUST be the next unused value
+
+	};
+
+	typedef enum _tagEMSMANOEUVRESTATUS  EMSMANOEUVRESTATUS;
+
+	//! @struct _tagEMSMANOEUVREDATA
+	//! NOTE that this is taken from emsmanoeuvre.h and eventually needs to be in one place only.
+	struct _tagEMSMANOEUVREDATA       // corresponds to SIT270A
+	{
+	   ULONG                   ulSatID;       // satellite to perform the manoeuvre (MF#6)
+	   EMSMANOEUVRETYPE        type;          // type of manoeuvre                  (MF#660)
+	   EMSTIME                 startTime;     // start time of manoeuvre            (MF#661)
+	   WORD                    wDuration;     // duration of manoeuvre in seconds   (MF#662)
+	   EMSMANOEUVRESTATUS      status;        // status of the manoeuvre            (MF#663)
+
+	};
+
+	typedef struct _tagEMSMANOEUVREDATA EMSMANOEUVREDATA;
+
+	//! @struct tagEMSSIT510DATA
+	//! NOTE that this is taken from emsit510.h and eventually needs to be in one place only.
+	struct tagEMSSIT510DATA
+	{
+		ULONG ulSatID;
+		double dFreqOffset;
+		double dFreqDrift;
+		EMSTIME timeCalibration;
+	};
+
+	typedef struct tagEMSSIT510DATA EMSSIT510DATA, *LPEMSSIT510DATA;
+
+
+	//! @struct tagEMSSITABLDATA
+	struct tagEMSSITABLDATA
+	{
+		int     iLUTID;
+		int     iNumMsgs;
+		int     iNumBursts;
+		int     iWaveForm;
+		INT64	i64BeaconID;
+		EMSTIME timeFirst;
+		EMSTIME timeLast;
+		double  dFrequency;
+		double	dLatitude;
+		double	dLongitude;
+		double	dMajorError;		//	Semi-major axis of error ellipse in km.
+		double	dMinorError;		//	Semi-minor axis of error ellipse in km.
+		double	dHeading;			//	Heading direction of error ellipse in degrees Azimuth.
+		double	dProbability;		//	Ambiguity probability of location, A side > .5.
+		double	dLQF;		        //	The computed location's quality factor (rating 0 - 5)
+		double	dMQF;		        //	The encoded location's quality factor (rating 0 - 5)
+		double	dFOANoise;
+		double	dTOANoise;
+		BYTE	acBeaconMsg[18];
+		#define EMS_MAX_SATS_PER_ABL_ALERT 16
+		#define EMS_MAX_LUTS_PER_ABL_ALERT 13
+		int 	aiSatIDs[EMS_MAX_SATS_PER_ABL_ALERT];	 //	Satellite Identifier numbers.
+		int 	aiLutIDs[EMS_MAX_LUTS_PER_ABL_ALERT];	 //	LUT Identifier numbers.
+	};
+
+	typedef struct tagEMSSITABLDATA EMSSITABLDATA, *LPEMSSITABLDATA;
+
+};
+
+#pragma pack()
+

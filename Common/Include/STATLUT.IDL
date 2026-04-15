@@ -1,0 +1,100 @@
+cpp_quote("/********************************************************************")
+cpp_quote("")
+cpp_quote("	Module:			StatLUT.h")
+cpp_quote("	Description: 	Interface and data structures to access IEMSLUTStatus")
+cpp_quote("")
+cpp_quote("*********************************************************************")
+cpp_quote("*")
+cpp_quote("*	              Copyright (c) 2009 by EMS Technologies, Inc.,")
+cpp_quote("*										All rights reserved")
+cpp_quote("*	This program is unpublished software and contains the trade secrets")
+cpp_quote("*	and confidential information of EMS Technologies, Inc.  It may not be ")
+cpp_quote("*	reproduced in whole or in part, in any form or by any means whatsoever ")
+cpp_quote("*	without the express written permission of EMS Technologies, Inc.")
+cpp_quote("*")
+cpp_quote("********************************************************************/")
+cpp_quote("")
+cpp_quote("#ifndef INC_STATLUT")
+cpp_quote("#define INC_STATLUT")
+cpp_quote("")
+cpp_quote("// {28AB7DA2-0ACC-4332-8D0C-CCD76FE95544}")
+cpp_quote("DEFINE_GUID( IID_IEMSLutStatus, 0x28ab7da2, 0xacc, 0x4332, 0x8d, 0xc, 0xcc, 0xd7, 0x6f, 0xe9, 0x55, 0x44);")
+cpp_quote("" )
+cpp_quote("// {12CD4C14-537F-4583-81A5-FD96BE139B9B}")
+cpp_quote("DEFINE_GUID( IID_IEMSSysTestStatus, 0x12cd4c14, 0x537f, 0x4583, 0x81, 0xa5, 0xfd, 0x96, 0xbe, 0x13, 0x9b, 0x9b);")
+cpp_quote("" )
+
+
+import "unknwn.idl";
+import "emstypex.idl";
+import "emstatus.idl";
+
+#define _EMS_RPC_VERSION 1
+#define __RPC_FAR 
+
+#pragma pack(1)
+
+[
+	object, uuid(12CD4C14-537F-4583-81A5-FD96BE139B9B),
+	helpstring("IEMSSysTestStatus Interface"),
+	pointer_default(unique)
+]
+interface IEMSSysTestStatus: IEMSStatus
+{
+	typedef [v1_enum] enum _tagEMSSYSTESTSTATUS
+	{
+		EMSSYSTESTSTATUS_Unknown = 0,
+		EMSSYSTESTSTATUS_Passed = 1,
+		EMSSYSTESTSTATUS_Fail_Power = 2,
+		EMSSYSTESTSTATUS_Warning_Power = 3,
+		EMSSYSTESTSTATUS_Fail_Antenna = 4,
+		EMSSYSTESTSTATUS_Warning_Antenna = 5
+	} EMSSYSTESTSTATUS;
+
+	HRESULT SetSysTestStatus( [in] const EMSSYSTESTSTATUS ceSysTestStatus );
+	HRESULT GetSysTestStatus( [out] EMSSYSTESTSTATUS* peSysTestStatus );
+};
+typedef [unique] IEMSSysTestStatus *LPEMSSYSTESTSTATUS;
+
+
+[
+	object, uuid(28AB7DA2-0ACC-4332-8D0C-CCD76FE95544),
+	helpstring("IEMSLutStatus Interface"),
+	pointer_default(unique)
+]
+
+interface IEMSLutStatus: IEMSStatus
+{
+	typedef [v1_enum] enum _tagEMSLUTSTATE
+	{
+		EMSLUTSTATE_Unknown = 0,
+		EMSLUTSTATE_Idle = 1,
+		EMSLUTSTATE_PassInProgress = 2,
+		EMSLUTSTATE_SystemTest = 3
+	} EMSLUTSTATE;
+
+	typedef struct _tagEMSLUTSTATUSINFO
+	{
+		EMSLUTSTATE			eLutState;
+		ULONG				ulLastSatID;
+		ULONG				ulLastPassID;
+		EMSTIME				timeLastSysTestEnd;
+		EMSSYSTESTSTATUS	eLastSysTestStatus;
+		EMSTIME				timeLastLutStart;
+		ULONG				ulReserved1;
+		ULONG				ulReserved2;
+		EMSTIME				timeReserved1;
+		EMSTIME				timeReserved2;
+		double				dReserved;
+
+	} EMSLUTSTATUSINFO, *LPEMSLUTSTATUSINFO;
+
+	HRESULT LutStarted( [in] const EMSTIME ctimeStarted );
+	HRESULT GetLutStatus( [out] LPEMSLUTSTATUSINFO pStatusInfo );
+};
+typedef [unique] IEMSLutStatus *LPEMSLUTSTATUS;
+
+
+#pragma pack()
+
+cpp_quote("#endif //INC_STATLUT")

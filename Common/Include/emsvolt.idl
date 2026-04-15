@@ -1,0 +1,26 @@
+cpp_quote( " " )
+cpp_quote( "#include \"emserror.h\"" )
+cpp_quote( " " )
+
+cpp_quote( "// {175725A6-4B7F-4f26-AA50-0D92F55A4A6D}" )
+cpp_quote( "DEFINE_GUID(IID_IEMSVoltageGauge, 0x175725a6, 0x4b7f, 0x4f26, 0xaa, 0x50, 0xd, 0x92, 0xf5, 0x5a, 0x4a, 0x6d);" )
+
+import "unknwn.idl";
+import "emstypex.idl";
+import "objidl.idl";
+import "EMSDEVICES.idl";
+
+const DWORD GAUGETYPE_VOLTAGE = 0x00000001;
+
+[
+	object, uuid(175725A6-4B7F-4f26-AA50-0D92F55A4A6D),
+	helpstring("IEMSVoltageGauge Interface"),
+	pointer_default(unique)
+]
+
+interface IEMSVoltageGauge : IEMSSubDevice
+{
+	HRESULT GetVoltage( [out]double *lpdVoltage );
+};
+
+typedef [unique] IEMSVoltageGauge *LPEMSVOLTAGEGAUGE;

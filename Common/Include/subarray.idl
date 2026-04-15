@@ -1,0 +1,111 @@
+cpp_quote("// {83C3E39F-B48D-4ca3-9905-177D3163EB76}")
+cpp_quote("DEFINE_GUID(IID_IEMSSubArray, 0x83c3e39f, 0xb48d, 0x4ca3, 0x99, 0x5, 0x17, 0x7d, 0x31, 0x63, 0xeb, 0x76);")
+
+import "unknwn.idl";
+import "emstypex.idl";
+
+
+[
+	uuid(83C3E39F-B48D-4ca3-9905-177D3163EB76),
+	helpstring("IEMSSubArray"),
+	pointer_default(unique)
+]
+interface IEMSSubArray : IUnknown
+{
+	typedef struct tagEMSCellWeight
+	{
+		ULONG ulCellID;
+		double dWeight;
+	} EMSCELLWEIGHT;
+
+	typedef DWORD EMSSUBARRAYSTATUS;
+
+	typedef struct tagEMSCellStatus
+	{
+		ULONG culCellID;
+		double dRMS;
+		double dMin;
+		double dMax;
+		double dTemp;
+		double dHumidity;
+		short sOn;		// 1 for power on, 0 for off
+	} EMSCELLSTATUS;
+
+	//! Start sub-array processing.
+	HRESULT Start();
+
+	//! Stop sub-array processing.
+	HRESULT Stop();
+
+	//! Set the sub-array identifier.  Where applicable, this is also the beam identifier.
+	HRESULT SetID( [in] const ULONG culID );
+
+	//! Get the sub-array identifier.  Where applicable, this is also the beam identifier.
+	HRESULT GetID( [out] ULONG* pulID );
+
+	//! Set the number of input channels (cells).
+	HRESULT SetNumChannels( [in] const ULONG culNum );
+
+	//! Get the number of input channels (cells).
+	HRESULT GetNumChannels( [out] ULONG* pulNum );
+
+	//! Set the minimum and maximum sample rates.
+	HRESULT SetSampleRate( [in] const ULONG culMin, [in] const ULONG culMax );
+
+	//! Get the minimum and maximum sample rates.
+	HRESULT GetSampleRate( [out] ULONG* pulMin, [out] ULONG* pulMax );
+
+	//! Set the sample size (# of bits).
+	HRESULT SetSampleSize( [in] const ULONG culSize );
+
+	//! Get the sample size (# of bits).
+	HRESULT GetSampleSize( [out] ULONG* pulSize );
+
+	//! Instruct the sub-array processor to output beam data to the specified 
+	//! IP addresses.
+	HRESULT SetOutputToIP( [in] const ULONG culOutputs, [in,size_is(culOutputs)] EMSOUTPUTADDRESS* aOutputs  );
+
+	//! Get the IP address and port number to which the beam data is being output.
+	HRESULT GetOutputToIP( [in] const ULONG culMax,	[out] ULONG* pulActual, 
+							[out,size_is(,culMax),length_is(,*pulActual)] EMSOUTPUTADDRESS** paOutputs );
+
+	//! Set the position of a cell.  There is a one-to-one relationship between a cell and an input channel.
+//***** What are the parameters here????
+	HRESULT SetCellPosition( [in] const ULONG culCellID );
+
+	//! Get the position of a cell.  There is a one-to-one relationship between a cell and an input channel.
+//***** What are the parameters here????
+	HRESULT GetCellPosition( [in] const ULONG culCellID );
+
+	//! Set the gain for a cell.
+	HRESULT SetCellGain( [in] const ULONG culCellID, [in] const double cdGain );
+
+	//! Get the gain for a cell.
+	HRESULT GetCellGain( [in] const ULONG culCellID, [out] double* pdGain );
+
+	//! Set the phase for a cell.
+	HRESULT SetCellPhase( [in] const ULONG culCellID, [in] const double cdPhase );
+
+	//! Get the phase for a cell.
+	HRESULT GetCellPhase( [in] const ULONG culCellID, [out] double* pdPhase );
+
+	//! Set the satellite ID that the sub-array is tracking.
+	HRESULT SetSatelliteID( [in] const ULONG culSatID );
+
+	//! Get the satellite ID that the sub-array is tracking.
+	HRESULT GetSatelliteID( [out] ULONG* pulSatID );
+
+	//! Set the weighting factors for the unit cells (channels).
+	HRESULT SetCellWeights( [in] const ULONG culNum, [in,size_is(culNum)] const EMSCELLWEIGHT* caWeights );
+
+	//! Get the weighting factors for the unit cells (channels).
+	HRESULT GetCellWeights( [in] const ULONG culMax, [out] ULONG* pulActual,
+						[out,size_is(,culMax),length_is(,*pulActual)] EMSCELLWEIGHT** paWeights );
+
+	//! Get the status of the subarray.
+	HRESULT GetStatus( [out] EMSSUBARRAYSTATUS* pStatus );
+
+	//! Get the status of each cell in the subarray.
+	HRESULT GetCellStatus( [in] const ULONG culMax, [out] ULONG* pulActual, 
+						[out,size_is(,culMax),length_is(,*pulActual)] EMSCELLSTATUS** paStatus );
+}

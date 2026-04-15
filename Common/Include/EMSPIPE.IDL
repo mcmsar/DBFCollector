@@ -1,0 +1,335 @@
+import "unknwn.idl";
+import "emstypex.idl";
+
+cpp_quote("#include \"emserror.h\"")
+cpp_quote("#include \"emscom.h\"")
+cpp_quote("#include \"pipemsgs.h\"")
+cpp_quote("")
+cpp_quote("")
+cpp_quote("/*********************************************************************")
+cpp_quote("*	GUIDs")
+cpp_quote("*********************************************************************/")
+
+cpp_quote("")
+
+cpp_quote("// {488E3131-7AD3-11d5-8BFD-009027912866}")
+cpp_quote("DEFINE_GUID( CLSID_EMSDataPipeline, 0x488e3131, 0x7ad3, 0x11d5, 0x8b, 0xfd, 0x0, 0x90, 0x27, 0x91, 0x28, 0x66);")
+cpp_quote("")
+cpp_quote("// {488E3132-7AD3-11d5-8BFD-009027912866}")
+cpp_quote("DEFINE_GUID( IID_IEMSCommandChannel, 0x488e3132, 0x7ad3, 0x11d5, 0x8b, 0xfd, 0x0, 0x90, 0x27, 0x91, 0x28, 0x66);")
+cpp_quote("")
+cpp_quote("// {488E3133-7AD3-11d5-8BFD-009027912866}")
+cpp_quote("DEFINE_GUID( IID_IEMSDataPipeline, 0x488e3133, 0x7ad3, 0x11d5, 0x8b, 0xfd, 0x0, 0x90, 0x27, 0x91, 0x28, 0x66);")
+cpp_quote("")
+cpp_quote("// {5F414595-AB0A-4880-9351-3D9700A9B1DD}")
+cpp_quote("DEFINE_GUID( IID_IEMSDataPipeline2, 0x5f414595, 0xab0a, 0x4880, 0x93, 0x51, 0x3d, 0x97, 0x0, 0xa9, 0xb1, 0xdd);")
+cpp_quote("")
+cpp_quote("// {488E3134-7AD3-11d5-8BFD-009027912866}")
+cpp_quote("DEFINE_GUID( IID_IEMSCommandSource, 0x488e3134, 0x7ad3, 0x11d5, 0x8b, 0xfd, 0x0, 0x90, 0x27, 0x91, 0x28, 0x66);")
+cpp_quote("")
+cpp_quote("// {488E3135-7AD3-11d5-8BFD-009027912866}")
+cpp_quote("DEFINE_GUID( IID_IEMSCommandSink, 0x488e3135, 0x7ad3, 0x11d5, 0x8b, 0xfd, 0x0, 0x90, 0x27, 0x91, 0x28, 0x66);")
+cpp_quote("")
+cpp_quote("// {488E3136-7AD3-11d5-8BFD-009027912866}")
+cpp_quote("DEFINE_GUID( IID_IEMSDataSource, 0x488e3136, 0x7ad3, 0x11d5, 0x8b, 0xfd, 0x0, 0x90, 0x27, 0x91, 0x28, 0x66);")
+cpp_quote("")
+cpp_quote("// {488E3137-7AD3-11d5-8BFD-009027912866}")
+cpp_quote("DEFINE_GUID( IID_IEMSDataSink, 0x488e3137, 0x7ad3, 0x11d5, 0x8b, 0xfd, 0x0, 0x90, 0x27, 0x91, 0x28, 0x66);")
+cpp_quote("")
+cpp_quote("// {6FBD1F04-C2D6-4830-A446-4C28E507FE8C}")
+cpp_quote("DEFINE_GUID(IID_IEMSDataSink2, 0x6fbd1f04, 0xc2d6, 0x4830, 0xa4, 0x46, 0x4c, 0x28, 0xe5, 0x7, 0xfe, 0x8c);")
+cpp_quote("")
+cpp_quote("// {488E3138-7AD3-11d5-8BFD-009027912866}")
+cpp_quote("DEFINE_GUID( IID_IEMSSeqStream, 0x488e3138, 0x7ad3, 0x11d5, 0x8b, 0xfd, 0x0, 0x90, 0x27, 0x91, 0x28, 0x66);")
+cpp_quote("")
+cpp_quote("// {7EC8F653-2B16-4cd2-8EFD-AD03B1FC250B}")
+cpp_quote("DEFINE_GUID(IID_IEMSTextSeqStream, 0x7ec8f653, 0x2b16, 0x4cd2, 0x8e, 0xfd, 0xad, 0x3, 0xb1, 0xfc, 0x25, 0xb);")
+cpp_quote("")
+cpp_quote("// {488E3139-7AD3-11d5-8BFD-009027912866}")
+cpp_quote("DEFINE_GUID( IID_IEMSPacketStream, 0x488e3139, 0x7ad3, 0x11d5, 0x8b, 0xfd, 0x0, 0x90, 0x27, 0x91, 0x28, 0x66);")
+cpp_quote("")
+
+cpp_quote("// {0DC244FB-AE01-4c9f-BE6A-B3CC71C26B49}")
+cpp_quote("DEFINE_GUID( IID_IEMSCommandChannel2, 0xdc244fb, 0xae01, 0x4c9f, 0xbe, 0x6a, 0xb3, 0xcc, 0x71, 0xc2, 0x6b, 0x49);")
+cpp_quote("")
+
+cpp_quote("// {138E91E8-2D48-4190-9E63-FA19C90048C4}")
+cpp_quote("DEFINE_GUID(IID_IEMSRandomStream, 0x138e91e8, 0x2d48, 0x4190, 0x9e, 0x63, 0xfa, 0x19, 0xc9, 0x0, 0x48, 0xc4);")
+cpp_quote("")
+
+
+cpp_quote("/*********************************************************************")
+cpp_quote("*	Defines")
+cpp_quote("*********************************************************************/")
+cpp_quote("")
+cpp_quote("/* Flags */")
+cpp_quote("#define EMS_PIPE_FIXED_LENGTH			(0x00000001)")
+cpp_quote("#define EMS_PIPE_VARIABLE_LENGTH		(0x00000002)")
+cpp_quote("#define EMS_PIPE_WAIT_WRITE			(0x00010000)")
+cpp_quote("#define EMS_PIPE_SUB_SINKS				(0x01000000)")
+cpp_quote("#define EMS_PIPE_IS_FULL				(0x02000000)")
+cpp_quote("#define EMS_PIPE_DEFAULT_FLAGS		(0x10000000)")
+cpp_quote("#define EMS_PIPE_DEFAULT_MAXLENGTH	(0x20000000)")
+cpp_quote("#define EMS_PIPE_DEFAULT_MAXSINKS	(0x40000000)")
+cpp_quote("#define EMS_PIPE_DEFAULT_MAXSOURCES	(0x80000000)")
+
+cpp_quote("#define EMS_PIPE_COMMAND_CHANNEL	(0xFF)")
+cpp_quote("#define EMS_PIPE_DEBUG_CHANNEL	(0xFE)")
+cpp_quote("#define EMS_PIPE_MAX_COMMAND_LENGTH	(256)")
+
+cpp_quote("")
+cpp_quote("/* Info Flags */")
+cpp_quote("#define EMS_PIPE_INFO_LOGGING_ON		(0x00000001)")
+
+cpp_quote("")
+cpp_quote("/* Command Connect Status Flags */")
+cpp_quote("#define EMS_PIPE_STATUS_CONNECTED (0x80000000)")
+cpp_quote("#define EMS_PIPE_STATUS_READY		 (0x00000001)")
+
+[
+	object, uuid(488E3138-7AD3-11d5-8BFD-009027912866),
+	pointer_default(unique)
+]
+
+interface IEMSSeqStream : IUnknown
+{
+	typedef [unique] IEMSSeqStream *LPEMSSEQSTREAM;
+
+	HRESULT Read(
+		[out, size_is(cb), length_is(*pcbRead)]	BYTE *pv,
+		[in] ULONG cb,
+		[out] ULONG *pcbRead);
+
+	HRESULT Write(
+		[in, size_is(cb)] BYTE const *pv,
+		[in] ULONG cb,
+		[out] ULONG *pcbWritten);
+};
+
+[
+	object, uuid(488E3139-7AD3-11d5-8BFD-009027912866),
+	pointer_default(unique)
+]
+
+interface IEMSPacketStream : IEMSSeqStream
+{
+	typedef [unique] IEMSPacketStream *LPEMSPACKETSTREAM;
+
+	HRESULT SetType( [in] BYTE cDataType );
+	HRESULT GetType( [out] BYTE *lpcDataType );
+	HRESULT SetMaxLength( [in] INT nMaxLength );
+	HRESULT GetMaxLength( [out] INT *lpnMaxLength );
+	HRESULT SetFlags( [in] DWORD dwFlags );
+	HRESULT GetFlags( [out] DWORD *lpdwFlags );
+};
+
+
+[
+	object, uuid(138E91E8-2D48-4190-9E63-FA19C90048C4),
+	pointer_default(unique)
+]
+interface IEMSRandomStream : IEMSSeqStream
+{
+	typedef [unique] IEMSRandomStream* LPEMSRANDOMSTREAM;
+
+	HRESULT MoveFirst();
+	HRESULT MoveLast();
+	HRESULT Move( [in] const long clIndex );
+};
+
+[
+	object, uuid(7EC8F653-2B16-4cd2-8EFD-AD03B1FC250B),
+	pointer_default(unique)
+]
+interface IEMSTextSeqStream : IEMSSeqStream
+{
+	typedef [unique] IEMSTextSeqStream *LPEMSTEXTSEQSTREAM;
+
+	HRESULT ReadLine( [out, string] wchar_t** ppwszLine );
+	HRESULT WriteLine( [in, string] wchar_t* pwszLine );
+};
+
+
+[
+	object, uuid(488E3136-7AD3-11d5-8BFD-009027912866),
+	pointer_default(unique)
+]
+
+interface IEMSDataSource : IUnknown
+{
+	typedef [unique] IEMSDataSource *LPEMSDATASOURCE;
+
+	HRESULT SetType( [in] BYTE cDataType );
+	HRESULT GetType( [out] BYTE *lpcDataType );
+	HRESULT GetMaxLength( [out] INT *lpnMaxLength );
+	HRESULT SetMaxLength( [in] INT nMaxLength );
+	HRESULT SetStream( [in] LPEMSPACKETSTREAM lpStream );
+	HRESULT GetStream( [out] LPEMSPACKETSTREAM *lplpStream );
+};
+
+[
+	object, uuid(488E3137-7AD3-11d5-8BFD-009027912866),
+	pointer_default(unique)
+]
+
+interface IEMSDataSink : IUnknown
+{
+	typedef [unique] IEMSDataSink *LPEMSDATASINK;
+
+	HRESULT SetType( [in] BYTE cDataType );
+	HRESULT GetType( [out] BYTE *lpcDataType );
+	HRESULT SetMaxLength( [in] INT nMaxLength );
+	HRESULT GetMaxLength( [out] INT *lpnMaxLength );
+	HRESULT SetStream( [in] LPEMSPACKETSTREAM lpStream );
+	HRESULT GetStream( [out] LPEMSPACKETSTREAM *lplpStream );
+	HRESULT OnDataAvailable( [in] DWORD dwSize, [in] DWORD dwFlags );
+};
+
+[
+	object, uuid(6FBD1F04-C2D6-4830-A446-4C28E507FE8C),
+	pointer_default(unique)
+]
+
+interface IEMSDataSink2 : IEMSDataSink
+{
+	typedef [unique] IEMSDataSink2 *LPEMSDATASINK2;
+
+	HRESULT SetReceivingProcessID( [in] const DWORD cdwProcessID );
+	HRESULT GetReceivingProcessID( [out] DWORD* pdwProcessID );
+};
+
+[ 
+	object, uuid(488E3133-7AD3-11d5-8BFD-009027912866),
+	pointer_default(unique)
+]
+
+interface IEMSDataPipeline : IUnknown
+{
+	typedef [unique] IEMSDataPipeline *LPEMSDATAPIPELINE;
+
+	typedef struct _tagEMSDATACHANNELINFO
+	{
+		BOOL		bValidChannel;
+		WORD		wMaxSinks;
+		WORD		wSinks;
+		WORD		wMaxSources;
+		WORD		wSources;
+		WORD		wMaxBuffers;
+		WORD		wHighBuffers;			// Highest number of buffered records
+		WORD		wLowBuffers;			// Lowest number of buffered records
+		DWORD		dwMaxLength;
+		DWORD		dwFlags;
+		HRESULT		errLatest;				
+	} EMSDATACHANNELINFO, *LPEMSDATACHANNELINFO;
+
+	HRESULT SetInfo( [in] DWORD dwInfo );
+	HRESULT GetInfo( [out] DWORD *lpdwInfo );
+	HRESULT GetChannelInfo( [in] BYTE cType, [out] EMSDATACHANNELINFO *lpInfo );
+
+	HRESULT SetFlags( [in] BYTE cType, [in] DWORD dwFlags );
+	HRESULT GetFlags( [in] BYTE cType, [out] DWORD *lpdwFlags );
+	HRESULT SetMaxLength( [in] BYTE cType, [in] INT nMaxLength );
+	HRESULT GetMaxLength( [in] BYTE cType, [out] INT *lpnMaxLength );
+	HRESULT SetMaxSinks( [in] BYTE cType, [in] INT nMaxSinks );
+	HRESULT GetMaxSinks( [in] BYTE cType, [out] INT *lpnMaxSinks );
+	HRESULT SetMaxSources( [in] BYTE cType, [in] INT nMaxSources );
+	HRESULT GetMaxSources( [in] BYTE cType, [out] INT *lpnMaxSources );
+
+	HRESULT RegisterSink( [in] LPEMSDATASINK lpSink );
+	HRESULT UnRegisterSink( [in] LPEMSDATASINK lpSink );
+	HRESULT RegisterSource( [in] LPEMSDATASOURCE lpSource );
+	HRESULT UnRegisterSource( [in] LPEMSDATASOURCE lpSource );
+};
+
+[ 
+	object, uuid(5F414595-AB0A-4880-9351-3D9700A9B1DD),
+	pointer_default(unique)
+]
+
+interface IEMSDataPipeline2 : IEMSDataPipeline
+{
+	typedef [unique] IEMSDataPipeline2 *LPEMSDATAPIPELINE2;
+
+	HRESULT	GetOverflowOrder( [in] const BYTE cType, [out, string] wchar_t** pwszOrder );
+};
+
+[
+	object, uuid(488E3134-7AD3-11d5-8BFD-009027912866),
+	pointer_default(unique)
+]
+
+interface IEMSCommandSource : IEMSDataSource
+{
+	typedef [unique] IEMSCommandSource *LPEMSCOMMANDSOURCE;
+
+	HRESULT SetCmdType( [in] BYTE cCmdType );
+	HRESULT GetCmdType( [out] BYTE *lpcCmdType );
+};
+
+[
+	object, uuid(488E3135-7AD3-11d5-8BFD-009027912866),
+	pointer_default(unique)
+]
+
+interface IEMSCommandSink : IEMSDataSink
+{
+	typedef [unique] IEMSCommandSink *LPEMSCOMMANDSINK;
+
+	HRESULT SetCmdType( [in] BYTE cCmdType );
+	HRESULT GetCmdType( [out] BYTE *lpcCmdType );
+};
+
+[
+	object, uuid(488E3132-7AD3-11d5-8BFD-009027912866),
+	pointer_default(unique)
+]
+
+interface IEMSCommandChannel : IUnknown 
+{
+	typedef [unique] IEMSCommandChannel *LPEMSCOMMANDCHANNEL;
+
+	HRESULT RegisterSource([in] IEMSCommandSource *lpCmdSource );
+	HRESULT UnRegisterSource( [in] IEMSCommandSource *lpCmdSource );
+	HRESULT RegisterSink( [in] IEMSCommandSink *lpCmdSink );
+	HRESULT UnRegisterSink( [in] IEMSCommandSink *lpCmdSink );
+};
+
+[
+	object, uuid(0DC244FB-AE01-4c9f-BE6A-B3CC71C26B49),
+	pointer_default(unique)
+]
+
+interface IEMSCommandChannel2 : IEMSCommandChannel
+{
+	typedef [unique] IEMSCommandChannel2 *LPEMSCOMMANDCHANNEL2;
+
+	HRESULT GetConnectStatus( [in] BYTE cCmdChannel, [out] DWORD *lpdwFlags );
+	HRESULT SetConnectStatus( [in] BYTE cCmdChannel, [in] DWORD dwFlags );
+};
+
+[
+	uuid(488E313A-7AD3-11d5-8BFD-009027912866),
+	version(1.0),
+	helpstring("EMSDataPipeline 1.0 Type Library")
+]
+library EMSDataPipelineLib
+{
+	importlib("stdole32.tlb");
+	importlib("stdole2.tlb");
+
+	[
+		uuid(488E3131-7AD3-11d5-8BFD-009027912866),
+		helpstring("EMSDataPipelineClass")
+	]
+	coclass EMSDataPipeline
+	{
+		interface IEMSDataPipeline;
+		interface IEMSCommandChannel;
+		interface IEMSCommandSource;
+		interface IEMSCommandSink;
+		interface IEMSDataSource;
+		interface IEMSDataSink;
+		interface IEMSSeqStream;
+		interface IEMSPacketStream;
+	};
+};

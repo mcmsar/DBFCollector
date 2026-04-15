@@ -1,0 +1,67 @@
+cpp_quote("// {C2DA85DC-E6A9-4ae3-881F-E1DA7F90974F}")
+cpp_quote("DEFINE_GUID( IID_IEMSSarrCalibStatus, 0xc2da85dc, 0xe6a9, 0x4ae3, 0x88, 0x1f, 0xe1, 0xda, 0x7f, 0x90, 0x97, 0x4f);")
+
+import "unknwn.idl";
+import "emstypex.idl";
+import "emstatus.idl";
+
+#define _EMS_RPC_VERSION 1
+#define __RPC_FAR 
+
+[
+	object, uuid(C2DA85DC-E6A9-4ae3-881F-E1DA7F90974F),
+	helpstring("IEMSSarrCalibStatus Interface"),
+	pointer_default(unique)
+]
+
+interface IEMSSarrCalibStatus : IEMSStatus
+{
+#pragma pack(1)
+	typedef [v1_enum] enum _tagEMSSARRCALIBSTATE
+	{
+		EMS_SARRCALIB_Idle = 0,
+		EMS_SARRCALIB_Initialized = 1,
+		EMS_SARRCALIB_Processing = 2,
+		EMS_SARRCALIB_EndOfPass = 3,
+		EMS_SARRCALIB_WaitingToProcess = 4
+	} EMSSARRCALIBSTATE;
+
+	typedef [v1_enum] enum _tagEMSSARRCALIBUPDATESTATUS
+	{
+		EMS_SARRCALIBUPD_Unknown = 0,
+		EMS_SARRCALIBUPD_Updated = 1,
+		EMS_SARRCALIBUPD_TooFewData = 2,
+		EMS_SARRCALIBUPD_Error = 3
+	} EMSSARRCALIBUPDATESTATUS;
+
+	typedef struct _tagEMSSARRCALIBINFO
+	{
+		WORD 							wStatus; // SarrCalib status
+		ULONG							ulSatID;
+		ULONG							ulSARRCALIBNumber;
+		WORD							wType;	// 0 = MCC, 1 = LUT, 2 = operator
+		float							fFreqOffset;
+		float							fFreqDrift;
+		INT64							i64TimeOffset;
+		ULONG							ulNumMsg;
+		ULONG							ulNumMsgUsed;
+		float							fFreqResidualMean;
+		float							fFreqResidualStdDev;
+		float							fFreqResidualMax;
+		float							fTimeResidualMean;
+		float							fTimeResidualStdDev;
+		float							fTimeResidualMax;
+	} EMSSARRCALIBINFO, *LPEMSSARRCALIBINFO;
+
+#pragma pack()
+
+	HRESULT ResetSarrCalibInfo( void );
+
+	HRESULT SetSarrCalibInfo( [in] EMSSARRCALIBINFO *lpInfo );
+	HRESULT GetSarrCalibInfo( [out] EMSSARRCALIBINFO *lpInfo );
+};
+
+typedef [unique] IEMSSarrCalibStatus *LPEMSSARRCALIBSTATUS;
+
+
+

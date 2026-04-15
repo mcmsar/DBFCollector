@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:dbfconstellation="urn:dbfconstellation" targetNamespace="urn:dbfconstellation" elementFormDefault="unqualified" >
+
+ <!-- DBF constellation Configuration -->
+
+  <xs:element name="computers" >
+    <xs:complexType>
+              <xs:sequence>
+				<xs:element name="SP" type="xs:string" minOccurs="1" maxOccurs="unbounded" form="unqualified"/>
+                <xs:element name="computer" type="dbfconstellation:computer"  minOccurs="1" maxOccurs="unbounded" form="unqualified"/>                
+             </xs:sequence>
+            <xs:attribute name="version" type="xs:string" use="required"/>
+      </xs:complexType>
+    </xs:element>
+
+  <xs:complexType name="computer">
+      <xs:sequence>
+		  <xs:element name="Switch" type="xs:integer"/>
+		  <xs:element name="SynthesizerIP" type="xs:string"/>
+		  <xs:element name="EnvSensorIP" type="xs:string"/>
+      </xs:sequence>
+	  <xs:attribute name="id" use="required" type="xs:string"/>
+  </xs:complexType>
+
+</xs:schema>

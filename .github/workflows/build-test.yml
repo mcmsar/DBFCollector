@@ -1,0 +1,116 @@
+name: Build and DLL Test
+
+on:
+  push:
+    branches: [ main, master ]
+  pull_request:
+    branches: [ main, master ]
+  workflow_dispatch:
+
+# All dependencies (Intel IPP 2022.3 import libs/headers, Xerces x64, Intel MKL
+# static libs) are checked into 3rdParty/.  No system software beyond VS 2022
+# is required on the runner.
+jobs:
+  build-x64:
+    name: Build + DLL Test (Debug|x64)
+    runs-on: windows-2022
+
+    steps:
+      - name: Checkout (with LFS)
+        uses: actions/checkout@v4
+        with:
+          lfs: true
+
+      - name: Setup MSBuild
+        uses: microsoft/setup-msbuild@v2
+
+      - name: Build Debug|x64
+        working-directory: DBFCollectorMT_Apr2_2025
+        shell: powershell
+        run: |
+          msbuild DBFCollector.vcxproj `
+            /p:Configuration=Debug `
+            /p:Platform=x64 `
+            /m `
+            /v:minimal `
+            /bl:build-x64.binlog
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+
+      - name: Upload build log (on failure)
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: build-log-x64
+          path: DBFCollectorMT_Apr2_2025/build-x64.binlog
+          if-no-files-found: ignore
+
+      - name: Verify executable produced
+        shell: powershell
+        run: |
+          $exe = "DBFCollectorMT_Apr2_2025\x64\Debug\DBFCollector.exe"
+          if (-not (Test-Path $exe)) {
+            Write-Error "DBFCollector.exe was not produced at: $exe"
+            exit 1
+          }
+          $info = Get-Item $exe
+          Write-Host "Build succeeded: $exe ($([math]::Round($info.Length/1KB, 1)) KB)"
+
+      - name: Check DLL dependencies (static analysis)
+        shell: powershell
+        run: |
+          # The PostBuildEvent copies Redist\x64\Debug\* (IPP DLLs, Xerces, etc.) to the
+          # output dir automatically, so all runtime DLLs should be present.
+          $exePath  = "$PWD\DBFCollectorMT_Apr2_2025\x64\Debug\DBFCollector.exe"
+          $debugDir = "$PWD\DBFCollectorMT_Apr2_2025\x64\Debug"
+          $script   = "$PWD\scripts\Check-DllDependencies.ps1"
+
+          & powershell -ExecutionPolicy Bypass -File $script `
+              -ExePath $exePath `
+              -SearchDirs @($debugDir)
+
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+
+      # ── Run smoke test ───────────────────────────────────────────────────────
+      # Launches the exe and checks it doesn't die immediately with a DLL error.
+      # The process normally blocks waiting for hardware/config, so we kill it
+      # after a short wait.  DLL failures (0xC0000135, 0xC0000142) exit in <1 s.
+      - name: Smoke test — DLL load check
+        shell: powershell
+        run: |
+          $exe = "$PWD\DBFCollectorMT_Apr2_2025\x64\Debug\DBFCollector.exe"
+
+          Write-Host "Launching: $exe"
+          $proc = Start-Process -FilePath $exe -PassThru -NoNewWindow -ErrorAction Stop
+
+          # Wait up to 8 seconds — DLL failures exit within milliseconds
+          $exited = $proc.WaitForExit(8000)
+
+          if ($exited) {
+            [int32]$code = $proc.ExitCode
+            # STATUS_DLL_NOT_FOUND        = 0xC0000135 = -1073741515
+            # STATUS_DLL_INIT_FAILED      = 0xC0000142 = -1073741502
+            # STATUS_ENTRYPOINT_NOT_FOUND = 0xC0000139 = -1073741511
+            $dllFailures = @(-1073741515, -1073741502, -1073741511)
+            $hex = "0x{0:X8}" -f [uint32]$code
+
+            if ($dllFailures -contains $code) {
+              Write-Error "DLL load failure detected! Exit code: $hex"
+              Write-Host "Run scripts\Check-DllDependencies.ps1 locally to identify the missing DLL."
+              exit 1
+            } else {
+              Write-Host "Process exited (code $hex) — not a DLL failure.  " +
+                         "Likely missing hardware/network config, which is expected in CI."
+            }
+          } else {
+            $proc.Kill()
+            Write-Host "Executable ran 8 s without DLL failures — smoke test passed."
+          }
+
+      - name: Upload executable and DLLs as artifact
+        if: success()
+        uses: actions/upload-artifact@v4
+        with:
+          name: DBFCollector-x64-Debug
+          path: |
+            DBFCollectorMT_Apr2_2025/x64/Debug/DBFCollector.exe
+            DBFCollectorMT_Apr2_2025/x64/Debug/*.dll

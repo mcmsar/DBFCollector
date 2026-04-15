@@ -1,0 +1,59 @@
+cpp_quote("// {F2CD981B-37BD-4fd2-A886-98574C46B473}")
+cpp_quote("DEFINE_GUID(CLSID_EMSNetConnMgr, 0xf2cd981b, 0x37bd, 0x4fd2, 0xa8, 0x86, 0x98, 0x57, 0x4c, 0x46, 0xb4, 0x73);")
+cpp_quote(" ")
+
+cpp_quote("// {07D430D0-3CE4-4300-BDD4-71722737A985}")
+cpp_quote("DEFINE_GUID(IID_IEMSNetConnMgr, 0x7d430d0, 0x3ce4, 0x4300, 0xbd, 0xd4, 0x71, 0x72, 0x27, 0x37, 0xa9, 0x85);")
+cpp_quote(" ")
+
+cpp_quote( "#define EMS_IPADDR_LEN 15" )
+#define EMS_IPADDR_LEN 15
+
+cpp_quote( "#define EMS_CONNECTION_NAME_LEN 255" )
+#define EMS_CONNECTION_NAME_LEN 255
+
+import "unknwn.idl";
+
+
+
+[
+	uuid(07D430D0-3CE4-4300-BDD4-71722737A985),
+	helpstring("IEMSNetConnMgr"),
+	pointer_default(unique)
+]
+
+interface IEMSNetConnMgr : IUnknown
+{
+
+	typedef enum
+	{
+		CONN_TYPE_UNKNOWN = 0,
+		CONN_TYPE_ETHERNET = 1,
+		CONN_TYPE_DIALUP = 2,
+		CONN_TYPE_DIALUP_STORM = 3,
+		CONN_TYPE_PDT = 4
+	} EMSCONNECTION_TYPE;
+
+	typedef struct _tagEMSConnectionInfo
+	{
+		EMSCONNECTION_TYPE ConnType;
+		char               szIPAddr[EMS_IPADDR_LEN + 1];
+		wchar_t            wszConnName[ EMS_CONNECTION_NAME_LEN + 1];
+	}	EMSCONNINFO, *LPEMSCONNINFO;
+
+
+	HRESULT Init( [in,string] const wchar_t* cwszXmlString );
+
+	HRESULT Connect( [in,string] const wchar_t* cwszConnName, [out] long* pRefID );
+
+	HRESULT ConnectEx( [in,string] const wchar_t* cwszConnName, [in, out] long* pRefID, [in] const BOOL cbBlocking );
+
+	HRESULT Disconnect( [in,string] const wchar_t* cwszConnName, [in] const long lRefID );
+
+	HRESULT GetIPAddresses( [out] unsigned long* pulCount,
+							[out, string, size_is(, *pulCount)] wchar_t***  pawszIPAddresses );
+
+	HRESULT GetConnections( [out] unsigned long* pulCount,
+							[out, size_is(, *pulCount)] EMSCONNINFO**  paConnsInfo );
+};
+

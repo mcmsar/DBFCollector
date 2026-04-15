@@ -1,0 +1,7 @@
+{
+  "name": "dbfcollector",
+  "version": "0.1.0",
+  "dependencies": [
+    "xerces-c"
+  ]
+}

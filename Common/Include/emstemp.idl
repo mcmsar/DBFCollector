@@ -1,0 +1,32 @@
+cpp_quote( " " )
+cpp_quote( "#include \"emserror.h\"" )
+cpp_quote( " " )
+
+cpp_quote( "// {8C42E87C-F7F7-4554-8745-EC1E66EA4CF4}" )
+cpp_quote( "DEFINE_GUID(IID_IEMSTemperatureGauge, 0x8c42e87c, 0xf7f7, 0x4554, 0x87, 0x45, 0xec, 0x1e, 0x66, 0xea, 0x4c, 0xf4);" )
+
+import "unknwn.idl";
+import "emstypex.idl";
+import "objidl.idl";
+import "EMSDEVICES.idl";
+
+const DWORD GAUGETYPE_TEMPERATURE = 0x00000002;
+
+[
+	object, uuid(8C42E87C-F7F7-4554-8745-EC1E66EA4CF4),
+	helpstring("IEMSTemperatureGauge Interface"),
+	pointer_default(unique)
+]
+
+interface IEMSTemperatureGauge : IEMSSubDevice
+{
+	HRESULT GetTemperatureCelsius( [out]double *lpdTemperature );
+
+	HRESULT GetTemperatureKelvin( [out]double *lpdTemperature );
+
+	HRESULT GetTemperatureFahrenheit( [out]double *lpdTemperature );
+
+	HRESULT GetTemperatureRankine( [out]double *lpdTemperature );
+};
+
+typedef [unique] IEMSTemperatureGauge *LPEMSTEMPERATUREGAUGE;

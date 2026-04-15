@@ -1,0 +1,69 @@
+cpp_quote("// {378E6C3F-FC1C-4c4e-8687-C057082032F2}")
+cpp_quote("DEFINE_GUID( IID_IEMSTCalStatus, 0x378e6c3f, 0xfc1c, 0x4c4e, 0x86, 0x87, 0xc0, 0x57, 0x8, 0x20, 0x32, 0xf2);")
+
+import "unknwn.idl";
+import "emstypex.idl";
+import "emstatus.idl";
+
+#define _EMS_RPC_VERSION 1
+#define __RPC_FAR 
+
+[
+	object, uuid(378E6C3F-FC1C-4c4e-8687-C057082032F2),
+	helpstring("IEMSTCalStatus Interface"),
+	pointer_default(unique)
+]
+
+interface IEMSTCalStatus : IEMSStatus
+{
+#pragma pack(1)
+
+	typedef [v1_enum] enum _tagEMSTCALSTATE
+	{
+		EMS_TCAL_Idle = 0,
+		EMS_TCAL_Initialized = 1,
+		EMS_TCAL_Processing = 2,
+		EMS_TCAL_EndOfPass = 3,
+		EMS_TCAL_WaitingToProcess = 4
+	} EMSTCALSTATE;
+
+	typedef [v1_enum] enum _tagEMSTCALUPDATESTATUS
+	{
+		EMS_TCALUPD_Unknown = 0,
+		EMS_TCALUPD_Updated = 1,
+		EMS_TCALUPD_TooFewData = 2,
+		EMS_TCALUPD_Error = 3
+	} EMSTCALUPDATESTATUS;
+
+	typedef struct _tagEMSTCALINFO
+	{
+		WORD 							wStatus; // TCal status
+		ULONG							ulSatID;
+		ULONG							ulTCALNumber;
+		WORD							wType;	// 0 = MCC, 1 = LUT, 2 = operator
+		EMSTIME						timeRollover;
+		float							fFreqCorrection;
+		ULONG							ulNumMsg;
+		ULONG							ulNumMsgUsed;
+		float							fResidualMean;
+		float							fResidualStdDev;
+		float							fResidualMax;
+		float							fRolloverError;
+		float							fFreqCorrectionError;
+		float							fCorrelationCoef;
+		double						dUSOFrequency;
+		double						dRolloverPropogationError;
+	} EMSTCALINFO, *LPEMSTCALINFO;
+
+#pragma pack()
+
+	HRESULT ResetTCalInfo( void );
+
+	HRESULT SetTCalInfo( [in] EMSTCALINFO *lpInfo );
+	HRESULT GetTCalInfo( [out] EMSTCALINFO *lpInfo );
+};
+
+typedef [unique] IEMSTCalStatus *LPEMSTCALSTATUS;
+
+
+

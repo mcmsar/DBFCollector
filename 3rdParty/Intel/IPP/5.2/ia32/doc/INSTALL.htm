@@ -1,0 +1,233 @@
+<!DOCTYPE HTML PUBLIC "-//IETF//DTD HTML//EN">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+<title>Intel&reg; IPP 5.2 for Windows* Installation Guide</title>
+<style type="text/css">
+<!--
+body {font-family: Arial, Helvetica, sans-serif;
+	font-size: 14px;
+	color: #000000;
+	background-color: #FFFFFF;}
+code {font-family: "Courier New", Courier, mono;
+	font-size: larger;}
+-->
+</style>
+</head>
+<body bgcolor="#FFFFFF">
+<h1 align=center style="text-align:center"><em>Intel® Integrated Performance 
+Primitives 5.2&nbsp;for Windows* on IA-32 Intel® Architecture<br>
+  Installation Guide </em></h1>
+<h2>Contents</h2>
+<ul>
+  <li><a href="#introduction">Introduction</a></li>
+  <li><a href="#systemreq">System Requirements </a></li>
+  <li><a href="#obtaincompiler">Obtaining Intel IPP</a></li>
+  <li><a href="#installcompiler">Installing
+  Intel IPP</a></li>
+  <li><a href="#uninstalling">Uninstalling
+  Intel IPP</a></li>
+  <li><a href="#techsupport">Obtaining Technical Support </a></li>
+  <li><a href="#copyright">Disclaimer and Legal Information </a></li>
+</ul>
+<h2><a name="introduction" id="introduction"></a>Introduction</h2>
+<p>This document explains how to install and configure for use the Intel&#174;
+Integrated Performance Primitives
+(Intel&#174; IPP) for Windows* on IA-32 Intel® Architecture product. Installation is a multi-step process.  Please
+  read this document in its entirety before beginning and follow the steps in
+  sequence. For information about the product contents, including new and changed
+  features, please refer to the separate release notes.
+</p>
+<p>If you have a previous (lower numbered) version of the Intel IPP
+  for Windows* on IA-32 Intel® Architecture installed, you do not need to uninstall it before installing this
+  version. If you choose to uninstall the older version, you may do so before
+  or after installing this version. Any previous installation of Intel IPP 5.2&nbsp; for Windows*
+on IA-32 Intel® Architecture&nbsp; must be uninstalled before installing this version.</p>
+<h2><a name="systemreq" id="systemreq"></a>System Requirements</h2>
+<!-- #BeginLibraryItem "/Library/Windows Sysreq C++.lbi" -->
+<h4>Minimum Hardware Requirements to Develop Applications</h4>
+<ul>
+  <li> a PC, workstation or server, with <font face="Arial">IA-32 Intel Architecture, and 
+	software-compatible processor, including software-compatible AMD* 
+	processor</font><li> 300 MB of free hard disk space, plus an additional 300 MB during installation
+      for download and temporary files.
+  </ul>
+<h4>Software Requirements to Develop IA-32 Applications </h4>
+<ul>
+  A supported OS (Intel IPP has been tested with the following):
+  <ul>
+    <li><font face="Arial">Microsoft* Windows Vista</font></li>
+	<li>Microsoft* Windows XP
+    </li>
+    <li>Microsoft* Windows Server 2003
+    </li>
+  </ul>
+  <br>A supported C compiler (Intel IPP has been tested with the
+  following):
+	<ul>
+		<li>Intel® C++ Compiler version 10.0 for IA-32 and Itanium®
+		processors </li>
+		<li>Intel® C++ Compiler version 9.1 IA-32 and Itanium® processors </li>
+	</ul>
+	<ul>
+		<li>Microsoft* Visual Studio* 2005 </li>
+		<li>Microsoft* Visual C++* .NET 2003 </li>
+		<li>Microsoft* Visual Studio* 6.0 </li>
+		<li><b>Note: </b>When using the Intel&#174; C++ Compiler version 8.1 for IA-32 and Itanium®
+		processors or Microsoft* Visual Studio* 6.0, a current version of the 
+		Microsoft* Platform SDK is required for libraries that are needed to 
+		build your application using Intel IPP.</li>
+	</ul>
+	<p style="margin-top: 0; margin-bottom: 0">&nbsp;</p>
+	<p style="margin-top: 0; margin-bottom: 0">Recommended documentation viewer:</p>
+	<ul>
+		<li>Adobe* Acrobat* Reader version 7.0 or later (provides better keyword
+    search capabilities for viewing documentation in PDF format) </li>
+	</ul>
+</ul>
+<!-- #EndLibraryItem --><h2><a name="obtaincompiler"></a>Obtaining Intel IPP</h2>
+<p>Before installing Intel IPP, you should check the <em>Product Downloads</em> section
+  of<a href="https://registrationcenter.intel.com/"> Intel&reg; Registration 
+Center</a> to see if a newer version or update is available. The version on CD 
+or as listed in your electronic download license letter may not be the most 
+current. <font face="Arial">The Intel IPP cryptography library requires a 
+separate registration and access to download, please follow the
+<a href="http://www3.intel.com/cd/software/products/asmo-na/eng/238683.htm">
+instructions</a> to make request.</font> <br>
+&nbsp;</p>
+<h2><a name="installcompiler"></a>Installing Intel IPP</h2>
+<p><b>Note:</b> the default installation directory for the Intel&reg; IPP version 
+5.2&nbsp; for Windows* on IA-32 Intel® Architecture&nbsp;
+  is <code>C:\Program Files\Intel\IPP\5.2\IA32</code><h4>Installation Instructions</h4>
+        <ol>
+          <li>If you received the
+          Intel IPP product on CD-ROM, insert the CD-ROM
+            in a CD-ROM drive. If the installation program does not automatically
+            start, locate the file Setup.exe on the CD-ROM and double-click it.
+			If you received the Intel IPP product as a download, double-click
+            on the downloaded file, which will have a name of the form <code>
+          w_ipp_ia32_p_5.2.xxx.exe</code></li>
+          <li>You will be asked to enter a temporary directory in which the
+          contents of the self-extracting installation file will be placed
+          before actual installation begins. After installation, the files will
+          still be located in this temp directory and must be deleted manually.</li>
+			<li>The Intel&reg; Software Setup Assistant will appear. Click Next.</li>
+          <li> The Setup Assistant will prompt you for your serial number. Enter
+            the serial number provided to you by Intel or your reseller and click
+            Next. If you are connected to the Internet, the Setup Assistant will
+            contact Intel, retrieve a license, and install it on your computer.
+            If an Internet connection to Intel is not available, a default license
+            will be installed which permits use of the libraries but which does
+            not allow updates. [Information subject to change.]<ul>
+			<li>Please Note: An internet connection is required to install Intel 
+			IPP using an Evaluation license</li>
+			</ul>
+			</li>
+          <li>The Intel IPP Install program will begin</li>
+          <li>As part of the installation process, you may accept the default 
+			installation directory (C:\Program Files\Intel\IPP\5.2\IA32 on 
+			Intel IA32 systems) or choose a different directory. Any previous 
+			version of Intel IPP may remain installed when installing Intel IPP 
+			5.2 . Be sure to update your build scripts to point to the 
+			desired version of Intel IPP if you choose to keep multiple versions 
+			installed.</li>
+			<li>
+			<p>The installation program
+          will offer the opportunity to register the <code>PATH</code>, <code>LIB</code>, and 
+			<code>INCLUDE</code>
+          environment variables with the path chosen for installation of Intel
+			IPP. After that installation is complete, a file, <code>ippenv.bat,
+			</code>will be placed in the
+          <code>tools\env</code> directory. This file can be used to set the
+          environment variables in the user shell.</p>
+			<p style="margin-top: 0; margin-bottom: 0">- If the version of
+          Windows* Installer on your system is older than version 2.0, the
+          Intel&#174; IPP installer will automatically upgrade it and the computer
+          will need to be rebooted after the installation is complete.</p>
+			<p style="margin-top: 0; margin-bottom: 0">- Scripts are used in the
+          normal install process and may trip false positives in certain
+          antivirus software. You may need to disable script blocking or you may
+          be able to temporarily allow scripts for the installation process.</li>
+			<li>The next page provides you the opportunity to register for Intel&reg; Premier
+            Support. Registration gives you full access to Intel Premier Support
+            for the length of your support term (typically one year for licenses
+            purchased with support), including all updates and new versions.
+            Enter your e-mail address in the field provided and click Next. (If
+            you already have an Intel Premier Support account, enter its registered
+            e-mail address.) You will then receive an e-mail with registration
+            information including an initial password. If you do not want to
+            register for Intel Premier Support, clear the checkbox and click
+            Next. </li>
+			<li>Click Finish on the final screen to exit the Intel Software Setup
+            Assistant. </li>
+        </ol>
+        <p><b>Please Note:</b> If you have an Evaluation license and decide to 
+		upgrade to a Commercial license,&nbsp; you must re run the Intel IPP 
+		installer. After obtaining the commercial serial number, rerun setup.exe 
+		and enter the product serial number when prompted by the Setup Assistant 
+		(Step 4 above). The remaining Intel IPP files will then be installed.</p>
+        <h2><a name="uninstalling"></a>Uninstalling or Modifying Intel IPP</h2>
+        <p>To uninstall or modify Intel IPP,
+          select <code>"Add or Remove Programs"</code> from the <code>"Control
+          Panel"</code>. </p>
+        <p><b>Note:</b> uninstalling the Intel IPP does not
+          delete the corresponding license file.</p>
+        <h2><a name="techsupport"></a>Obtaining Technical Support</h2>
+
+  <p class="Default"><font face="Arial">Your feedback is very important to us. 
+	To receive technical support for the tools provided in this product and 
+	technical information including FAQ's and product updates, you need to be 
+	registered for an account at secure <a href="https://premier.intel.com">
+	Intel® Premier Support&nbsp; web site</a>. Please register
+	<a href="https://registrationcenter.intel.com">here</a> with your given 
+	serial number of this product.</font></p>
+<ul>
+	<li>
+	<p class="Default"><font face="Arial">If you are having trouble registering 
+	or are unable to access your Intel® Premier Support account, please contact 
+	us via <a href="https://registrationcenter.intel.com/support">this channel</a>.
+	</font></li>
+</ul>
+<p class="Default"><font face="Arial"><b>Note: </b>If your distributor provides 
+technical support for this product, please contact them for support rather than 
+Intel. </font></p>
+<p class="Default"><font face="Arial">For information about the Intel IPP&#8217;s, 
+FAQ's, tips and tricks, Users Forums and other support information, please visit 
+the&nbsp; &lt;<i>Support Resources</i>&gt; tab at the
+<a href="http://www.intel.com/software/products/ipp/">Intel IPP Website</a>.</font></p>
+<h2><a name="copyright"></a>Disclaimer and Legal Information</h2>
+<p>The information in this document is subject to change without notice and
+    Intel Corporation assumes no responsibility or liability for any errors or
+    inaccuracies that may appear in this document or any software that may be
+    provided in association with this document. This document and the software
+    described in it are furnished under license and may only be used or copied
+    in accordance with the terms of the license. No license, express or implied,
+    by estoppel or otherwise, to any intellectual property rights is granted
+    by this document. The information in this document is provided in connection
+    with Intel products and should not be construed as a commitment by Intel
+  Corporation. </p>
+<P>EXCEPT AS PROVIDED IN INTEL'S TERMS AND CONDITIONS OF SALE FOR SUCH PRODUCTS,
+    INTEL ASSUMES NO LIABILITY WHATSOEVER, AND INTEL DISCLAIMS ANY EXPRESS OR
+    IMPLIED WARRANTY, RELATING TO SALE AND/OR USE OF INTEL PRODUCTS INCLUDING
+    LIABILITY OR WARRANTIES RELATING TO FITNESS FOR A PARTICULAR PURPOSE, MERCHANTABILITY,
+    OR INFRINGEMENT OF ANY PATENT, COPYRIGHT OR OTHER INTELLECTUAL PROPERTY RIGHT.
+    Intel products are not intended for use in medical, life saving, life sustaining,
+  critical control or safety systems, or in nuclear facility applications. </P>
+<P>Designers must not rely on the absence or characteristics of any features
+    or instructions marked "reserved" or "undefined." Intel reserves these for
+    future definition and shall have no responsibility whatsoever for conflicts
+  or incompatibilities arising from future changes to them. </P>
+<P>The software described in this document may contain software defects which
+    may cause the product to deviate from published specifications. Current characterized
+  software defects are available on request. </P>
+<P>Intel, the Intel logo, Intel SpeedStep, Intel NetBurst, Intel NetStructure,
+    MMX, Intel386, Intel486, Celeron, Intel Centrino, Intel Xeon, Intel XScale,
+    Itanium, Pentium, Pentium II Xeon, Pentium III Xeon, Pentium M, and VTune
+    are trademarks or registered trademarks of Intel Corporation or its subsidiaries
+  in the United States and other countries.</P>
+<P>* Other names and brands may be claimed as the property of others.</P>
+<P>Copyright &copy; 2007, Intel Corporation. </P>
+<!-- #EndLibraryItem -->
+
+</body>
+</html>

@@ -1,0 +1,60 @@
+/*********************************************************************
+*	              Copyright (c) 2006 by EMS Technologies, Inc.,
+*										All rights reserved
+*	This program is unpublished software and contains the trade secrets
+*	and confidential information of EMS Technologies, Inc.  It may not be 
+* reproduced in whole or in part, in any form or by any means whatsoever 
+* without the express written permission of EMS Technologies, Inc.
+*
+********************************************************************/
+
+/*******************************************************************
+
+  Revision Record
+
+	$Log:
+	$
+********************************************************************/
+
+cpp_quote("// {E8D7009F-4D06-4bb5-BB68-22536D048F9C}")
+cpp_quote("DEFINE_GUID(IID_IEMSWSClient, 0xe8d7009f, 0x4d06, 0x4bb5, 0xbb, 0x68, 0x22, 0x53, 0x6d, 0x4, 0x8f, 0x9c);")
+
+cpp_quote("// {90B963F0-61C3-4251-B882-427BFDDECE1A}")
+cpp_quote("DEFINE_GUID(IID_IEMSWSClientA, 0x90b963f0, 0x61c3, 0x4251, 0xb8, 0x82, 0x42, 0x7b, 0xfd, 0xde, 0xce, 0x1a);")
+
+
+import "unknwn.idl";
+
+[
+	uuid(E8D7009F-4D06-4bb5-BB68-22536D048F9C),
+	helpstring("IEMSWSClient"),
+	pointer_default(unique)
+]
+interface IEMSWSClient : IUnknown
+{
+	HRESULT SetConnectionConfig( [in,string] const wchar_t* cwszConfig );
+
+	HRESULT SetURL( [in,string] const wchar_t* cwszURL );
+
+	HRESULT SetUsername( [in,string] const wchar_t* cwszUser );
+
+	HRESULT SetPassword( [in,string] const wchar_t* cwszPwd );
+
+}
+
+[
+	uuid(90B963F0-61C3-4251-B882-427BFDDECE1A),
+	helpstring("IEMSWSClientA"),
+	pointer_default(unique)
+]
+interface IEMSWSClientA : IUnknown
+{
+	HRESULT SetConnectionConfig( [in,string] const char* cszConfig );
+
+	HRESULT SetURL( [in,string] const char* cszURL );
+
+	HRESULT SetUsername( [in,string] const char* cszUser );
+
+	HRESULT SetPassword( [in,string] const char* cszPwd );
+
+}

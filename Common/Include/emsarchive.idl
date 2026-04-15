@@ -1,0 +1,50 @@
+
+cpp_quote("// {460AE48B-3652-44ca-9C17-C69ECDF4F84E}")
+cpp_quote("DEFINE_GUID( IID_IEMS600ArchiveInfo, 0x460ae48b, 0x3652, 0x44ca, 0x9c, 0x17, 0xc6, 0x9e, 0xcd, 0xf4, 0xf8, 0x4e);")
+
+
+import "unknwn.idl";
+import "emstypex.idl";
+
+#define _EMS_RPC_VERSION 1
+#define __RPC_FAR 
+
+	typedef struct _tagEMSARCHIVEINFO
+	{
+		double dRawCBCDataDays;			// days
+		double dRaw406DataDays;			// days
+		double dSpectrumDataDays;		// days
+		double dCalibCBCDataDays;		// days
+		double dCalib406DataDays;		// days
+		double dStatsDataDays;			// days
+		double dAlarmDataDays;			// days
+		double dTLEDataDays;				// days	
+		double dLocationDataDays; 		// days	
+		double dPassDataDays; 			// days	
+		double dPassSchedDays; 			// days	
+		double dCommsDataDays; 			// days	
+		double dLogDataDays; 			// days	
+		double dSensorDataDays; 			// days	
+		double dEnvironDataDays; 			// days	
+
+		double dCombined406DataDays; 			// days	
+		double dResidualDataDays; 			// days	
+		double dConfigDataDays; 			// days	
+		double dSarpCalibDataDays; 			// days	
+		double dSarrCalibDataDays; 			// days	
+		double dGeoStatsDataDays; 			// days	
+	} EMSARCHIVEINFO, *LPEMSARCHIVEINFO;
+
+[
+	object, uuid(460AE48B-3652-44ca-9C17-C69ECDF4F84E),
+	helpstring("IEMS600ArchiveInfo Interface"),
+	pointer_default(unique)
+]
+
+interface IEMS600ArchiveInfo : IUnknown
+{	
+	HRESULT GetArchiveInfo( [ out ] EMSARCHIVEINFO *lpInfo );
+};
+
+typedef [unique] IEMS600ArchiveInfo *LPEMS600ARCHIVEINFO;
+

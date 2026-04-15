@@ -1,0 +1,70 @@
+// LUTMonitorView.idl : IDL source for LUTMonitorView.dll
+//
+
+// This file will be processed by the MIDL tool to
+// produce the type library (LUTMonitorView.tlb) and marshalling code.
+
+cpp_quote("#ifndef _LUTMONITORVIEW_IDL_H_")
+cpp_quote("#define _LUTMONITORVIEW_IDL_H_")
+
+cpp_quote("// {926E6E0A-DC72-4079-81E9-51E7809DBE65}")
+cpp_quote("DEFINE_GUID( IID_IEMSLUTMonitorCtrl, 0x926E6E0A, 0xDC72, 0x4079, 0x81, 0xE9, 0x51, 0xE7, 0x80, 0x9D, 0xBE, 0x65 );")
+
+cpp_quote("// {496BF701-79CE-4353-A91B-85E440AB8212}")
+cpp_quote("DEFINE_GUID( IID_IEMSRunningLUTMonitors, 0x496bf701, 0x79ce, 0x4353, 0xa9, 0x1b, 0x85, 0xe4, 0x40, 0xab, 0x82, 0x12 );")
+
+cpp_quote("// {E1E339FA-A90B-46C3-8D57-3512DF706C1A}")
+cpp_quote("DEFINE_GUID( CLSID_EMSLUTMonitorCtrl, 0xE1E339FA, 0xA90B, 0x46C3, 0x8D, 0x57, 0x35, 0x12, 0xDF, 0x70, 0x6C, 0x1A ); ")
+
+import "oaidl.idl";
+import "ocidl.idl";
+#include "olectl.h"
+#include "oiplugincontrol.idl"
+	
+
+	[
+		object,
+		uuid(926E6E0A-DC72-4079-81E9-51E7809DBE65),
+		dual,
+		helpstring("IEMSLUTMonitorCtrl Interface"),
+		pointer_default(unique)
+	]
+	interface IEMSLUTMonitorCtrl : IDispatch
+	{
+	};
+	
+	[
+		object,
+		uuid(496BF701-79CE-4353-A91B-85E440AB8212),
+		helpstring("IEMSRunningLUTMonitors Interface"),
+		pointer_default(unique)
+	]
+	interface IEMSRunningLUTMonitors : IUnknown
+	{
+		HRESULT IsMonitorRunning( [in] const ULONG culLutID, [out] BOOL* pbRunning );
+	};
+
+[
+	uuid(BF31E134-FB6E-4345-91B8-5281C4B0675E),
+	version(1.0),
+	helpstring("LUTMonitorView 1.0 Type Library")
+]
+library LUTMONITORVIEWLib
+{
+	importlib("stdole32.tlb");
+	importlib("stdole2.tlb");
+
+	[
+		uuid(E1E339FA-A90B-46C3-8D57-3512DF706C1A),
+		helpstring("EMSLUTMonitorCtrl Class")
+	]
+	coclass EMSLUTMonitorCtrl
+	{
+		[default] interface IEMSOIPluginControl;
+		//interface IEMSLUTMonitorCtrl;
+		interface IEMSRunningLUTMonitors;
+	};
+};
+
+cpp_quote("#endif //_LUTMONITORVIEW_IDL_H_")
+

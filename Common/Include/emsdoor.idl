@@ -1,0 +1,42 @@
+cpp_quote( " " )
+cpp_quote( "#include \"emserror.h\"" )
+cpp_quote( " " )
+
+cpp_quote( "// {EA7570FC-70E3-4787-9235-DAA6816687FA}" )
+cpp_quote( "DEFINE_GUID(IID_IEMSDoor, 0xea7570fc, 0x70e3, 0x4787, 0x92, 0x35, 0xda, 0xa6, 0x81, 0x66, 0x87, 0xfa);" )
+
+import "unknwn.idl";
+import "emstypex.idl";
+import "objidl.idl";
+import "EMSDEVICES.idl";
+
+const DWORD EVENT_OPENED = 0x00000001;
+const DWORD EVENT_CLOSED = 0x00000002;
+
+const DWORD DOOR_STATUS_OPEN = 0x00000004;
+const DWORD DOOR_STATUS_CLOSED = 0x00000008;
+
+[
+	object, uuid(EA7570FC-70E3-4787-9235-DAA6816687FA),
+	helpstring("IEMSDoor Interface"),
+	pointer_default(unique)
+]
+
+interface IEMSDoor : IEMSSubDevice
+{
+	typedef struct _tagDoorEvent
+	{
+		EMSTIME eventTime;
+		DWORD eventType;
+	} EMSDOOREVENT, *LPEMSDOOREVENT;
+
+	HRESULT GetDoorStatus( [out]LPDWORD lpdwStatus );
+
+	HRESULT GetDoorLog( [in, out]LPDWORD dwNumEvents, [out, size_is(*dwNumEvents * sizeof(EMSDOOREVENT))]EMSDOOREVENT DoorEvents[] );
+
+	HRESULT PeekDoorLog( [in, out]LPDWORD dwNumEvents, [out, size_is(*dwNumEvents * sizeof(EMSDOOREVENT))]EMSDOOREVENT DoorEvents[] );
+
+	HRESULT ClearDoorLog();
+};
+
+typedef [unique] IEMSDoor *LPEMSDOOR;

@@ -1,0 +1,4506 @@
+/********************************************************************
+*	Module:			emsDBF.cpp 
+*	Process ID:
+*	S/W Platforms:
+*	H/W Platforms:
+*	Compiler:
+*	Description: 	
+*						
+*
+*	Usage:
+*	Entry Point:
+*	Input Files:
+*	Output Files:
+*	Comments:	
+*
+*
+*********************************************************************
+*	              Copyright (c) 2006 by EMS Technologies, Inc.,
+*										All rights reserved
+*	This program is unpublished software and contains the trade secrets
+*	and confidential information of EMS Technologies, Inc.  It may not be 
+* reproduced in whole or in part, in any form or by any means whatsoever 
+* without the express written permission of EMS Technologies, Inc.
+*
+********************************************************************/
+
+/*******************************************************************
+
+  Revision Record
+
+	Rev	Date			Auth	Changes
+	===	====			====	=======
+
+	0.0	2006/07/09		rcr		start
+
+********************************************************************/
+
+#include <memory.h>
+#include <stdlib.h>
+#include <math.h>
+#include <windows.h>
+#include <tchar.h>
+#include <io.h>
+
+#include "sigproc.h"
+#include "emsclock.h"
+#include "emsconst.h"
+#include "emsvectr.h"
+
+#include "emsDBF.h"
+//snl
+//#include "emsDBFDataMgr.h"
+#include "emsDBFtypes.h"
+#include "convutility.h"
+
+
+int CDigitalBeamFormer::ms_iNextObjectID = 1;
+std::wstring		CDigitalBeamFormer::m_wsSPIP;
+
+
+const char  c_szCalibFile[] = "C:\\EMSDBF_Calib_";
+
+const double	TIMETO_SEND_COVARIANCE_FILE = (1.0/6.0);	//10 mins
+
+//const wchar_t* cwszConnectInfo = L"<Connection><ip_address>1.1.1.41</ip_address><port_id>9070</port_id></Connection>";
+//const wchar_t* cwszConnectInfo = L"<Connection><ip_address>1.1.1.71</ip_address><port_id>9070</port_id></Connection>";
+
+
+//const wchar_t* cwszConnectInfo = L"<Connection><IP>192.54.173.183</IP><Port>9099</Port></Connection>";
+//const wchar_t* cwszConnectInfo = L"<Connection><IP>192.168.86.17</IP><Port>9070</Port></Connection>";
+
+//const wchar_t* CDigitalBeamFormer::ms_cwszSat = L"Sat[@id='%03d']/SatID";
+#include <sstream>
+
+
+CEMSTime CDigitalBeamFormer::m_oDBFBufferPhaseLastWriteTime = 0;
+CEMSTime CDigitalBeamFormer::m_oDBFCovarFileLastWriteTime = 0;
+BOOL CDigitalBeamFormer::m_bIsCovarFileSendTime = FALSE;
+CDigitalBeamFormer::CDigitalBeamFormer(CEMSQueue<DBFTrackingData >&  dbfBeamVect) : m_ulChannels(0), m_ulSamplesPerChannel(0), m_ulSatellites(0), m_lpOutputFile( nullptr ),m_lpCalibFile(NULL), m_asRawTimeSeries( NULL ), m_asPhaseVector( NULL ), m_asDBFVector( NULL ), 
+	m_afRawInputSamples( NULL ),m_afPowerSpectrum(nullptr),m_acFFTdata1(nullptr), m_acMatrix(nullptr), m_acMatrixT( nullptr), m_qrefDBFBeamVectors( dbfBeamVect )
+	//snl added nullptr
+{
+	m_lpTraceFile = NULL;
+	m_pDataTransmit = NULL;
+	m_ulLastStartPPS = 0;
+	m_ulRawBuffSize = 0;
+
+	m_timeActual.intTime = 0L;
+
+	memset( &m_LastCalibRecord, 0, sizeof( m_LastCalibRecord ) );
+
+	m_iObjectID = GetNextObjID();
+
+	m_lpCalibFile = NULL;
+
+	m_bOutputOK = true;
+
+	//snl
+	m_oDBFBufferPhaseLastWriteTime =  m_oDBFCovarFileLastWriteTime = 0;
+	//m_bIsCovarFileSendTime = FALSE;
+//	m_oDBFpass.Initialize(1);
+}
+
+CDigitalBeamFormer::CDigitalBeamFormer( const CDigitalBeamFormer& x ) : m_ulChannels( x.m_ulChannels ),
+							m_ulSamplesPerChannel( x.m_ulSamplesPerChannel ),
+							m_ulSatellites(x.m_ulSatellites), m_lpOutputFile( NULL),m_lpTraceFile(NULL), m_lpCalibFile(NULL), m_asRawTimeSeries( NULL ), m_asPhaseVector( NULL ), m_asDBFVector( NULL ), m_afRawInputSamples( NULL ),m_qrefDBFBeamVectors(x.m_qrefDBFBeamVectors)
+{
+	m_iObjectID = GetNextObjID();
+}
+
+CDigitalBeamFormer::~CDigitalBeamFormer( void )
+{
+	m_ulChannels = 0;
+	m_ulSatellites = 0;
+	m_ulSamplesPerChannel = 0;
+
+		
+	if (m_lpTraceFile)
+	{
+		fclose( m_lpTraceFile );
+		m_lpTraceFile = 0;
+	}
+	if (m_lpOutputFile)
+	{
+		fclose( m_lpOutputFile );
+		m_lpOutputFile = 0;
+	}
+
+	if( m_lpCalibFile )
+	{
+		fclose( m_lpCalibFile );
+		m_lpCalibFile = NULL;
+	}
+
+	if (m_asRawTimeSeries)
+	{
+		delete [] m_asRawTimeSeries;
+		m_asRawTimeSeries = NULL;
+	}
+
+	if (m_asPhaseVector)
+	{
+		delete [] m_asPhaseVector;
+		m_asPhaseVector = NULL;
+	}
+
+	if (m_asDBFVector)
+	{
+		delete [] m_asDBFVector;
+		m_asDBFVector = NULL;
+	}
+	
+	if (m_afRawInputSamples)
+	{
+		delete [] m_afRawInputSamples;
+		m_afRawInputSamples = NULL;
+	}
+
+	if (m_afPowerSpectrum)
+	{
+		delete [] m_afPowerSpectrum;
+		m_afPowerSpectrum = NULL;
+	}
+
+	
+	for(int i = 0; i < DBF_MAX_SATELLITES; ++i)
+	{
+		delete m_acFFTdata[i] ;
+	}
+
+	if (m_acFFTdata)
+	{
+		delete [] m_acFFTdata;
+		m_acFFTdata = NULL;
+	}
+
+	
+	//delete []m_acFFTdata;
+
+	if (m_acFFTdata1)
+	{
+		delete [] m_acFFTdata1;
+		m_acFFTdata1 = NULL;
+	}
+
+	// Remove temporary buffer memory
+	if (m_acMatrix)
+	{
+		delete [] m_acMatrix;
+		m_acMatrix = NULL;
+	}
+	if (m_acMatrixT)
+	{
+		delete [] m_acMatrixT;
+		m_acMatrixT = NULL;
+	}
+	if (m_acTemp1)
+	{
+		delete [] m_acTemp1;
+		m_acTemp1 = NULL;
+	}
+	if (m_acTemp2)
+	{
+		delete [] m_acTemp2;
+		m_acTemp2 = NULL;
+	}
+	if (m_afTemp1)
+	{
+		delete [] m_afTemp1;
+		m_afTemp1 = NULL;
+	}
+	if (m_afTemp2)
+	{
+		delete [] m_afTemp2;
+		m_afTemp2 = NULL;
+	}
+
+	if( m_afChan0 )
+	{
+		delete [] m_afChan0;
+		m_afChan0 = NULL;
+	}
+
+	if( m_pDataTransmit )
+	{
+		m_pDataTransmit->Disconnect();
+		m_pDataTransmit->Release();
+		m_pDataTransmit = NULL;
+	}
+
+	//snl
+
+}
+
+//---------------------------------------------------------------------------
+
+EMS_RESULT
+CDigitalBeamFormer::SetRawData( const unsigned char* abytes, int iSize )
+{
+	EMS_RESULT hr = EMS_BAD_PARAM;
+
+
+	if( iSize == 128000008 )
+	{
+		INT64* pTM = (INT64*)&(abytes[iSize - 9]);
+		m_timeActual.intTime = (*pTM);
+	}
+
+	if( m_asRawTimeSeries && abytes )
+	{
+		if( (iSize - 8) <=  (DBF_SAMPLE_SIZE * DBF_MAX_CHANNELS * sizeof(unsigned long)) )
+		{
+			memcpy(m_asRawTimeSeries, abytes, iSize - 8 );// make it a const.
+
+			hr = EMS_OK;
+
+			m_ulRawBuffSize = iSize - 8;
+		}
+	}
+	else
+	{
+		m_ulRawBuffSize = 0;
+	}
+
+	return hr;
+}
+
+//---------------------------------------------------------------------------
+EMS_RESULT
+CDigitalBeamFormer::Initialize( const TCHAR *cDir )
+{
+	EMS_RESULT hr = EMS_OK;//EMS_BAD_PARAM;
+
+	lstrcpy( m_cFilePath, cDir );
+
+	m_dElapsedTime = 0.0;
+	m_dAverageTime = 0.0;
+	m_nCounter = 0;
+
+	
+	m_ulSamplesPerChannel = DBF_SAMPLE_SIZE;
+//	m_ulChannels   = 16; //DBF_MAX_CHANNELS;
+	m_ulChannels   = DBF_MAX_CHANNELS;
+//	m_ulSatellites = 4;  //DBF_MAX_SATELLITES;
+	m_ulSatellites = DBF_MAX_SATELLITES;
+
+	// One second pulse shape function
+
+	m_afPulseShape = new float[ PULSE_SHAPE_SIZE ];
+
+	for ( int i = 0; i < PULSE_SHAPE_SIZE; i++ )
+	{
+
+		float t = (float) i / (float) PULSE_SHAPE_SIZE; 
+		m_afPulseShape[i] = t * exp( t ) / exp ( 1.0 );
+	}
+
+	
+//	m_asRawTimeSeries = new unsigned short[ DBF_SAMPLE_SIZE * DBF_MAX_CHANNELS * 4 ];
+	m_asRawTimeSeries = new unsigned long[ DBF_SAMPLE_SIZE * DBF_MAX_CHANNELS ];
+	m_asPhaseVector   = new short[ DBF_MAX_CHANNELS * DBF_MAX_SATELLITES * 2 ];
+	m_asDBFVector     = new short[ DBF_SAMPLE_SIZE * DBF_MAX_SATELLITES * 2 ];
+
+//	m_afCovariance    = new float[ COVARIANCE_SIZE ];     // Covariance matrix
+	m_acCovariance    = new EMSCOMPLEX[ COVARIANCE_SIZE ];     // Covariance matrix
+
+
+	memset( m_asRawTimeSeries, 0, DBF_SAMPLE_SIZE * DBF_MAX_CHANNELS * sizeof(unsigned long) );
+//	memset( m_asRawTimeSeries, 0, DBF_SAMPLE_SIZE * DBF_MAX_CHANNELS * sizeof(unsigned short) * 4);
+	memset( m_asPhaseVector, 1.0, DBF_MAX_CHANNELS * DBF_MAX_SATELLITES * 2 * sizeof(short));
+	memset( m_asDBFVector, 0, DBF_SAMPLE_SIZE * DBF_MAX_SATELLITES * 2 * sizeof(short));
+	
+//	memset( m_afCovariance, 0, COVARIANCE_SIZE * sizeof(float));
+	memset( m_acCovariance, 0, COVARIANCE_SIZE * sizeof(EMSCOMPLEX));
+
+	m_afRawInputSamples = new float[DBF_FFT_REAL_SIZE];
+	m_afPowerSpectrum	= new float[DBF_FFT_COMPLEX_SIZE + 1];
+	m_acFFTdata			= new EMSCOMPLEX*[DBF_MAX_SATELLITES];
+	for(int i = 0; i < DBF_MAX_SATELLITES; ++i)
+	{
+		m_acFFTdata[i] = new EMSCOMPLEX[DBF_FFT_COMPLEX_SIZE];
+		memset( m_acFFTdata[i], 0, sizeof(EMSCOMPLEX) * DBF_FFT_COMPLEX_SIZE );
+	}
+	m_acFFTdata1			= new EMSCOMPLEX[DBF_FFT_COMPLEX_SIZE];
+	
+	memset( m_afRawInputSamples, 0, DBF_SAMPLE_SIZE*sizeof(float));
+	memset( m_afPowerSpectrum, 0, (DBF_FFT_COMPLEX_SIZE + 1)*sizeof(float));
+	//memset( m_acFFTdata, 0, DBF_MAX_SATELLITES*DBF_FFT_COMPLEX_SIZE*sizeof(EMSCOMPLEX));
+	memset( m_acFFTdata1, 0, DBF_FFT_COMPLEX_SIZE*sizeof(EMSCOMPLEX));
+
+	m_afTemp1	= new float[DBF_FFT_REAL_SIZE];
+	m_afTemp2	= new float[DBF_FFT_REAL_SIZE];
+	m_acTemp1	= new EMSCOMPLEX[DBF_FFT_COMPLEX_SIZE+1];
+	m_acTemp2	= new EMSCOMPLEX[DBF_FFT_COMPLEX_SIZE+1];
+	m_acMatrix	= new EMSCOMPLEX[DBF_MAX_CHANNELS*DBF_INVERSE_FFT_COMPLEX_SIZE];
+	m_acMatrixT	= new EMSCOMPLEX[DBF_MAX_CHANNELS*DBF_INVERSE_FFT_COMPLEX_SIZE];
+
+	m_afChan0   = new float[DBF_SAMPLE_SIZE];
+
+	memset( m_afTemp1, 0, DBF_FFT_REAL_SIZE*sizeof(float));
+	memset( m_acTemp1, 0, (DBF_FFT_COMPLEX_SIZE+1)*sizeof(EMSCOMPLEX));
+	memset( m_afTemp2, 0, DBF_FFT_REAL_SIZE*sizeof(float));
+	memset( m_acTemp2, 0, (DBF_FFT_COMPLEX_SIZE+1)*sizeof(EMSCOMPLEX));
+	memset( m_acMatrix, 0, (DBF_MAX_CHANNELS*DBF_INVERSE_FFT_COMPLEX_SIZE)*sizeof(EMSCOMPLEX));
+	memset( m_acMatrixT, 0, (DBF_MAX_CHANNELS*DBF_INVERSE_FFT_COMPLEX_SIZE)*sizeof(EMSCOMPLEX));
+	memset( m_afChan0, 0, DBF_SAMPLE_SIZE*sizeof(float));
+
+	memset( &m_aPassSchedule, 0, sizeof(EMSDBFPASSRECORDS));
+	memset( &m_aMaintenance, 0, sizeof(EMSDBFMAINTENANCE));
+	//memset( &m_aDBFplate, 0, sizeof(EMSDBFARRAY));
+
+	if ( (m_ulSamplesPerChannel>0) && (m_ulChannels>0) && (m_ulSatellites>0) 
+		&& (m_asRawTimeSeries) && (m_asPhaseVector) && (m_asDBFVector)
+		&& (m_afRawInputSamples) && (m_afPowerSpectrum) && (m_acFFTdata) && (m_acFFTdata1) )
+	{
+		hr = EMS_OK;
+	}
+
+	m_timeStart  = CEMSSystemClock::GetTime();
+	m_timeFinish = CEMSSystemClock::GetTime();
+
+	TCHAR cTraceFileName[256];
+	TCHAR cTempName[256];
+
+	memset(cTraceFileName, 0, sizeof( cTraceFileName ) );
+//	lstrcpy( m_cFilePath, cDir );
+
+//	lstrcpy( cTraceFileName, cDir );
+			
+	//_stprintf( cTempName, TEXT( "DBFtrace-%I64d.csv" ), m_timeStart );
+	_stprintf( cTraceFileName, TEXT( "C:\\DBF-Calibration\\DBFtrace_%02d.csv" ), m_iObjectID );
+				
+//	lstrcat( cTraceFileName, cTempName ); 
+				
+	m_lpTraceFile  = fopen( cTraceFileName, "wt");
+	m_lpOutputFile = NULL;
+
+	
+		
+	//memset( afRawInputSamples, 0, DBF_SAMPLE_SIZE*sizeof(float));
+	memset( m_afTemp1, 0, DBF_SAMPLE_SIZE*sizeof(float));
+	memset( m_afTemp2, 0, DBF_SAMPLE_SIZE*sizeof(float));
+		
+	
+	return hr;
+}
+
+//---------------------------------------------------------------------------
+
+void 
+CDigitalBeamFormer::Reset( )
+{
+	if (m_lpTraceFile)
+	{
+		fclose( m_lpTraceFile );
+		m_lpTraceFile = 0;
+	}
+	if (m_lpOutputFile)
+	{
+		fclose( m_lpOutputFile );
+		m_lpOutputFile = 0;
+	}
+
+	if( m_pDataTransmit )
+	{
+		m_pDataTransmit->Disconnect();
+		m_pDataTransmit->Release();
+		m_pDataTransmit = NULL;
+	}
+}
+
+
+//---------------------------------------------------------------------------
+
+EMS_RESULT 
+CDigitalBeamFormer::BufferStatistics( const unsigned long *m_asRawTimeSeries )
+{
+	EMS_RESULT hr = EMS_BAD_PARAM;
+
+	if ( (m_asRawTimeSeries) && (m_afPowerSpectrum) )
+	{
+		memset( m_afTemp1, 0, m_ulSamplesPerChannel*sizeof(float));
+		memset( m_afRawInputSamples, 0, m_ulSamplesPerChannel*sizeof(float));
+
+		ULONG ichunk = 0;
+		ULONG iSample = 0;
+
+		// Outer loop divides data block into chunks
+
+		for ( ichunk = 0, iSample = 0; ichunk < m_ulChannels*m_ulSamplesPerChannel; ichunk += m_ulChannels )
+		{
+
+			// Convert unsigned integer to float
+			emssbIntToFloat( &m_asRawTimeSeries[ichunk], m_afRawInputSamples, m_ulChannels, 32, 0x0800);
+			m_afTemp1[iSample++] = emssMean( m_afRawInputSamples, m_ulChannels );
+
+		}
+
+		//m_dMeanADC   = emssMean( &m_afTemp1[0], m_ulSamplesPerChannel );
+		//m_dStdDevADC = emssStdDev ( &m_afTemp1[0], m_ulSamplesPerChannel );
+
+		m_dStdDevADC = _EMSsMeanStdDev( &m_afTemp1[0], m_ulSamplesPerChannel, &m_dMeanADC);
+
+		_EMSsbNormalize(m_afTemp1, m_afRawInputSamples, m_ulSamplesPerChannel, m_dMeanADC, m_dStdDevADC);
+
+		m_dMaxPower = _EMSsMaxExt( &m_afRawInputSamples[0], m_ulSamplesPerChannel, &m_ulStartPPS );
+
+		m_dMinPower = _EMSsMinExt( &m_afRawInputSamples[0], m_ulSamplesPerChannel, &m_ulStopPPS );
+
+
+
+		hr = EMS_OK;
+
+	}
+	return hr;
+}
+
+float
+CDigitalBeamFormer::_EMSsMean(const float *vec, ULONG len)
+{
+	float fMean = 0.0;
+	for( ULONG i = 0; i < len; i++ )
+	{
+		fMean += vec[i];
+	}
+
+	fMean = fMean/(float)len;
+
+	return fMean;
+}
+
+
+double
+CDigitalBeamFormer::_EMSsMeanStdDev(const float *vec, ULONG len, double* pfMean )
+{
+	double fSum = 0.00;
+	double fMean = 0.00; 
+	double fStdDev = 0.00;
+
+    ULONG i;
+
+    for(i = 0; i < len; ++i)
+    {
+        fSum += vec[i];
+    }
+
+    fMean = fSum/len;
+	*pfMean = fMean;
+
+    for(i = 0; i < len; ++i)
+        fStdDev += pow(vec[i] - fMean, 2);
+
+    return sqrt(fStdDev / len);
+}
+
+float
+CDigitalBeamFormer::_EMSsMaxExt(const float  *vec, int len, ULONG* index)
+{
+	float fMaxVal = -1.0;
+	for( ULONG i = 0; i < len; i++ )
+	{
+		if( fMaxVal < vec[i] )
+		{
+			fMaxVal = vec[i];
+			*index = i;
+		}
+	}
+	return fMaxVal;
+}
+
+float
+CDigitalBeamFormer::_EMSsMinExt(const float  *vec, int len, ULONG* index)
+{
+	float fMinVal = vec[0];
+	for( ULONG i = 0; i < len; i++ )
+	{
+		if( fMinVal > vec[i] )
+		{
+			fMinVal = vec[i];
+			*index = i;
+		}
+	}
+	return fMinVal;
+}
+
+//---------------------------------------------------------------------------
+
+EMS_RESULT
+CDigitalBeamFormer::RemoveTimePulse( float *afRawTimeSeries )
+{
+
+	EMS_RESULT hr = EMS_OK;
+
+	if( m_ulStartPPS > 0 && m_ulStopPPS < m_ulSamplesPerChannel - PULSE_SHAPE_SIZE )
+	{
+
+		for ( int i = 0; i < PULSE_SHAPE_SIZE; i++ )
+		{
+			afRawTimeSeries[ i + m_ulStartPPS - 2 ] *= m_afPulseShape[ i ];
+			afRawTimeSeries[ i + m_ulStopPPS - 2  ] *= m_afPulseShape[ i ];
+
+		}
+
+	}
+	else
+		hr = EMS_BAD_PARAM;
+
+	return hr;
+}
+//---------------------------------------------------------------------------
+
+HRESULT 
+CDigitalBeamFormer::_InitDT()
+{
+	EMS_RESULT hr =  E_FAIL;
+	if(!m_pDataTransmit)
+	{
+		hr = CoCreateInstance( CLSID_DataXmitter, NULL, CLSCTX_ALL,
+							   IID_IEMSDataTransmitter, (void**) &m_pDataTransmit );
+		//std::wstring cwszConnectInfo = std::wstring(L"<Connection><ip_address>")  + m_wsSPIP + ::wstring(L"</ip_address><port_id>9070</port_id></Connection>");
+
+		if( EMS_OK != hr || m_pDataTransmit == NULL)
+		{
+			//printf("\n Failed to load Data Transmitter");
+		}
+		else if( EMS_OK != m_pDataTransmit->Connect( m_wsSPIP.c_str() ) )
+		{
+			m_pDataTransmit->Release();
+			m_pDataTransmit = NULL;
+			//printf("\n Data Transmitter failed to connect");
+		}
+		else
+		{
+			//printf("\n Connected");
+		}
+	}
+	return hr;
+}
+
+//---------------------------------------------------------------------------
+
+EMS_RESULT
+CDigitalBeamFormer::DBFprocessor1Ex(EMSTIME tm)
+{
+	EMSTIME timeStart, timeFinish;
+
+	timeStart.intTime  = 0;
+	timeFinish.intTime = 0;
+
+	INT64   i64ElapsedTime = 0;
+
+	EMS_RESULT hr = EMS_OK;
+
+	timeStart = CEMSSystemClock::GetTime();
+
+	try
+	{
+		if( m_ulSatellites > 0 )
+			hr = DBFprocessor1(m_asRawTimeSeries);
+
+		//EMSTIME tmActualTime = _SetActualTime(tm);
+		//_OutputWave( m_timeActual, 0 );
+		_OutputWaveExProcess1(  m_timeActual, 1 );
+
+//		_OutputCalibData( m_timeActual );
+
+	}
+	catch( ... )
+	{
+		//printf("Unknown exception occurred (%d).\n", m_nCounter);
+	}
+  
+	timeFinish = CEMSSystemClock::GetTime();
+
+	i64ElapsedTime = timeFinish.intTime - timeStart.intTime;
+
+
+	m_nCounter++;
+	m_dElapsedTime += ((double) i64ElapsedTime) * 1e-9; 
+	m_dAverageTime = m_dElapsedTime / (double) m_nCounter;
+
+	m_timeFinish = CEMSSystemClock::GetTime();
+	i64ElapsedTime = m_timeFinish.intTime - m_timeStart.intTime;
+	double dElapsedTime = ((double) i64ElapsedTime) * 1e-9;
+
+
+/*	printf( "\n 1, %d, AT(sec) = %f, PT = %f, AveT = %f\n",
+		m_nCounter, dElapsedTime, m_dElapsedTime, m_dAverageTime );
+*/
+	if ( m_lpTraceFile )
+	{
+		fprintf( m_lpTraceFile, "1, %d, %I64d, %f,%f,%f, %f,%f,%f,%ld,%ld, %ld\n",
+			m_nCounter, tm.intTime, dElapsedTime, m_dElapsedTime, m_dAverageTime,
+			m_dMeanADC, m_dStdDevADC, m_dMaxPower, m_ulStartPPS, m_ulStopPPS - m_ulStartPPS,
+			m_ulMaxPowerIndex);
+
+	}
+	return hr;
+}
+
+EMSTIME 
+CDigitalBeamFormer::_SetActualTime( EMSTIME tm )
+{
+	return m_timeActual;
+	EMSTIMEFIELDS tmFlds;
+	CEMSTime oTM(tm);
+
+	oTM.GetTime(&tmFlds);
+
+	CEMSTime oActualTime;
+	oActualTime.SetTime(tmFlds.nYear, tmFlds.nMonth, tmFlds.nDay, tmFlds.nHour, tmFlds.nMinute, tmFlds.nSecond, 0 );
+
+	m_ulMarkerBitRate = 500000;  //TBD
+
+	if( m_ulLastStartPPS > 0 && !m_oLastPPS.IsZero() )
+	{
+//		double dSecondDiff = m_oLastPPS.SecondsDifferent(oActualTime);
+		double dSecondDiff = m_oLastPPS.SecondsDifferent(tm);
+		if( dSecondDiff < 0.0 )
+		{
+			dSecondDiff *= -1.0;
+		}
+		dSecondDiff *= 2;
+		dSecondDiff = ((ULONG)dSecondDiff) / 2.0;
+
+		//m_ulMarkerBitRate += (m_ulLastStartPPS - m_ulStartPPS) / dSecondDiff;
+	}
+
+	//double dTimeFraction = (double) m_ulStartPPS / (double) m_ulMarkerBitRate;
+
+	double dTimeFraction = (double) (m_ulStartPPS) / (double) m_ulMarkerBitRate;
+
+//	m_oLastPPS = oActualTime;
+	m_oLastPPS = tm;
+	m_ulLastStartPPS = m_ulStartPPS;
+
+	// To find start time of buffer subtract time fraction
+	oActualTime.AddSeconds(-dTimeFraction);
+
+	double dSecDiff = oTM.SecondsDifferent(oActualTime);
+
+	if( dSecDiff < -1.001 )
+	{
+		oActualTime.AddSeconds(1.0);
+	}
+	else if( dSecDiff > 1.001 )
+	{
+		oActualTime.AddSeconds(-1.0);
+	}
+
+	// 0.5 second offset correction
+	oActualTime.AddSeconds(-0.5);
+
+	return oActualTime;
+}
+
+
+
+int
+CDigitalBeamFormer::_GetMostCommonIndex( ULONG* arr, int iCount)
+{
+	int iRet = -1;
+	ULONG arrCount[32];
+	memset( arrCount, 0, sizeof( arrCount ) );
+
+	for( int i = 0; i < 32; i++ )
+	{
+		for( int j = i + 1; j < 32; j++)
+		{
+			if( arr[i] == arr[j] )
+				arrCount[i]++;
+		}
+	}
+
+	ULONG lTest = 0;
+	for( int k = 0; k < 32; k++ )
+	{
+		if( lTest < arrCount[k] )
+		{
+			lTest = arrCount[k];
+			iRet = k;
+		}
+	}
+
+	return iRet;
+}
+
+
+void
+CDigitalBeamFormer::_EMScbPowerSpectr(const EMSCOMPLEX *src, float *spectr,ULONG length)
+{
+	if( src && spectr )
+	{
+		for( ULONG i = 0; i < length; i++ )
+		{
+			spectr[i] = sqrt( src[i].re * src[i].re + src[i].im * src[i].im );
+		}
+	}
+}
+
+void
+CDigitalBeamFormer::_EMSsbNormalize( const float *src, float *dst, ULONG n, const float valuesub, const float valuediv )
+{
+	if( src && dst )
+	{
+		for( ULONG i = 0; i < n; i++ )
+		{
+			dst[i] = ( src[i] -  valuesub ) / valuediv;
+		}
+	}
+}
+
+
+void
+CDigitalBeamFormer::_EMScbMpy1( const EMSCOMPLEX val, EMSCOMPLEX *dst, ULONG n )
+{
+	if( dst )
+	{
+		EMSCOMPLEX cTemp;
+		
+		for( ULONG i = 0; i < n; i++ )
+		{
+			//as suggested by Sichun, changing the code for .re
+			//cTemp.re = dst[i].re * val.re + dst[i].im * val.im;
+			cTemp.re = dst[i].re * val.re - dst[i].im * val.im;
+			cTemp.im = dst[i].re * val.im + dst[i].im * val.re;
+			dst[i].re = cTemp.re;
+			dst[i].im = cTemp.im;
+		}
+	}
+}
+
+void
+CDigitalBeamFormer::_EMScbAdd2( const EMSCOMPLEX *src, EMSCOMPLEX *dst, ULONG n )
+{
+	if( src && dst )
+	{
+		for( ULONG i = 0; i < n; i++ )
+		{
+			dst[i].re += src[i].re;
+			dst[i].im += src[i].im;
+		}
+	}
+}
+
+void
+CDigitalBeamFormer::_EMSsbMpy1( const float val, float *dst, ULONG n )
+{
+	if( dst )
+	{
+		for( ULONG i = 0; i < n; i++ )
+		{
+			dst[i] *= val;
+		}
+	}
+}
+
+//---------------------------------------------------------------------------
+
+// Performs FFT on each channel and phase corrects using frequency of maximum carrier power
+
+EMS_RESULT
+CDigitalBeamFormer::DBFprocessor1( const unsigned long *clpRawTimeSeries )
+{
+
+	EMS_RESULT hr = EMS_BAD_PARAM;
+	float fScaleFactor        = (float)ADC_OFFSET;   // Scale factor for real to integer conversion
+	float fScaleFactorInverse = 1.0 / fScaleFactor;  // Scale factor for integer to real conversion
+	m_ulMaxPowerIndex = 0;
+
+	m_bOutputOK = true;
+
+	memset( &m_LastCalibRecord, 0, sizeof( m_LastCalibRecord ) );
+	// Find 1 second mark
+
+	if ( clpRawTimeSeries )
+	{
+		ULONG ichan, jsample, index;
+		ULONG ulMaxPowerIndex = 0;
+		ULONG ulOneSecond = 0;
+		double dMean   = 0.0;
+		double dStdDev = 0.0;
+		EMSCOMPLEX cPhaseCorrection;
+		double dPower  = 0.0;
+
+		memset( m_afRawInputSamples, 0, DBF_SAMPLE_SIZE*sizeof(float));
+		memset( m_afPowerSpectrum, 0, ( DBF_FFT_COMPLEX_SIZE + 1)*sizeof(float));
+//		memset( m_acFFTdata, 0, DBF_FFT_COMPLEX_SIZE*sizeof(EMSCOMPLEX));
+	
+//		hr = BufferStatistics( m_asRawTimeSeries );
+		
+		memset( m_afTemp1, 0, DBF_FFT_REAL_SIZE*sizeof(float));
+		memset( m_afTemp2, 0, DBF_FFT_REAL_SIZE*sizeof(float));
+		//memset( m_acFFTdata, 0, DBF_FFT_COMPLEX_SIZE*sizeof(EMSCOMPLEX));
+
+//		int iGoodChan[25] = {1,2,4,5,6,7,9,10,12,13,14,22,23,27,34,37,39,40,42,43,45,49,51,59,64};
+		ULONG aulMostConsistentIndex[32];
+		memset( aulMostConsistentIndex, 0, sizeof(aulMostConsistentIndex) );
+
+		for ( ichan = 1; ichan < (int)m_ulChannels; ichan++ )
+		{
+			// Convert integer to float
+			memset( m_afTemp1, 0, DBF_FFT_REAL_SIZE*sizeof(float));
+			memset( m_afTemp2, 0, DBF_FFT_REAL_SIZE*sizeof(float));
+
+			for ( jsample = 0, index = ichan; jsample < m_ulSamplesPerChannel;  jsample++, index += m_ulChannels )//m_ulSamplesPerChannel = 1000000
+			{
+				m_afTemp1[jsample] = (float) m_asRawTimeSeries[index] * fScaleFactorInverse;
+			}
+
+			//dMean   = emssMean( &m_afTemp1[0], m_ulSamplesPerChannel / 8 );
+			//dStdDev = emssStdDev ( &m_afTemp1[0], m_ulSamplesPerChannel / 8 );
+
+			dStdDev = _EMSsMeanStdDev( m_afTemp1, m_ulSamplesPerChannel, &dMean );
+
+			if( dStdDev == 0.00 )
+				continue;
+
+			_EMSsbNormalize(m_afTemp1, m_afTemp2, m_ulSamplesPerChannel, dMean, dStdDev);
+
+			emssRealFftNip( m_afTemp2, m_acTemp1, DBF_FFT_SIZE_LOG2, EMS_SPL_FWD );
+
+//			emscbPowerSpectr(m_acTemp1, m_afPowerSpectrum, DBF_FFT_COMPLEX_SIZE);
+			_EMScbPowerSpectr( m_acTemp1, m_afPowerSpectrum, DBF_FFT_COMPLEX_SIZE/2 );
+
+			//m_dMaxPower = emssMaxExt( &m_afPowerSpectrum[10], DBF_FFT_COMPLEX_SIZE-11, (int *)&m_ulMaxPowerIndex );
+			//m_ulMaxPowerIndex += (10);
+
+			m_dMaxPower = 0;
+			for( ULONG k = 10000; k < DBF_FFT_COMPLEX_SIZE/2-10001; k++ )
+			{
+				if( m_dMaxPower < m_afPowerSpectrum[k] )
+				{
+					m_dMaxPower = m_afPowerSpectrum[k];
+					m_ulMaxPowerIndex = k;
+				}
+			}
+
+			
+
+			aulMostConsistentIndex[ichan] = m_ulMaxPowerIndex;
+
+			_EMScbAdd2( m_acTemp1, m_acFFTdata[0], DBF_FFT_COMPLEX_SIZE );	
+		
+		}
+
+		int iBestIndex = _GetMostCommonIndex( (ULONG*) aulMostConsistentIndex, 32 );
+		iBestIndex=0;
+		if( iBestIndex > 0 )
+		{
+			m_ulMaxPowerIndex = aulMostConsistentIndex[iBestIndex];
+		}
+		else
+		{
+			_EMScbPowerSpectr(m_acFFTdata[0], m_afPowerSpectrum, DBF_FFT_COMPLEX_SIZE/2);
+			//emscbPowerSpectr(m_acFFTdata, m_afPowerSpectrum, DBF_FFT_COMPLEX_SIZE);
+
+			//m_dMaxPower = emssMaxExt( &m_afPowerSpectrum[10], DBF_FFT_COMPLEX_SIZE-11, (int *)&m_ulMaxPowerIndex );
+			//m_ulMaxPowerIndex += (10);
+			m_dMaxPower = 0;
+			for( ULONG k = 10000; k < DBF_FFT_COMPLEX_SIZE/2-10001; k++ )
+			{
+				if( m_dMaxPower < m_afPowerSpectrum[k] )
+				{
+					m_dMaxPower = m_afPowerSpectrum[k];
+					m_ulMaxPowerIndex = k;
+				}
+			}
+		}
+
+		//memset( m_acFFTdata, 0, DBF_FFT_COMPLEX_SIZE*sizeof(EMSCOMPLEX));
+
+		m_emsDBFBufferPhase.ulMaxFreqIndex = m_ulMaxPowerIndex;
+		m_emsDBFBufferPhase.dMaxPowerlevel = m_dMaxPower;
+		for ( ichan = 1; ichan < (int)m_ulChannels; ichan++ )
+		{
+			// Convert integer to float
+
+			memset( m_afTemp1, 0, DBF_FFT_REAL_SIZE*sizeof(float));
+			memset( m_afTemp2, 0, DBF_FFT_REAL_SIZE*sizeof(float));
+			
+			//rr  for ( jsample = 0, index = ichan; jsample < m_ulSamplesPerChannel;  jsample++, index += m_ulChannels )
+			for ( jsample = 1, index = ichan; jsample < m_ulSamplesPerChannel;  jsample++, index += m_ulChannels )
+			{
+				m_afTemp1[jsample] = (float) m_asRawTimeSeries[index] * fScaleFactorInverse;
+			}
+
+			/*
+			//looking the good channels only here
+			bool bOK = false;
+
+			for( int iGood = 0; iGood < 25 && !bOK; iGood++ )
+			{
+				if( ichan == (iGoodChan[iGood] - 1) )
+					bOK = true;
+			}
+			if( !bOK )
+				continue;
+
+			*/
+//			hr = RemoveTimePulse( m_afTemp1 );
+
+			//dMean   = emssMean( &m_afTemp1[0], m_ulSamplesPerChannel / 8 );
+			//dStdDev = emssStdDev ( &m_afTemp1[0], m_ulSamplesPerChannel / 8 );
+
+			dStdDev = _EMSsMeanStdDev( m_afTemp1, m_ulSamplesPerChannel, &dMean );
+
+			if( dStdDev == 0.00 )
+				continue;
+
+//			emssbNormalize(m_afTemp1, m_afTemp2, m_ulSamplesPerChannel, dMean, dStdDev);
+			
+			_EMSsbNormalize(m_afTemp1, m_afTemp2, m_ulSamplesPerChannel, dMean, dStdDev);
+
+			emssRealFftNip( m_afTemp2, m_acTemp1, DBF_FFT_SIZE_LOG2, EMS_SPL_FWD );
+
+
+			//if ( ichan == 0 )
+			//{
+			//	emscbPowerSpectr(m_acTemp1, m_afPowerSpectrum, DBF_FFT_COMPLEX_SIZE);
+
+			//	m_dMaxPower = emssMaxExt( &m_afPowerSpectrum[DBF_FFT_COMPLEX_SIZE/4], DBF_FFT_COMPLEX_SIZE/2, (int *)&m_ulMaxPowerIndex );
+			//	m_ulMaxPowerIndex += (DBF_FFT_COMPLEX_SIZE/4);
+			//}
+
+			// Phase correct
+
+			//m_ulMaxPowerIndex = 261904; // for debugging and fixing the satellite id in view
+
+			dPower  = m_acTemp1[m_ulMaxPowerIndex].re * m_acTemp1[m_ulMaxPowerIndex].re;
+			dPower += m_acTemp1[m_ulMaxPowerIndex].im * m_acTemp1[m_ulMaxPowerIndex].im;
+			//dPower  = sqrt( dPower ) * (double)m_ulChannels;
+			dPower  = sqrt( dPower );
+
+
+
+			cPhaseCorrection.re =  m_acTemp1[m_ulMaxPowerIndex].re / (float)dPower;
+			cPhaseCorrection.im = -1.0 * m_acTemp1[m_ulMaxPowerIndex].im / (float)dPower;
+
+			
+			m_LastCalibRecord.fCalibPhaseReal[ichan] = (short)(cPhaseCorrection.re * fScaleFactor);
+			m_LastCalibRecord.fCalibPhaseImag[ichan] = (short)(cPhaseCorrection.im * fScaleFactor);
+
+			m_emsDBFBufferPhase.fPhase[ichan] = atan2( cPhaseCorrection.im, cPhaseCorrection.re );
+
+			cPhaseCorrection.re = ((float)(m_aPassSchedule.rec[0].nPhaseReal[ichan]))/32768.00;
+			cPhaseCorrection.im = ((float)(m_aPassSchedule.rec[0].nPhaseImag[ichan]))/32768.00;
+
+			m_emsDBFBufferPhase.fBias[ichan] = atan2( cPhaseCorrection.im, cPhaseCorrection.re );
+			m_emsDBFBufferPhase.fBias[ichan]  -= m_emsDBFBufferPhase.fPhase[ichan];
+
+//			m_LastCalibRecord.fCalibPhaseReal[ichan] = m_acTemp1[m_ulMaxPowerIndex].re;
+//			m_LastCalibRecord.fCalibPhaseImag[ichan] = m_acTemp1[m_ulMaxPowerIndex].im;
+
+
+			//m_asPhaseVector[ichan * 2 ]    = (short) ( cPhaseCorrection.re * fScaleFactor );
+			//m_asPhaseVector[ichan * 2 + 1] = (short) ( cPhaseCorrection.im * fScaleFactor );
+
+			// Accumulate FFT data from each channel
+			//emscbMpy1( cPhaseCorrection, m_acTemp1, DBF_FFT_COMPLEX_SIZE);
+			
+			//test no phase correction.
+			_EMScbMpy1( cPhaseCorrection, m_acTemp1, DBF_FFT_COMPLEX_SIZE/2);
+
+			//emscbAdd2( m_acTemp1, m_acFFTdata, DBF_FFT_COMPLEX_SIZE );	
+			_EMScbAdd2( m_acTemp1, m_acFFTdata[0], DBF_FFT_COMPLEX_SIZE/2 );	
+		
+			m_aMaintenance.dMean[ichan]   = dMean;
+			m_aMaintenance.dStdDev[ichan] = dStdDev;
+
+		}
+
+		//int iCount = 0;
+		//float fPower1 = 0.0;
+		//float fPower2 = 0.0;
+
+		//for( ULONG k = 0; k < DBF_FFT_COMPLEX_SIZE-1; k++ )
+		//{
+		//	fPower1  = m_acFFTdata[k].re * m_acFFTdata[k].re;
+		//	fPower1 += m_acFFTdata[k].im * m_acFFTdata[k].im;
+		//	fPower1  = sqrt( fPower1 );
+
+		//	if( fPower1 == 0.00 )
+		//		continue;
+		//	fPower2  = m_acFFTdata[k+1].re * m_acFFTdata[k+1].re;
+		//	fPower2 += m_acFFTdata[k+1].im * m_acFFTdata[k+1].im;
+		//	fPower2  = sqrt( fPower2 );
+
+		//	if( (fPower2/fPower1) > 10.00 )
+		//		iCount++;
+		//}
+		//
+		//if( iCount > 1000 )
+		//	m_bOutputOK = false;
+		//else
+		//	int x = 1;
+
+		//for( ULONG k = 0; k < DBF_FFT_COMPLEX_SIZE; k++ )
+		//{
+		//	m_acFFTdata[k].im *= -1.0;
+		//}
+		// Perform spectrum inversion
+		//KA comment out
+		//for ( index = 0; index < DBF_FFT_COMPLEX_SIZE; index++ )
+		//{
+
+		//	m_acTemp2[ index ].re =  m_acFFTdata[ DBF_FFT_COMPLEX_SIZE - index -1 ].re; 
+		//	m_acTemp2[ index ].im = -m_acFFTdata[ DBF_FFT_COMPLEX_SIZE - index -1 ].im; 
+
+		//}
+
+		// Convert to Time Domain
+//		emscFftNip( m_acTemp2, m_acTemp1, DBF_FFT_SIZE_LOG2-1, EMS_SPL_INV );
+//		emscFftNip( m_acTemp2, m_acFFTdata, DBF_FFT_SIZE_LOG2-1, EMS_SPL_INV );
+
+//		emssRealFftNip( m_afTemp2, m_acFFTdata, DBF_FFT_SIZE_LOG2, EMS_SPL_INV );
+
+		// Frequency shift
+		//KA comment out
+		//for ( index = 0; index < DBF_FFT_COMPLEX_SIZE; index+=2 )
+		//{
+		//	
+		//	m_acTemp1[index].re = -m_acTemp1[ index ].re;
+		//	m_acTemp1[index].im = -m_acTemp1[ index ].im;
+		//}		
+		//
+		
+		// Compute phase
+//		emscbPhase(m_acTemp1,m_afTemp1,DBF_FFT_COMPLEX_SIZE);
+
+//		emssbMpy1(fScaleFactor / c_dPI, m_afTemp1, DBF_FFT_COMPLEX_SIZE);
+//		emssbMpy1( (fScaleFactor/8), m_afTemp2, DBF_FFT_REAL_SIZE);
+
+		//int iMaxValue = 0;
+		//float ddMaxValue = emssMaxExt( &m_afTemp2[0], DBF_SAMPLE_SIZE, &iMaxValue );
+		//float ddMinValue = emssMinExt( &m_afTemp2[0], DBF_SAMPLE_SIZE, &iMaxValue );
+		////emssMaxExt( m_afTemp2, , (int *)&m_ulMaxPowerIndex );
+
+
+		//float fScale = 0.0;
+		//if( ddMaxValue != 0.00 || ddMinValue != 0.00) 
+		//{
+		//	if( abs(ddMaxValue) > abs(ddMinValue) )
+		//	{
+		//		fScale = 32000.00/ abs(ddMaxValue);
+		//	}
+		//	else
+		//		fScale = 32000.00/abs(ddMinValue);
+		//}
+
+		//emssbMpy1( fScale, m_afTemp2, DBF_FFT_REAL_SIZE);
+//		_EMSsbMpy1( fScale, m_afTemp2, DBF_FFT_REAL_SIZE);
+
+
+		// Convert to integer
+//		emssbFloatToInt(m_afTemp1, m_asDBFVector, DBF_SAMPLE_SIZE/2, 16, NSP_Round);
+//		emssbFloatToInt(m_afTemp1, m_asDBFVector, DBF_SAMPLE_SIZE, 16, NSP_Round);
+
+		//		emssbFloatToInt(m_afTemp2, m_asDBFVector, DBF_SAMPLE_SIZE, 16, NSP_Round);
+
+
+		hr = EMS_OK;
+	}
+	return hr;
+}
+
+void 
+CDigitalBeamFormer::_IsTimeToCopyCovarFile( const EMSTIME& oCurrentTime)
+{
+		//check if covariance file send time is up
+
+		CEMSTime oNext(m_oDBFCovarFileLastWriteTime);
+		oNext.AddHours(TIMETO_SEND_COVARIANCE_FILE);
+		//oNext.AddHours(0.2);
+		
+		EMSTIME tmNext = oNext;
+		EMSTIME tmCurrent = oCurrentTime;
+
+		if( tmCurrent.intTime >= tmNext.intTime )
+		{
+			m_bIsCovarFileSendTime = TRUE;
+			m_oDBFCovarFileLastWriteTime = oCurrentTime;
+		}
+		/*else
+			m_bIsCovarFileSendTime = FALSE;*/
+		//check if covariance file send time is up
+		
+	
+}
+bool 
+CDigitalBeamFormer::_IsTimeToCopyBufferPhaseFile( const EMSTIME& oCurrentTime)
+{
+	bool bRet = false;
+	if( 0 == m_oDBFBufferPhaseLastWriteTime.GetTimeNano() )
+	{
+		m_oDBFBufferPhaseLastWriteTime =  m_oDBFCovarFileLastWriteTime = CEMSSystemClock::GetTime();
+		bRet = true;
+	}
+	else
+	{
+		// check one hour.
+		CEMSTime oNext(m_oDBFBufferPhaseLastWriteTime);
+		oNext.AddHours(1.0);
+		//oNext.AddHours(0.2);
+		
+		EMSTIME tmNext = oNext;
+		EMSTIME tmCurrent = oCurrentTime;
+
+		if( tmCurrent.intTime >= tmNext.intTime )
+		{
+			bRet = true;
+		}
+		_IsTimeToCopyCovarFile( oCurrentTime );
+	}
+	return bRet;
+}
+
+
+
+
+EMS_RESULT
+CDigitalBeamFormer::DBFprocessor22( const unsigned long *clpRawTimeSeries )
+{
+
+	EMS_RESULT hr = EMS_BAD_PARAM;
+	float fScaleFactor        = (float)ADC_OFFSET;   // Scale factor for real to integer conversion
+	float fScaleFactorInverse = 1.0 / fScaleFactor;  // Scale factor for integer to real conversion
+
+	memset( &m_LastCalibRecord, 0, sizeof( m_LastCalibRecord ) );
+	// Find 1 second mark
+
+	if ( clpRawTimeSeries )
+	{
+		ULONG ichan, jsample, index;
+		ULONG ulMaxPowerIndex = 0;
+		ULONG ulMaxPowerIndex1 = 0;
+		ULONG ulOneSecond = 0;
+		double dMean   = 0.0;
+		double dStdDev = 0.0;
+		EMSCOMPLEX cPhaseCorrection;
+		EMSCOMPLEX cPhaseCorrection1;
+		double dPower  = 0.0;
+
+		memset( m_afRawInputSamples, 0, DBF_SAMPLE_SIZE*sizeof(float));
+		memset( m_afPowerSpectrum, 0, ( DBF_FFT_COMPLEX_SIZE + 1)*sizeof(float));
+		//memset( m_acFFTdata, 0, DBF_FFT_COMPLEX_SIZE*sizeof(EMSCOMPLEX));
+		//memset( m_acFFTdata1, 0, DBF_FFT_COMPLEX_SIZE*sizeof(EMSCOMPLEX));
+	
+		hr = BufferStatistics( m_asRawTimeSeries );
+		
+		memset( m_afTemp1, 0, DBF_FFT_REAL_SIZE*sizeof(float));
+		memset( m_afTemp2, 0, DBF_FFT_REAL_SIZE*sizeof(float));
+		memset( m_acFFTdata, 0, DBF_MAX_SATELLITES*DBF_FFT_COMPLEX_SIZE*sizeof(EMSCOMPLEX));
+
+		memset( m_acFFTdata1, 0, DBF_FFT_COMPLEX_SIZE*sizeof(EMSCOMPLEX));
+
+		for ( ichan = 0; ichan < (int)m_ulChannels; ichan++ )
+		{
+			// Convert integer to float
+
+			for ( jsample = 0, index = ichan; jsample < m_ulSamplesPerChannel;  jsample++, index += m_ulChannels )
+			{
+				m_afTemp1[jsample] = (float) m_asRawTimeSeries[index] * fScaleFactorInverse;
+			}
+
+//			hr = RemoveTimePulse( m_afTemp1 );
+
+			dMean   = emssMean( &m_afTemp1[0], m_ulSamplesPerChannel / 8 );
+			dStdDev = emssStdDev ( &m_afTemp1[0], m_ulSamplesPerChannel / 8 );
+
+			emssbNormalize(m_afTemp1, m_afTemp2, m_ulSamplesPerChannel, dMean, dStdDev);
+
+			emssRealFftNip( m_afTemp2, m_acTemp1, DBF_FFT_SIZE_LOG2, EMS_SPL_FWD );
+
+			memcpy( m_acTemp2, m_acTemp1, (DBF_FFT_COMPLEX_SIZE+1) * sizeof(EMSCOMPLEX) );
+
+			if ( ichan == 0 )
+			{
+				emscbPowerSpectr(m_acTemp1, m_afPowerSpectrum, DBF_FFT_COMPLEX_SIZE);
+
+				ULONG ulI1 = 261450;
+				ULONG ulI2 = 261900;
+
+				//m_dMaxPower = emssMaxExt( &m_afPowerSpectrum[ulI1-200], 400, (int *)&m_ulMaxPowerIndex );
+				//m_ulMaxPowerIndex += ulI1;
+				m_dMaxPower = emssMaxExt( &m_afPowerSpectrum[DBF_FFT_COMPLEX_SIZE/4], DBF_FFT_COMPLEX_SIZE/2, (int *)&m_ulMaxPowerIndex1 );
+				m_ulMaxPowerIndex1 += (DBF_FFT_COMPLEX_SIZE/4);
+
+				memset(&m_afPowerSpectrum[m_ulMaxPowerIndex1-100], 0, 200 * sizeof( float ) );
+				
+				m_dMaxPower = emssMaxExt( &m_afPowerSpectrum[DBF_FFT_COMPLEX_SIZE/4], DBF_FFT_COMPLEX_SIZE/2, (int *)&m_ulMaxPowerIndex );
+				m_ulMaxPowerIndex += (DBF_FFT_COMPLEX_SIZE/4);
+
+				//m_dMaxPower = emssMaxExt( &m_afPowerSpectrum[ulI2-200], 400, (int *)&m_ulMaxPowerIndex1 );
+				//m_ulMaxPowerIndex1 += ulI2;
+
+			}
+
+			// Phase correct
+
+			//m_ulMaxPowerIndex = 261904; // for debugging and fixing the satellite id in view
+
+			dPower  = m_acTemp1[m_ulMaxPowerIndex].re * m_acTemp1[m_ulMaxPowerIndex].re;
+			dPower += m_acTemp1[m_ulMaxPowerIndex].im * m_acTemp1[m_ulMaxPowerIndex].im;
+			//dPower  = sqrt( dPower ) * (double)m_ulChannels;
+			dPower  = sqrt( dPower );
+
+			cPhaseCorrection.re =  m_acTemp1[m_ulMaxPowerIndex].re / (float)dPower;
+			cPhaseCorrection.im = -m_acTemp1[m_ulMaxPowerIndex].im / (float)dPower;
+
+			// Accumulate FFT data from each channel
+			emscbMpy1( cPhaseCorrection, m_acTemp1, DBF_FFT_COMPLEX_SIZE);
+			emscbAdd2( m_acTemp1, m_acFFTdata[0], DBF_FFT_COMPLEX_SIZE );	
+
+			/////////////////////////////////////////////////////////////////////////////////////
+			dPower  = m_acTemp2[m_ulMaxPowerIndex1].re * m_acTemp2[m_ulMaxPowerIndex1].re;
+			dPower += m_acTemp2[m_ulMaxPowerIndex1].im * m_acTemp2[m_ulMaxPowerIndex1].im;
+			//dPower  = sqrt( dPower ) * (double)m_ulChannels;
+			dPower  = sqrt( dPower );
+
+			cPhaseCorrection1.re =  m_acTemp2[m_ulMaxPowerIndex1].re / (float)dPower;
+			cPhaseCorrection1.im = -m_acTemp2[m_ulMaxPowerIndex1].im / (float)dPower;
+
+			// Accumulate FFT data from each channel
+			emscbMpy1( cPhaseCorrection1, m_acTemp2, DBF_FFT_COMPLEX_SIZE);
+			emscbAdd2( m_acTemp2, m_acFFTdata1, DBF_FFT_COMPLEX_SIZE );	
+		
+
+			
+			
+			//m_aMaintenance.dMean[ichan]   = dMean;
+			//m_aMaintenance.dStdDev[ichan] = dStdDev;
+
+		}
+
+		// Perform spectrum inversion
+		for ( index = 0; index < DBF_FFT_COMPLEX_SIZE; index++ )
+		{
+
+			m_acTemp2[ index ].re =  m_acFFTdata[0][ DBF_FFT_COMPLEX_SIZE - index -1 ].re; 
+			m_acTemp2[ index ].im = -m_acFFTdata[0][ DBF_FFT_COMPLEX_SIZE - index -1 ].im; 
+
+		}
+
+		// Convert to Time Domain
+		emscFftNip( m_acTemp2, m_acTemp1, DBF_FFT_SIZE_LOG2-1, EMS_SPL_INV );
+
+		// Frequency shift
+
+		for ( index = 0; index < DBF_FFT_COMPLEX_SIZE; index+=2 )
+		{
+			
+			m_acTemp1[index].re = -m_acTemp1[ index ].re;
+			m_acTemp1[index].im = -m_acTemp1[ index ].im;
+		}		
+		
+		
+		// Compute phase
+		emscbPhase(m_acTemp1,m_afTemp1,DBF_FFT_COMPLEX_SIZE);
+
+		emssbMpy1(fScaleFactor / c_dPI, m_afTemp1, DBF_FFT_COMPLEX_SIZE);
+
+		// Convert to integer
+		emssbFloatToInt(m_afTemp1, m_asDBFVector, DBF_FFT_REAL_SIZE/2, 16, NSP_Round);
+
+//////////
+				// Perform spectrum inversion
+		for ( index = 0; index < DBF_FFT_COMPLEX_SIZE; index++ )
+		{
+
+			m_acTemp2[ index ].re =  m_acFFTdata1[ DBF_FFT_COMPLEX_SIZE - index -1 ].re; 
+			m_acTemp2[ index ].im = -m_acFFTdata1[ DBF_FFT_COMPLEX_SIZE - index -1 ].im; 
+
+		}
+
+		// Convert to Time Domain
+		emscFftNip( m_acTemp2, m_acTemp1, DBF_FFT_SIZE_LOG2-1, EMS_SPL_INV );
+
+		// Frequency shift
+
+		for ( index = 0; index < DBF_FFT_COMPLEX_SIZE; index+=2 )
+		{
+			
+			m_acTemp1[index].re = -m_acTemp1[ index ].re;
+			m_acTemp1[index].im = -m_acTemp1[ index ].im;
+		}		
+		
+		
+		// Compute phase
+		emscbPhase(m_acTemp1,m_afTemp1,DBF_FFT_COMPLEX_SIZE);
+
+		emssbMpy1(fScaleFactor / c_dPI, m_afTemp1, DBF_FFT_COMPLEX_SIZE);
+
+		// Convert to integer
+		emssbFloatToInt(m_afTemp1, &m_asDBFVector[DBF_FFT_REAL_SIZE/2], DBF_FFT_REAL_SIZE/2, 16, NSP_Round);
+
+
+		hr = EMS_OK;
+	}
+	return hr;
+}
+//---------------------------------------------------------------------------
+
+EMS_RESULT
+CDigitalBeamFormer::DBFprocessor2Ex(EMSTIME tm)
+{
+	EMSTIME timeStart, timeFinish;
+
+	timeStart.intTime  = 0;
+	timeFinish.intTime = 0;
+
+	int iSatMax = 0;
+	ULONG ulSatMaxFreq = 0;
+	double dSatMaxPower = 0;
+	double dPeakPhase[DBF_MAX_CHANNELS];
+
+	double dPowerThreshold = 35.00;
+
+	INT64   i64ElapsedTime = 0;
+
+	EMS_RESULT hr = EMS_OK;
+
+//	hr = GetPhaseBuffer( );
+	//printf("\n DBFprocessor2Ex" ); 
+
+	timeStart = CEMSSystemClock::GetTime();
+
+	try
+	{
+		int iMax = m_ulSatellites;
+		//if( m_ulSatellites >=1 )
+		if( m_ulSatellites >= DBF_MAX_SATELLITES )
+		//if( m_ulSatellites >= 2 )
+		{
+			//iMax = 2;
+			iMax = DBF_MAX_SATELLITES;
+		}
+		else
+			iMax = m_ulSatellites;
+			
+//			memset( &m_emsDBFBufferPhase, 0, sizeof(m_emsDBFBufferPhase) );
+		//setting the last value of the rawtimeseries to 0 as per Rich
+		m_asRawTimeSeries[DBF_SAMPLE_SIZE * DBF_MAX_CHANNELS -1] = 0;
+		hr = DBFprocessor2(m_asRawTimeSeries, iMax );
+		_OutputWaveEx( m_timeActual, iMax );
+		_OutputMaxPowerPhases(iMax );
+		//printf(  "\nProcess2 %I64d, Sats %ld\n", m_timeActual.intTime, m_ulSatellites );
+
+	}
+
+	catch( ... )
+	{
+		//printf("Unknown exception occurred (%d).\n", m_nCounter);
+	}
+  
+	timeFinish = CEMSSystemClock::GetTime();
+
+	i64ElapsedTime = timeFinish.intTime - timeStart.intTime;
+
+
+	m_nCounter++;
+	m_dElapsedTime += ((double) i64ElapsedTime) * 1e-9; 
+	m_dAverageTime = m_dElapsedTime / (double) m_nCounter;
+
+	m_timeFinish = CEMSSystemClock::GetTime();
+	i64ElapsedTime = m_timeFinish.intTime - m_timeStart.intTime;
+	double dElapsedTime = ((double) i64ElapsedTime) * 1e-9;
+
+
+/*	printf( "\n 2, %d, AT(sec) = %f, PT = %f, AveT = %f\n",
+		m_nCounter, dElapsedTime, m_dElapsedTime, m_dAverageTime );
+*/
+	if ( m_lpTraceFile )
+	{
+		fprintf( m_lpTraceFile, "3,%d,%f,%f,%f,%f,%f,%f,%ld\n",
+			m_nCounter, dElapsedTime, m_dElapsedTime, m_dAverageTime,
+			m_dMeanADC, m_dStdDevADC, m_dMaxPower, m_ulStartPPS );
+
+	}
+	return hr;
+}
+
+//---------------------------------------------------------------------------
+
+// Performs phase correction and summation for each satellite
+
+//EMS_RESULT
+//CDigitalBeamFormer::DBFprocessor2( const unsigned long *clpRawTimeSeries )
+//{
+//
+//	EMS_RESULT hr = EMS_BAD_PARAM;
+//	int	nScaleFactor = 16;      // Scale factor for integer dot product
+//	float fScaleFactor        = (float)ADC_OFFSET;   // Scale factor for real to integer conversion
+//	float fScaleFactorInverse = 1.0 / fScaleFactor;  // Scale factor for integer to real conversion
+//
+//	if ( clpRawTimeSeries )
+//	{
+//
+//		// Calculate buffer statistics
+//		hr = BufferStatistics( m_asRawTimeSeries );
+//
+//		ULONG i, j, k, n1, n2, m;
+//		ULONG ulIndex, ulSample;
+//
+//		k = 0;
+//		n1 = 0;
+//		n2 = m_ulChannels;
+//
+//
+//		for ( i = 0; i < m_ulSatellites; i++ )
+//		{
+//
+//			m = 0;
+//			k = 0;
+//			memset( m_acFFTdata, 0, DBF_FFT_COMPLEX_SIZE*sizeof(EMSCOMPLEX));
+//			memset( m_acTemp1, 0, (DBF_FFT_COMPLEX_SIZE+1)*sizeof(EMSCOMPLEX));
+//
+//			for ( j = 0; j < m_ulSamplesPerChannel/2; j++ )
+//			{
+//				// real component
+///*				m_acTemp1[k].re = (float) emswDotProd( (short*)&clpRawTimeSeries[m],
+//									m_aPassSchedule.rec[i].nPhaseReal, (int) m_ulChannels,
+//									NSP_FIXED_SCALE, &nScaleFactor );
+//				m += m_ulChannels;
+//
+//				// imaginary component
+//				m_acTemp1[k++].im = (float) emswDotProd( (short*)&clpRawTimeSeries[m],
+//									m_aPassSchedule.rec[i].nPhaseImag, (int) m_ulChannels,
+//									NSP_FIXED_SCALE, &nScaleFactor );*/
+//
+//				m_acTemp1[k].re = 0.0;
+//				m_acTemp1[k].im = 0.0;
+//				for( int iChan = 0; iChan < m_ulChannels; iChan++ )
+//				{
+//					m_acTemp1[k].re += (float)clpRawTimeSeries[m + iChan] * (float)m_aPassSchedule.rec[i].nPhaseReal[iChan] / 65536.0 ;
+//					m_acTemp1[k].im += (float)clpRawTimeSeries[m + iChan] * (float)m_aPassSchedule.rec[i].nPhaseImag[iChan] / 65536.0;
+//				}
+//				//m_acTemp1[k].re
+//				k++;
+//				m += m_ulChannels;
+//			}
+//
+//
+//			if( m_aPassSchedule.rec[i].ulSatID < 250 ) // phase modulated satellites 
+//			{
+//
+//				m_aPassSchedule.rec[i].ulSatID = 261 + i;
+//
+//				// Frequency shift
+//				/*for ( ulSample = 0; ulSample < DBF_FFT_REAL_SIZE/2; ulSample += 2 )
+//				{
+//					
+//					m_acTemp1[ulSample].re = -m_acTemp1[ ulSample ].re;
+//					m_acTemp1[ulSample].im = -m_acTemp1[ ulSample ].im;
+//				}*/		
+//				
+//				// Compute phase
+//				//emscbPhase(m_acTemp1,m_afTemp2,DBF_FFT_REAL_SIZE/2);
+//				//emssbMpy1(fScaleFactor / c_dPI, m_afTemp2, DBF_FFT_REAL_SIZE/2);
+//
+//				
+//			//}
+//			//else
+//			//{
+//			
+//				for ( ulSample = 0; ulSample < DBF_FFT_REAL_SIZE/2; ulSample++ )
+//				{
+//					m_afTemp1[ ulSample ] = m_acTemp1[ ulSample ].re;
+//				}
+//
+//				m_dMeanADC   = emssMean( m_afTemp1, DBF_FFT_REAL_SIZE/2 );
+//				m_dStdDevADC = emssStdDev ( m_afTemp1, DBF_FFT_REAL_SIZE/2 );
+//
+//				emssbNormalize( m_afTemp1, m_afTemp2, DBF_FFT_REAL_SIZE/2, m_dMeanADC, (m_dStdDevADC * 3.0) / fScaleFactor );
+//
+//			}
+//
+//			
+//			// Convert to integer
+//			//emssbFloatToInt(m_afTemp2, &m_asDBFVector[i * DBF_FFT_REAL_SIZE/2], DBF_FFT_REAL_SIZE/2, 16, NSP_Round);
+//			ulIndex = i * (DBF_FFT_REAL_SIZE/2);
+//			emssbFloatToInt(m_afTemp2, &m_asDBFVector[ulIndex], DBF_FFT_REAL_SIZE/2, 16, NSP_Round);
+//
+//			n1 += m_ulChannels * 2;
+//			n2 += m_ulChannels * 2;
+//
+//		}
+//
+//		hr = EMS_OK;
+//	}
+//	return hr;
+//}
+
+
+
+EMS_RESULT
+CDigitalBeamFormer::DBFprocessor2( const unsigned long *clpRawTimeSeries, int iNumSats  )
+{
+	CEMSTime timeStart =  CEMSSystemClock::GetTime();
+	EMS_RESULT hr = EMS_BAD_PARAM;
+	float fScaleFactor        = (float)ADC_OFFSET;   // Scale factor for real to integer conversion
+	float fScaleFactorInverse = 1.0 / fScaleFactor;  // Scale factor for integer to real conversion
+
+	m_ulMaxPowerIndex = 0;
+	m_bOutputOK = true;
+
+	memset( &m_LastCalibRecord, 0, sizeof( m_LastCalibRecord ) );
+	// Find 1 second mark
+
+	if ( clpRawTimeSeries )
+	{
+		ULONG ichan, jsample, index;
+		ULONG ulMaxPowerIndex = 0;
+		ULONG ulOneSecond = 0;
+		double dMean   = 0.0;
+		double dStdDev = 0.0;
+		EMSCOMPLEX cPhaseCorrection;
+		double dPower  = 0.0;
+
+
+		memset( m_afRawInputSamples, 0, DBF_SAMPLE_SIZE*sizeof(float));
+		memset( m_afPowerSpectrum, 0, ( DBF_FFT_COMPLEX_SIZE + 1)*sizeof(float));
+		for(int i = 0; i < DBF_MAX_SATELLITES; ++i)
+		{
+			memset( m_acFFTdata[i], 0, sizeof(EMSCOMPLEX) * DBF_FFT_COMPLEX_SIZE );
+		}
+	
+		hr = BufferStatistics( m_asRawTimeSeries );
+		
+
+		for ( ichan = 1; ichan < (int)m_ulChannels; ichan++ )
+		{
+			// Convert integer to float
+
+			memset( m_afTemp1, 0, DBF_FFT_REAL_SIZE*sizeof(float));
+			memset( m_afTemp2, 0, DBF_FFT_REAL_SIZE*sizeof(float));
+			
+			for ( jsample = 0, index = ichan; jsample < m_ulSamplesPerChannel;  jsample++, index += m_ulChannels )
+			{
+				m_afTemp1[jsample] = (float) m_asRawTimeSeries[index] * fScaleFactorInverse;
+			}
+
+			dStdDev = _EMSsMeanStdDev( m_afTemp1, m_ulSamplesPerChannel, &dMean );
+
+			if( dStdDev == 0.00 )
+				continue;
+
+			_EMSsbNormalize(m_afTemp1, m_afTemp2, m_ulSamplesPerChannel, dMean, dStdDev);
+
+			emssRealFftNip( m_afTemp2, m_acTemp1, DBF_FFT_SIZE_LOG2, EMS_SPL_FWD );
+
+			//cPhaseCorrection.re = ((float)(m_aPassSchedule.rec[iSatIndex].nPhaseReal[ichan]))/32768.00;
+			//cPhaseCorrection.im = ((float)(m_aPassSchedule.rec[iSatIndex].nPhaseImag[ichan]))/32768.00;
+			//for( int iSat = 0; iSat < m_ulSatellites; iSat++ )
+			for( int iSat = 0; iSat < iNumSats; iSat++ )			
+			{
+				memcpy( m_acTemp2 ,m_acTemp1, sizeof(EMSCOMPLEX) * (DBF_FFT_COMPLEX_SIZE+1) );
+				// RR - correction to match the tracking dish FFT output by reducing the power output by 40 dB
+				//      any drop below this will result in the spectrum display showing anomalies due to its handling of negative dB levels
+				cPhaseCorrection.re = ((float)(m_aPassSchedule.rec[iSat].nPhaseReal[ichan]))/32768.00/10000.0;
+				cPhaseCorrection.im = ((float)(m_aPassSchedule.rec[iSat].nPhaseImag[ichan]))/32768.00/10000.0;
+				//cPhaseCorrection.im *= -1.00 ;
+
+				if( abs(cPhaseCorrection.re) + abs(cPhaseCorrection.im) > 0.0 )   
+					_EMScbMpy1( cPhaseCorrection, m_acTemp2, DBF_FFT_COMPLEX_SIZE);
+			
+				_EMScbAdd2( m_acTemp2, m_acFFTdata[iSat], DBF_FFT_COMPLEX_SIZE );	
+		
+				
+			}
+			m_aMaintenance.dMean[ichan]   = dMean;
+			m_aMaintenance.dStdDev[ichan] = dStdDev;
+
+		}
+
+		//_OutputMaxPowerPhases( );
+
+		//FILE* lpfftFile = fopen("C:\\HGT\\DBFPassData\\FFT_Test\\fft.bin","wb");
+		//if( lpfftFile )
+		//{
+		//	fwrite( (unsigned char*)m_acFFTdata, 1, DBF_FFT_COMPLEX_SIZE * sizeof( EMSCOMPLEX ), lpfftFile );
+		//	fclose( lpfftFile );
+		//}
+
+
+		hr = EMS_OK;
+	}
+	CEMSTime timeEnd =  CEMSSystemClock::GetTime();
+	//printf( "\nDBFProcessor2 -> Time elapsed: %f seconds for %i sats, id: %i \n" ,timeStart.SecondsDifferent( timeEnd), iNumSats,  GetCurrentThreadId() );
+
+	return hr;
+
+	///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//	EMS_RESULT hr = EMS_BAD_PARAM;
+//	int	nScaleFactor = 16;      // Scale factor for integer dot product
+//	float fScaleFactor        = (float)ADC_OFFSET;   // Scale factor for real to integer conversion
+//	float fScaleFactorInverse = 1.0 / fScaleFactor;  // Scale factor for integer to real conversion
+//
+//	if ( clpRawTimeSeries )
+//	{
+//
+//		// Calculate buffer statistics
+//		hr = BufferStatistics( m_asRawTimeSeries );
+//
+//		ULONG i, j, k, n1, n2, m;
+//		ULONG ulIndex, ulSample;
+//
+//		k = 0;
+//		n1 = 0;
+//		n2 = m_ulChannels;
+//
+//
+//		for ( i = 0; i < m_ulSatellites; i++ )
+//		{
+//
+//			m = 0;
+//			k = 0;
+//			memset( m_acFFTdata, 0, DBF_FFT_COMPLEX_SIZE*sizeof(EMSCOMPLEX));
+//			memset( m_acTemp1, 0, (DBF_FFT_COMPLEX_SIZE+1)*sizeof(EMSCOMPLEX));
+//
+//			for ( j = 0; j < m_ulSamplesPerChannel/2; j++ )
+//			{
+//				// real component
+///*				m_acTemp1[k].re = (float) emswDotProd( (short*)&clpRawTimeSeries[m],
+//									m_aPassSchedule.rec[i].nPhaseReal, (int) m_ulChannels,
+//									NSP_FIXED_SCALE, &nScaleFactor );
+//				m += m_ulChannels;
+//
+//				// imaginary component
+//				m_acTemp1[k++].im = (float) emswDotProd( (short*)&clpRawTimeSeries[m],
+//									m_aPassSchedule.rec[i].nPhaseImag, (int) m_ulChannels,
+//									NSP_FIXED_SCALE, &nScaleFactor );*/
+//
+//				m_acTemp1[k].re = 0.0;
+//				m_acTemp1[k].im = 0.0;
+//				for( int iChan = 0; iChan < m_ulChannels; iChan++ )
+//				{
+//					m_acTemp1[k].re += (float)clpRawTimeSeries[m + iChan] * (float)m_aPassSchedule.rec[i].nPhaseReal[iChan] / 65536.0 ;
+//					m_acTemp1[k].im += (float)clpRawTimeSeries[m + iChan] * (float)m_aPassSchedule.rec[i].nPhaseImag[iChan] / 65536.0;
+//				}
+//				//m_acTemp1[k].re
+//				k++;
+//				m += m_ulChannels;
+//			}
+//
+//
+//			if( m_aPassSchedule.rec[i].ulSatID < 250 ) // phase modulated satellites 
+//			{
+//
+//				m_aPassSchedule.rec[i].ulSatID = 261 + i;
+//
+//				// Frequency shift
+//				/*for ( ulSample = 0; ulSample < DBF_FFT_REAL_SIZE/2; ulSample += 2 )
+//				{
+//					
+//					m_acTemp1[ulSample].re = -m_acTemp1[ ulSample ].re;
+//					m_acTemp1[ulSample].im = -m_acTemp1[ ulSample ].im;
+//				}*/		
+//				
+//				// Compute phase
+//				//emscbPhase(m_acTemp1,m_afTemp2,DBF_FFT_REAL_SIZE/2);
+//				//emssbMpy1(fScaleFactor / c_dPI, m_afTemp2, DBF_FFT_REAL_SIZE/2);
+//
+//				
+//			//}
+//			//else
+//			//{
+//			
+//				for ( ulSample = 0; ulSample < DBF_FFT_REAL_SIZE/2; ulSample++ )
+//				{
+//					m_afTemp1[ ulSample ] = m_acTemp1[ ulSample ].re;
+//				}
+//
+//				m_dMeanADC   = emssMean( m_afTemp1, DBF_FFT_REAL_SIZE/2 );
+//				m_dStdDevADC = emssStdDev ( m_afTemp1, DBF_FFT_REAL_SIZE/2 );
+//
+//				emssbNormalize( m_afTemp1, m_afTemp2, DBF_FFT_REAL_SIZE/2, m_dMeanADC, (m_dStdDevADC * 3.0) / fScaleFactor );
+//
+//			}
+//
+//			
+//			// Convert to integer
+//			//emssbFloatToInt(m_afTemp2, &m_asDBFVector[i * DBF_FFT_REAL_SIZE/2], DBF_FFT_REAL_SIZE/2, 16, NSP_Round);
+//			ulIndex = i * (DBF_FFT_REAL_SIZE/2);
+//			emssbFloatToInt(m_afTemp2, &m_asDBFVector[ulIndex], DBF_FFT_REAL_SIZE/2, 16, NSP_Round);
+//
+//			n1 += m_ulChannels * 2;
+//			n2 += m_ulChannels * 2;
+//
+//		}
+//
+//		hr = EMS_OK;
+//	}
+//	return hr;
+}
+
+
+void
+CDigitalBeamFormer::_OutputMaxPowerPhases( int numSats )
+{
+	CEMSTime timeStart =  CEMSSystemClock::GetTime();
+
+	int iSatMax = 0;
+	ULONG ulSatMaxFreq = 0;
+	double dSatMaxPower = 0;
+	double dPeakPhase[DBF_MAX_CHANNELS];
+	double dStdDev = 0.0;
+	double dPowerThreshold = 15.00;
+	double dNoise = 0.0;
+	double dMean = 0.0;
+	const ULONG DETECTIONOFFSET = 100000;
+	const ULONG DETECTIONBANDWIDTH = 100000;
+
+	if( numSats > DBF_MAX_SATELLITES )
+		numSats = DBF_MAX_SATELLITES;
+	for( int i = 0; i < numSats; i++ )
+	{
+		emscbPowerSpectr(m_acFFTdata[i], m_afPowerSpectrum, DBF_FFT_COMPLEX_SIZE/2);
+		dStdDev = _EMSsMeanStdDev( &m_afPowerSpectrum[DETECTIONOFFSET], DETECTIONBANDWIDTH, &dMean );
+		for( ULONG k = 0; k < DBF_FFT_COMPLEX_SIZE/2; k++ )
+		{
+			if( dSatMaxPower < m_afPowerSpectrum[k] )
+			{
+				dSatMaxPower = m_afPowerSpectrum[k];
+				ulSatMaxFreq = k;
+				iSatMax = i;
+				dNoise = dMean;
+			}
+		}
+
+	}
+	
+	dSatMaxPower /= dNoise;
+	dSatMaxPower = 10.0*log10(dSatMaxPower);
+	m_dMaxPower = dSatMaxPower;	
+
+	if( dSatMaxPower > dPowerThreshold )
+	{
+		memset( &dPeakPhase[0], 0, DBF_MAX_CHANNELS * sizeof(double) );
+		_EMSGetPhaseOffsets( m_asRawTimeSeries, ulSatMaxFreq, &dPeakPhase[0] );
+				
+		m_emsDBFBufferPhase.timestamp = m_timeActual;
+		m_emsDBFBufferPhase.ulSatID = m_aPassSchedule.rec[iSatMax].ulSatID;
+		m_emsDBFBufferPhase.fPlateAzimuth = m_aPassSchedule.rec[iSatMax].fPlateAzimuth;
+		m_emsDBFBufferPhase.fPlateElevation = m_aPassSchedule.rec[iSatMax].fPlateElevation;
+		m_emsDBFBufferPhase.ulMaxFreqIndex = ulSatMaxFreq;
+		m_emsDBFBufferPhase.dMaxPowerlevel = dSatMaxPower;
+
+		for( int ichan = 1; ichan < DBF_MAX_CHANNELS; ichan++ )
+		{
+			m_emsDBFBufferPhase.fPhase[ichan] = atan2((double )m_aPassSchedule.rec[iSatMax].nPhaseImag[ichan],(double) m_aPassSchedule.rec[iSatMax].nPhaseReal[ichan] );
+			m_emsDBFBufferPhase.fBias[ichan] = dPeakPhase[ichan] - dPeakPhase[23]; //- m_emsDBFBufferPhase.fPhase[ichan];
+		}
+		//_OutputBufferPhases( timeStart );
+	}
+
+	CEMSTime timeEnd =  CEMSSystemClock::GetTime();
+	//printf( "_OutputMaxPowerPhases -> Time elapsed: %f seconds for %i sats, MaxFreq %ld, MaxPower %f, id: %i " ,timeStart.SecondsDifferent( timeEnd), numSats, ulSatMaxFreq, dSatMaxPower, GetCurrentThreadId() );
+
+}
+
+//---------------------------------------------------------------------------
+
+EMS_RESULT
+CDigitalBeamFormer::DBFprocessor3Ex(EMSTIME tm)
+{
+	EMSTIME timeStart, timeFinish;
+
+	timeStart.intTime  = tm.intTime;
+	timeFinish.intTime = 0;
+
+	INT64   i64ElapsedTime = 0;
+
+	EMS_RESULT hr = EMS_OK;
+
+	
+	try
+	{
+		hr = DBFprocessor3(m_asRawTimeSeries);	
+	}
+	catch( ... )
+	{
+		//printf("Unknown exception occurred (%d).\n", m_nCounter);
+	}
+	if( m_bIsCovarFileSendTime )
+	{
+		m_bIsCovarFileSendTime = FALSE;
+
+		EMSDBFCOVARIANCE aCOV;
+		memset( &aCOV, 0, sizeof( EMSDBFCOVARIANCE ) );
+		aCOV.timestamp     = tm;
+		aCOV.ulSampleSize  = m_ulSamplesPerChannel;
+		aCOV.wChannelCount = m_ulChannels;
+		aCOV.wPlateID      = 1;
+
+		for( ULONG i = 0; i < m_ulSatellites; i++ )
+		{
+			aCOV.fPlateAzimuth[i] = m_aPassSchedule.rec[i].fPlateAzimuth;
+			aCOV.fPlateElevation[i] = m_aPassSchedule.rec[i].fPlateElevation;
+			aCOV.ulSatelliteID[i] = m_aPassSchedule.rec[i].ulSatID;
+		}
+
+		memcpy( aCOV.acCovariance, m_acCovariance, sizeof( EMSCOMPLEX ) * COVARIANCE_SIZE );
+
+		char szFileName[256];
+		//_stprintf( szFileName, TEXT( "\\\\1.1.1.91\\C$\\HGT\\DBFCovarianceFiles\\DBFCovariance-%I64d.bin" ), timeStart.intTime );
+		_stprintf( szFileName, TEXT( "c:\\hgt\\DBFCovarianceFiles\\DBFCovariance-%I64d.bin" ), timeStart.intTime );
+
+		FILE* lpCovFile = fopen(szFileName,"wb");
+		if( lpCovFile )
+		{
+			fwrite( &aCOV, 1, sizeof( EMSDBFCOVARIANCE ), lpCovFile );
+			fclose( lpCovFile );
+		}
+
+	}
+	timeFinish = CEMSSystemClock::GetTime();
+
+	i64ElapsedTime = timeFinish.intTime - timeStart.intTime;
+
+
+	m_nCounter++;
+	m_dElapsedTime += ((double) i64ElapsedTime) * 1e-9; 
+	m_dAverageTime = m_dElapsedTime / (double) m_nCounter;
+
+	m_timeFinish = CEMSSystemClock::GetTime();
+	i64ElapsedTime = m_timeFinish.intTime - m_timeStart.intTime;
+	double dElapsedTime = ((double) i64ElapsedTime) * 1e-9;
+
+
+/*	printf( " 3, %d, AT(sec) = %f, PT = %f, AveT = %f (%f)\n",
+		m_nCounter, dElapsedTime, m_dElapsedTime, m_dAverageTime,
+		m_afCovariance[0] / (float)m_ulSamplesPerChannel);
+*/
+	if ( m_lpTraceFile )
+	{
+		fprintf( m_lpTraceFile, "3,%d,%f,%f,%f,%f,%f,%f,%ld\n",
+			m_nCounter, dElapsedTime, m_dElapsedTime, m_dAverageTime,
+			m_dMeanADC, m_dStdDevADC, m_dMaxPower, m_ulStartPPS );
+
+		int k = 0;
+		for (int i = 0; i < m_ulChannels; i++)
+		{
+			fprintf(m_lpTraceFile,"X,%02d,%10.2f,%10.2f,", i, m_afMean[i], m_afStdDev[i] );
+			for (int j = 0; j < m_ulChannels; j++)
+			{
+				fprintf(m_lpTraceFile,"%10.6f,%10.6f,", m_acCovariance[k++].re / (float)DBF_INVERSE_FFT_COMPLEX_SIZE,
+					m_acCovariance[k++].im / (float)DBF_INVERSE_FFT_COMPLEX_SIZE );
+			}
+			fprintf(m_lpTraceFile,"\n");
+		}
+	}
+	return hr;
+}
+
+//---------------------------------------------------------------------------
+
+// Computes correlation matrix
+
+EMS_RESULT 
+CDigitalBeamFormer::DBFprocessor3( const unsigned long *clpRawTimeSeries )
+{
+
+	EMS_RESULT hr = EMS_BAD_PARAM;
+	static int	nScaleFactor = 16;      // Scale factor for integer dot product
+
+	if ( clpRawTimeSeries )
+	{
+		ULONG i, ichan, jsample, index, ichunk;
+		double dPower  = 0.0;
+		double dMean = 0.0;
+		double dStdDev = 0.0;
+		try
+		{
+			hr = BufferStatistics( m_asRawTimeSeries );
+
+			memset( m_afMean, 0, DBF_MAX_CHANNELS*sizeof(float));
+			memset( m_afStdDev, 0, DBF_MAX_CHANNELS*sizeof(float));
+		
+			memset( m_afTemp1, 0, m_ulSamplesPerChannel*sizeof(float));
+			memset( m_afTemp2, 0, (m_ulSamplesPerChannel)*sizeof(float));
+			memset( m_afRawInputSamples, 0, m_ulSamplesPerChannel*sizeof(float));
+			memset( m_acCovariance, 0, COVARIANCE_SIZE*sizeof(EMSCOMPLEX));
+			memset( m_acTemp1, 0, (DBF_FFT_COMPLEX_SIZE+1)*sizeof(EMSCOMPLEX));
+			memset( m_acTemp2, 0, (DBF_FFT_COMPLEX_SIZE+1)*sizeof(EMSCOMPLEX));
+
+			memset( m_acMatrix,  0, (DBF_MAX_CHANNELS*DBF_INVERSE_FFT_COMPLEX_SIZE)*sizeof(EMSCOMPLEX));
+			memset( m_acMatrixT, 0, (DBF_MAX_CHANNELS*DBF_INVERSE_FFT_COMPLEX_SIZE)*sizeof(EMSCOMPLEX));
+		}
+		catch( ... )
+		{
+			return hr;
+		}
+
+		float fScaleFactor        = (float)ADC_OFFSET;   // Scale factor for real to integer conversion
+		float fScaleFactorInverse = 1.0 / fScaleFactor;  // Scale factor for integer to real conversion
+
+		for ( ichan = 0; ichan < (int)m_ulChannels; ichan++ )
+		{
+			// Convert integer to float
+
+			memset( m_afTemp1, 0, DBF_FFT_REAL_SIZE*sizeof(float));
+			memset( m_afTemp2, 0, DBF_FFT_REAL_SIZE*sizeof(float));
+			
+			for ( jsample = 0, index = ichan; jsample < m_ulSamplesPerChannel;  jsample++, index += m_ulChannels )
+			{
+				m_afTemp1[jsample] = (float) m_asRawTimeSeries[index] * fScaleFactorInverse;
+			}
+
+			dStdDev = _EMSsMeanStdDev( m_afTemp1, m_ulSamplesPerChannel, &dMean );
+
+			if( dStdDev == 0.00 )
+				continue;
+
+			_EMSsbNormalize(m_afTemp1, m_afTemp2, m_ulSamplesPerChannel, dMean, dStdDev);
+
+			emssRealFftNip( m_afTemp2, m_acTemp1, DBF_FFT_SIZE_LOG2, EMS_SPL_FWD );
+			emscFftNip( &m_acTemp1[125000], m_acTemp2, DBF_INVERSE_FFT_SIZE_LOG2, EMS_SPL_INV );
+
+			memcpy(&m_acMatrix[ichan*DBF_INVERSE_FFT_COMPLEX_SIZE], m_acTemp2, DBF_INVERSE_FFT_COMPLEX_SIZE * sizeof(EMSCOMPLEX));
+		}
+
+		emscbMatrixTranspose( m_acMatrix, m_acMatrixT, DBF_INVERSE_FFT_COMPLEX_SIZE, DBF_MAX_CHANNELS );
+		emscbConj1( m_acMatrixT, DBF_MAX_CHANNELS*DBF_INVERSE_FFT_COMPLEX_SIZE  );
+
+		emscbMatrixMuliply( m_acMatrixT, DBF_MAX_CHANNELS, DBF_INVERSE_FFT_COMPLEX_SIZE, 
+			m_acMatrix, DBF_INVERSE_FFT_COMPLEX_SIZE, DBF_MAX_CHANNELS, m_acCovariance );
+
+		EMSCOMPLEX cScaleFactor;
+		cScaleFactor.re = 1.0/ ((float)(DBF_INVERSE_FFT_COMPLEX_SIZE*(float)DBF_INVERSE_FFT_COMPLEX_SIZE*(float)DBF_INVERSE_FFT_COMPLEX_SIZE));
+		cScaleFactor.im = 0.0;
+		emscbMpy1(cScaleFactor, m_acCovariance, DBF_MAX_CHANNELS*DBF_MAX_CHANNELS );
+
+	}
+
+	return hr;
+}
+
+
+		//// Outer loop divides data block into chunks
+		//for ( ichunk = 0; ichunk < m_ulChannels*m_ulSamplesPerChannel; ichunk += m_ulSamplesPerChannel )
+		//{
+
+		//	// Convert unsigned integer to float
+		//	emssbIntToFloat( &clpRawTimeSeries[ichunk], m_afRawInputSamples, m_ulSamplesPerChannel, 16, 0x0800);
+
+		//	for ( ichan = 0; ichan < m_ulChannels; ichan++ )
+		//	{
+		//		k1 = 0;
+		//		for ( i = 0; i < m_ulSamplesPerChannel-m_ulChannels; i+= m_ulChannels )
+		//		{
+		//			m_afTemp2[k1++] = m_afRawInputSamples[i+ichan];
+		//		}
+
+		//		m_afMean[ichan]   = emssMean( &m_afTemp2[0], k1 );
+		//		m_afStdDev[ichan] = emssStdDev ( &m_afTemp2[0], k1 ) + 0.0000001;
+
+		//	}
+
+		//	for ( i = 0; i < m_ulSamplesPerChannel-m_ulChannels; i+= m_ulChannels )
+		//	{
+		//		for ( ichan = 0; ichan < m_ulChannels; ichan++ )
+		//		{
+		//			// Convert integer to float
+		//			m_afTemp1[ichan] = m_afRawInputSamples[i+ichan];
+		//			m_afTemp1[ichan] -= m_afMean[ichan];
+		//			m_afTemp1[ichan] /= m_afStdDev[ichan];
+		//		}
+
+		//		index = 0;
+
+		//		for ( k1 = 0; k1 < m_ulChannels; k1++ )
+		//		{
+		//			for ( k2 = k1; k2 < m_ulChannels; k2++ )
+		//			{
+		//				m_afCovariance[index++] += m_afTemp1[k1] * m_afTemp1[k2];
+		//			}
+		//		}
+		//	}
+
+		//}
+
+	//	hr = EMS_OK;
+	//}
+	//return hr;
+
+//}
+
+//---------------------------------------------------------------------------
+
+EMS_RESULT
+CDigitalBeamFormer::DBFprocessor4(EMSTIME tm)
+{
+	EMSTIME timeStart, timeFinish;
+
+	timeStart.intTime  = tm.intTime;
+	timeFinish.intTime = 0;
+
+	INT64   i64ElapsedTime = 0;
+
+	EMS_RESULT hr = EMS_OK;
+
+	EMSDBFCOVARIANCE aCOV;
+
+	memset( &aCOV, 0, sizeof( EMSDBFCOVARIANCE ) );
+
+	try
+	{
+//		BufferStatistics( m_asRawTimeSeries );
+
+		int size = m_ulRawBuffSize; 
+		
+		//EMSTIME tmActual;
+		//tmActual = _SetActualTime(tm);
+
+//		for(int i = 0; i < 4; i++ )
+		{
+			_OutputWaveFile( (unsigned char*)&m_asRawTimeSeries[0], m_timeActual, size );	
+			//tmActual.intTime++;
+		}
+	}
+	catch( ... )
+	{
+		//printf("Unknown exception occurred (%d).\n", m_nCounter);
+	}	
+	
+	//try
+	//{
+	//	BufferStatistics( m_asRawTimeSeries );
+
+	//	int size = m_ulRawBuffSize / 4;
+	//	
+	//	EMSTIME tmActual;
+	//	tmActual = _SetActualTime(tm);
+
+	//	for(int i = 0; i < 4; i++ )
+	//	{
+	//		_OutputWaveFile( (unsigned char*)&m_asRawTimeSeries[i*size/2], tmActual, size );	
+	//		tmActual.intTime++;
+	//	}
+	//}
+	//catch( ... )
+	//{
+	//	printf("Unknown exception occurred (%d).\n", m_nCounter);
+	//}
+  
+	timeFinish = CEMSSystemClock::GetTime();
+
+	i64ElapsedTime = timeFinish.intTime - timeStart.intTime;
+
+	m_nCounter++;
+	m_dElapsedTime += ((double) i64ElapsedTime) * 1e-9; 
+	m_dAverageTime = m_dElapsedTime / (double) m_nCounter;
+
+	m_timeFinish = CEMSSystemClock::GetTime();
+	i64ElapsedTime = m_timeFinish.intTime - m_timeStart.intTime;
+	double dElapsedTime = ((double) i64ElapsedTime) * 1e-9;
+
+
+	if ( m_lpTraceFile )
+	{
+		fprintf( m_lpTraceFile, "4,%d,%f,%f,%f,%f,%f,%f,%ld\n",
+			m_nCounter, dElapsedTime, m_dElapsedTime, m_dAverageTime,
+			m_dMeanADC, m_dStdDevADC, m_dMaxPower, m_ulStartPPS );
+
+		fflush( m_lpTraceFile );
+
+	}
+	return hr;
+}
+
+
+
+EMS_RESULT
+CDigitalBeamFormer::DBFprocessor5(EMSTIME tm)
+{
+	//only for LEO
+	/*if( m_aPassSchedule.rec[0].ulSatID >= 200 )
+		return S_FALSE;*/
+	EMS_RESULT hr = EMS_OK;
+	try
+	{
+		int size = m_ulRawBuffSize; 
+		_OutpuRawDigitalDataFile( (unsigned char*)&m_asRawTimeSeries[0], m_timeActual, size );	
+	}
+	catch( ... )
+	{
+		//printf("Unknown exception occurred (%d).\n", m_nCounter);
+	}	
+	
+	return hr;
+}
+
+
+EMS_RESULT
+CDigitalBeamFormer::DBFprocessor6(EMSTIME tm)
+{
+	EMS_RESULT hr = EMS_OK;
+	try
+	{
+		int size = m_ulRawBuffSize; 
+		_OutpuRawDigitalDataFile( (unsigned char*)&m_asRawTimeSeries[0], m_timeActual, size );	
+	}
+	catch( ... )
+	{
+		//printf("Unknown exception occurred (%d).\n", m_nCounter);
+	}	
+	
+	return hr;
+}
+
+//---------------------------------------------------------------------------
+EMS_RESULT 
+CDigitalBeamFormer::SetPassSchedule( EMSDBFPASSRECORDS* pPassRecords, EMSTIME tm )
+{
+
+	EMS_RESULT hr = EMS_OK;
+	if( pPassRecords )
+	{
+		// read pass schedule information for time 'tm'
+
+		memcpy(&m_aPassSchedule, pPassRecords, sizeof(EMSDBFPASSRECORDS) );
+
+		m_ulSatellites = 0;
+		for( int i = 0; i < DBF_MAX_SATELLITES; i++ )
+
+		//for( int i = 0; i < 4; i++ )
+		//for( int i = 0; i < 11; i++ )
+		{
+			if( m_aPassSchedule.rec[i].ulSatID > 0 ) m_ulSatellites++;
+		}
+
+		m_aMaintenance.timestamp = tm;
+		m_aMaintenance.ulSampleSize = m_ulSamplesPerChannel;
+		//m_aMaintenance.wCellID
+		m_aMaintenance.wChannelCount = m_ulChannels;
+		m_aMaintenance.wPlateID = 1;
+	}
+	else
+	{
+		memset(&m_aPassSchedule, 0, sizeof(EMSDBFPASSRECORDS) );
+		hr = EMS_BAD_PARAM;
+	}
+
+	return hr;
+}
+
+//---------------------------------------------------------------------------
+
+EMS_RESULT 
+CDigitalBeamFormer::GetADCBuffer( const char *szFilename1, const char *szFilename2, const char *szFilename3, const char *szFilename4  )
+{
+	EMS_RESULT hr = EMS_BAD_PARAM;
+	{
+		FILE *lpFile = 0;
+		int nRetcode1 = 0;
+		int nRetcode2 = 0;
+		int nRetcode3 = 0;
+		int nRetcode4 = 0;
+		ULONG ulIndex = 0;
+		ULONG ulIncrement = m_ulChannels * m_ulSamplesPerChannel / 4;
+		
+/*
+		for ( ULONG i = 0; i <  ( m_ulChannels * m_ulSamplesPerChannel ); i++ )
+		{
+			m_asRawTimeSeries[ i  ] = (short) rand();
+		}
+*/
+		lpFile = fopen( szFilename1, "rb" );
+		if ( lpFile )
+		{
+			nRetcode1 = fread( &m_asRawTimeSeries[ulIndex], 2, ulIncrement, lpFile );
+			fclose( lpFile );
+		}
+		ulIndex += ulIncrement;
+
+		lpFile = fopen( szFilename2, "rb" );
+		if ( lpFile )
+		{
+			nRetcode2 = fread( &m_asRawTimeSeries[ulIndex], 2, ulIncrement, lpFile );
+			fclose( lpFile );
+		}
+		ulIndex += ulIncrement;
+
+		lpFile = fopen( szFilename3, "rb" );
+		if ( lpFile  )
+		{
+			nRetcode3 = fread( &m_asRawTimeSeries[ulIndex], 2, ulIncrement, lpFile );
+			fclose( lpFile );
+		}
+		ulIndex += ulIncrement;
+
+		lpFile = fopen( szFilename4, "rb" );
+		if ( lpFile )
+		{
+			nRetcode4 = fread( &m_asRawTimeSeries[ulIndex], 2, ulIncrement, lpFile );
+			fclose( lpFile );
+		}
+
+		if ( (nRetcode1 + nRetcode2 + nRetcode3 + nRetcode4) == 4 * ulIncrement )
+			hr = EMS_OK;
+	}
+	return hr;
+
+}
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+EMS_RESULT 
+CDigitalBeamFormer::GetPhaseBuffer( )
+{
+	EMS_RESULT hr = EMS_BAD_PARAM;
+	{
+		double dPhaseAngle;
+		for ( ULONG i = 0; i < DBF_MAX_CHANNELS * DBF_MAX_SATELLITES; i++ )
+		{
+			
+			dPhaseAngle = rand() * c_dTwoPI;
+			m_asPhaseVector[ i++ ] = (short) ( sin(dPhaseAngle) * 32767 );
+			m_asPhaseVector[ i++ ] = (short) ( cos(dPhaseAngle) * 32767 );
+		}
+		hr = EMS_OK;
+	}
+	return hr;
+
+}
+//---------------------------------------------------------------------------
+/*
+template <typename T>
+void CMatrix<T>::inPlaceTranspose(  )
+{
+    using std::swap;
+ 
+    resize(cols,rows);
+ 
+    int i, j, k, k_start, k_new;
+    int n = rows;
+    int m = cols;
+ 
+    int length = rows*cols;
+ 
+    for(k_start=1; k_start < length; k_start++)
+    {
+        T       temp    = data[k_start];
+        bool    abort   = false;
+        k_new = k = k_start;
+ 
+        // go through the cycle once and ensure that the starting point is
+        // minimal
+        do
+        {
+            if( k_new < k_start )
+            {
+                abort = true;
+                break;
+            }
+ 
+            k       = k_new;
+            i       = k%n;
+            j       = k/n;
+            k_new   = i*m + j;
+        }while(k_new != k_start);
+ 
+ 
+        // if the current value is not the minimum of the cycle, then don't
+        // perform the cycle
+        if(abort)
+            continue;
+ 
+ 
+        // otherwise, perform the cycle
+        k_new = k = k_start;
+        do
+        {
+            swap<T>( data[k_new], temp );
+ 
+            k       = k_new;
+            i       = k%n;
+            j       = k/n;
+            k_new   = i*m + j;
+        }while(k_new != k_start);
+ 
+        swap<T>( data[k_new], temp );
+    }
+} 
+*/
+//---------------------------------------------------------------------------
+
+void
+CDigitalBeamFormer::_OutputWave( EMSTIME tm, const ULONG culIndex  )
+{
+	EMS_RESULT hr = EMS_OK;
+	CEMSWaveEx oWaveOut;
+
+	if( !m_bOutputOK )
+		return;
+
+//	char fName[256];
+//	FILE *OneSecFile = 0;
+	DWORD dwBytes = 0;
+	BYTE* abyData = 0;
+
+	ULONG ulLutID = m_aPassSchedule.rec[culIndex].ulLutID;
+	ULONG ulSatID = m_aPassSchedule.rec[culIndex].ulSatID;
+	WORD  wPlateID = m_aPassSchedule.rec[culIndex].wPlateID;
+	double dSatAzimuth = (double) m_aPassSchedule.rec[culIndex].fAzimuth;
+	double dSatElevation = (double) m_aPassSchedule.rec[culIndex].fElevation;
+	ULONG ulBytes = sizeof(short) * DBF_SAMPLE_SIZE;
+//	ULONG ulBytes = sizeof(short) * DBF_SAMPLE_SIZE/2;
+
+	ULONG ulIndex = culIndex * ulBytes / sizeof(short);
+//	oWaveOut.Write( (unsigned char*)&m_asDBFVector[ulIndex], ulBytes  );
+//	oWaveOut.Write( (unsigned char*)m_acFFTdata, DBF_FFT_COMPLEX_SIZE * sizeof( EMSCOMPLEX )  );
+//	oWaveOut.Write( (unsigned char*)m_acFFTdata, DBF_FFT_COMPLEX_SIZE * sizeof( EMSCOMPLEX )/2  ); // RR reduced buffer size to 250kHz
+	oWaveOut.Write( (unsigned char*)&m_acFFTdata[40000], DBF_FFT_COMPLEX_SIZE * sizeof( EMSCOMPLEX )/2  ); // RR reduced buffer size to 250kHz & added 50kHz offset
+
+	oWaveOut.GetFormatChunkRef().SetAudioFormat( 1 );	// PCM
+	oWaveOut.GetFormatChunkRef().SetNumChannels( 1 );	// Mono
+	oWaveOut.GetFormatChunkRef().SetSampleRate( 1000000 );
+	oWaveOut.GetFormatChunkRef().SetBitsPerSample( 16 );
+
+
+	oWaveOut.GetExtendedInfoRef().GetLutDetailsRef().SetLutID( ulLutID );
+	oWaveOut.GetExtendedInfoRef().GetSatDetailsRef().SetSatID( ulSatID );
+	oWaveOut.GetExtendedInfoRef().GetLutDetailsRef().SetAntennaID( wPlateID );
+
+	oWaveOut.GetExtendedInfoRef().GetPropertiesRef().SetTimeStart( tm );
+
+	// Set additional properties indicating whether the signal requires
+	// phase demod or down-conversion.
+	oWaveOut.GetExtendedInfoRef().GetSignalDetailsRef().SetMeanADC( m_dMeanADC );
+	oWaveOut.GetExtendedInfoRef().GetSignalDetailsRef().SetStdDevADC( m_dStdDevADC * 10.00 );
+
+	// Wave has not yet been downconverted:
+	oWaveOut.GetExtendedInfoRef().GetSignalDetailsRef().SetDCState( EMS_DC_NO );//EMS_DC_YES
+	//oWaveOut.GetExtendedInfoRef().GetSignalDetailsRef().SetDCState( EMS_DC_YES );
+	
+	// Set flag indicating whether the marker bit was found for this measurement.
+//	oWaveOut.GetExtendedInfoRef().GetSignalDetailsRef().SetFlags( CEMSWaveExtSignalDetails::EMSWAVEEXSIGNAL_BAD_MARKER_BIT );
+	oWaveOut.GetExtendedInfoRef().GetSignalDetailsRef().SetFlags( m_ulStartPPS );
+
+	// RR added azimuth and elevation of satellite
+	oWaveOut.GetExtendedInfoRef().GetSignalDetailsRef().SetMaxModIndex( dSatAzimuth );
+	oWaveOut.GetExtendedInfoRef().GetSignalDetailsRef().SetMeanModIndex( dSatElevation );
+
+
+	if ( ulSatID < 200 )
+		oWaveOut.GetExtendedInfoRef().GetSignalDetailsRef().SetPhaseModState( EMS_PHASE_MOD_YES);
+	else
+		oWaveOut.GetExtendedInfoRef().GetSignalDetailsRef().SetPhaseModState( EMS_PHASE_MOD_NO );
+
+	dwBytes = oWaveOut.Serialize( abyData );
+	//printf("\nData Transmitter to send the buffer\n");
+	if( dwBytes > 0 )
+	{
+		int iSent = 0;
+
+		hr = _InitDT();
+		if( m_pDataTransmit )
+		{
+			hr = m_pDataTransmit->Send( dwBytes, abyData, &iSent);
+		}
+		if(FAILED(hr) )
+		{
+			//printf("Data Transmitter failed to send the buffer");
+			//pDataTransmit->Disconnect();
+		}
+		/*else
+			printf("Data Transmitter successfully sent the buffer");*/
+
+		/*			unsigned long ulBytesWritten = fwrite(abyData, 1, dwBytes, OneSecFile);
+		if( ulBytesWritten < (dwBytes) )
+			printf("\n  Error writing a wave file... ");
+
+		flushall();
+		fclose(OneSecFile);*/
+		delete[] abyData;
+		abyData = 0;
+	}
+
+	return;
+}
+
+void
+CDigitalBeamFormer::_OutputWaveExProcess1( EMSTIME tm, ULONG culNumSats  )
+{
+	CEMSTime timeStart =  CEMSSystemClock::GetTime();
+	EMS_RESULT hr = EMS_OK;
+	/*if( culNumSats > DBF_MAX_SATELLITES )
+		culNumSats = DBF_MAX_SATELLITES;
+	if( !m_bOutputOK )
+		return;*/
+
+//	char fName[256];
+//	FILE *OneSecFile = 0;
+	int *beamID = m_qrefDBFBeamVectors.ReadFirst( ).predBeamIDs;
+
+	for( int iSat = 0; iSat < culNumSats; iSat++ )
+	{
+		CEMSWaveEx oWaveOut;
+
+		DWORD dwBytes = 0;
+		BYTE* abyData = 0;
+
+		ULONG ulLutID = m_aPassSchedule.rec[iSat].ulLutID;
+		ULONG ulSatID = m_aPassSchedule.rec[iSat].ulSatID;
+		WORD  wPlateID = m_aPassSchedule.rec[iSat].wPlateID;
+		double dSatAzimuth = (double) m_aPassSchedule.rec[iSat].fAzimuth;
+		double dSatElevation = (double) m_aPassSchedule.rec[iSat].fElevation;
+		ULONG ulBytes = sizeof(short) * DBF_SAMPLE_SIZE;
+	//	ULONG ulBytes = sizeof(short) * DBF_SAMPLE_SIZE/2;
+
+		//ULONG ulIndex = culIndex * ulBytes / sizeof(short);
+	//	oWaveOut.Write( (unsigned char*)&m_asDBFVector[ulIndex], ulBytes  );
+	//	oWaveOut.Write( (unsigned char*)m_acFFTdata, DBF_FFT_COMPLEX_SIZE * sizeof( EMSCOMPLEX )  );
+	//	oWaveOut.Write( (unsigned char*)m_acFFTdata, DBF_FFT_COMPLEX_SIZE * sizeof( EMSCOMPLEX )/2  ); // RR reduced buffer size to 250kHz
+		oWaveOut.Write( (unsigned char*)&m_acFFTdata[iSat][40000], DBF_FFT_COMPLEX_SIZE * sizeof( EMSCOMPLEX )/2  ); // RR reduced buffer size to 250kHz & added 50kHz offset
+		//oWaveOut.Write( (unsigned char*)&m_acFFTdata[iSat][40000], 200000 * sizeof( EMSCOMPLEX )  ); // RR reduced buffer size to 250kHz & added 50kHz offset
+
+		oWaveOut.GetFormatChunkRef().SetAudioFormat( 1 );	// PCM
+		oWaveOut.GetFormatChunkRef().SetNumChannels( 1 );	// Mono
+		oWaveOut.GetFormatChunkRef().SetSampleRate( 1000000 );
+		oWaveOut.GetFormatChunkRef().SetBitsPerSample( 16 );
+
+
+		oWaveOut.GetExtendedInfoRef().GetLutDetailsRef().SetLutID( ulLutID );
+		oWaveOut.GetExtendedInfoRef().GetSatDetailsRef().SetSatID( ulSatID );
+		//oWaveOut.GetExtendedInfoRef().GetLutDetailsRef().SetAntennaID( wPlateID );
+		oWaveOut.GetExtendedInfoRef().GetLutDetailsRef().SetAntennaID( beamID[iSat] );
+
+		//oWaveOut.GetExtendedInfoRef().GetLutDetailsRef().SetAntennaID( (WORD)iSat ); // RR temporary to test satellite sensitivity to nulling
+
+		oWaveOut.GetExtendedInfoRef().GetPropertiesRef().SetTimeStart( tm );
+
+		// Set additional properties indicating whether the signal requires
+		// phase demod or down-conversion.
+		oWaveOut.GetExtendedInfoRef().GetSignalDetailsRef().SetMeanADC( m_dMeanADC );
+		oWaveOut.GetExtendedInfoRef().GetSignalDetailsRef().SetStdDevADC( m_dStdDevADC );
+
+		// Wave has not yet been downconverted:
+		oWaveOut.GetExtendedInfoRef().GetSignalDetailsRef().SetDCState( EMS_DC_NO );//EMS_DC_YES
+		//oWaveOut.GetExtendedInfoRef().GetSignalDetailsRef().SetDCState( EMS_DC_YES );
+	
+		// Set flag indicating whether the marker bit was found for this measurement.
+	//	oWaveOut.GetExtendedInfoRef().GetSignalDetailsRef().SetFlags( CEMSWaveExtSignalDetails::EMSWAVEEXSIGNAL_BAD_MARKER_BIT );
+		oWaveOut.GetExtendedInfoRef().GetSignalDetailsRef().SetFlags( m_ulStartPPS );
+
+		// RR added azimuth and elevation of satellite
+		oWaveOut.GetExtendedInfoRef().GetSignalDetailsRef().SetMaxModIndex( dSatAzimuth );
+		oWaveOut.GetExtendedInfoRef().GetSignalDetailsRef().SetMeanModIndex( dSatElevation );
+
+
+		// RR change for LEO calibration testing
+		if ( ulSatID < 200 )
+			oWaveOut.GetExtendedInfoRef().GetSignalDetailsRef().SetPhaseModState( EMS_PHASE_MOD_YES);
+		else
+			oWaveOut.GetExtendedInfoRef().GetSignalDetailsRef().SetPhaseModState( EMS_PHASE_MOD_NO );
+
+		dwBytes = oWaveOut.Serialize( abyData );
+		//printf("\nData Transmitter to send the buffer\n");
+		if( dwBytes > 0 )
+		{
+			int iSent = 0;
+
+			hr = _InitDT();
+			if( m_pDataTransmit )
+			{
+				hr = m_pDataTransmit->Send( dwBytes, abyData, &iSent);
+			}
+			if(FAILED(hr) )
+			{
+				//printf("Data Transmitter failed to send the buffer");
+				//pDataTransmit->Disconnect();
+			}
+			/*else
+				printf("Data Transmitter successfully sent the buffer");*/
+
+			/*			unsigned long ulBytesWritten = fwrite(abyData, 1, dwBytes, OneSecFile);
+			if( ulBytesWritten < (dwBytes) )
+				printf("\n  Error writing a wave file... ");
+
+			flushall();
+			fclose(OneSecFile);*/
+			delete[] abyData;
+			abyData = 0;
+		}
+	}
+	
+	CEMSTime timeEnd =  CEMSSystemClock::GetTime();
+	//printf( "_OutputWaveEx -> Time elapsed : %f seconds for %i sats, id: %i\n" ,timeStart.SecondsDifferent( timeEnd) , culNumSats, GetCurrentThreadId()  );
+
+	return;
+}
+void
+CDigitalBeamFormer::_OutputWaveEx( EMSTIME tm, ULONG culNumSats  )
+{
+	EMSTIME timeStart =  CEMSSystemClock::GetTime();
+	EMS_RESULT hr = EMS_OK;
+	if( culNumSats > DBF_MAX_SATELLITES )
+		culNumSats = DBF_MAX_SATELLITES;
+	if( !m_bOutputOK )
+		return;
+	INT testSatID = 460;
+
+//	char fName[256];
+//	FILE *OneSecFile = 0;
+	int *beamID = m_qrefDBFBeamVectors.ReadFirst( ).predBeamIDs;
+	int *predSatIDs = m_qrefDBFBeamVectors.ReadFirst( ).predSatIDs;
+	double *probability = m_qrefDBFBeamVectors.ReadFirst( ).probability;
+
+	for( int iSat = 0; iSat < culNumSats; iSat++ )
+	{
+		CEMSWaveEx oWaveOut;
+
+		DWORD dwBytes = 0;
+		BYTE* abyData = 0;
+
+		ULONG ulLutID = m_aPassSchedule.rec[iSat].ulLutID;
+		ULONG ulSatID = m_aPassSchedule.rec[iSat].ulSatID;
+		
+		WORD  wPlateID = m_aPassSchedule.rec[iSat].wPlateID;
+		double dSatAzimuth = (double) m_aPassSchedule.rec[iSat].fAzimuth;
+		double dSatElevation = (double) m_aPassSchedule.rec[iSat].fElevation;
+		//if( ulSatID >= 200 && dSatElevation < 15.0 )	//snl added to check > 30 if pass sched has no elev constraints
+		if( ulSatID >= 200 && dSatElevation < MEO_MIN_ELEVATION )	//snl added to check > 30 if pass sched has no elev constraints
+		//if( ulSatID >= 200 && dSatElevation < 0.0 )	//snl added to check > 30 if pass sched has no elev constraints
+		//if( ulSatID >= 200 && dSatElevation < 5.0 )	//snl added to check > 30 if pass sched has no elev constraints
+			continue;
+		ULONG ulBytes = sizeof(short) * DBF_SAMPLE_SIZE;
+	//	ULONG ulBytes = sizeof(short) * DBF_SAMPLE_SIZE/2;
+
+		//ULONG ulIndex = culIndex * ulBytes / sizeof(short);
+	//	oWaveOut.Write( (unsigned char*)&m_asDBFVector[ulIndex], ulBytes  );
+	//	oWaveOut.Write( (unsigned char*)m_acFFTdata, DBF_FFT_COMPLEX_SIZE * sizeof( EMSCOMPLEX )  );
+	//	oWaveOut.Write( (unsigned char*)m_acFFTdata, DBF_FFT_COMPLEX_SIZE * sizeof( EMSCOMPLEX )/2  ); // RR reduced buffer size to 250kHz
+		oWaveOut.Write( (unsigned char*)&m_acFFTdata[iSat][40000], DBF_FFT_COMPLEX_SIZE * sizeof( EMSCOMPLEX )/2  ); // RR reduced buffer size to 250kHz & added 50kHz offset
+		//oWaveOut.Write( (unsigned char*)&m_acFFTdata[iSat][40000], 200000 * sizeof( EMSCOMPLEX )  ); // RR reduced buffer size to 250kHz & added 50kHz offset
+
+		oWaveOut.GetFormatChunkRef().SetAudioFormat( 1 );	// PCM
+		oWaveOut.GetFormatChunkRef().SetNumChannels( 1 );	// Mono
+		oWaveOut.GetFormatChunkRef().SetSampleRate( 1000000 );
+		oWaveOut.GetFormatChunkRef().SetBitsPerSample( 16 );
+
+
+		oWaveOut.GetExtendedInfoRef().GetLutDetailsRef().SetLutID( ulLutID );
+		oWaveOut.GetExtendedInfoRef().GetSatDetailsRef().SetSatID( ulSatID );
+		//oWaveOut.GetExtendedInfoRef().GetLutDetailsRef().SetAntennaID( wPlateID );
+		//oWaveOut.GetExtendedInfoRef().GetLutDetailsRef().SetAntennaID( beamID[iSat] );
+
+
+		WORD wAntID = wPlateID*100 +  (WORD) ( beamID[iSat] % 100) ;
+		oWaveOut.GetExtendedInfoRef().GetLutDetailsRef().SetAntennaID( wAntID );
+
+		//oWaveOut.GetExtendedInfoRef().GetLutDetailsRef().SetAntennaID( (WORD)iSat ); // RR temporary to test satellite sensitivity to nulling
+
+		oWaveOut.GetExtendedInfoRef().GetPropertiesRef().SetTimeStart( tm );
+
+		// Set additional properties indicating whether the signal requires
+		// phase demod or down-conversion.
+		oWaveOut.GetExtendedInfoRef().GetSignalDetailsRef().SetMeanADC( m_dMeanADC );
+		oWaveOut.GetExtendedInfoRef().GetSignalDetailsRef().SetStdDevADC( m_dStdDevADC );
+
+		// Wave has not yet been downconverted:
+		oWaveOut.GetExtendedInfoRef().GetSignalDetailsRef().SetDCState( EMS_DC_NO );//EMS_DC_YES
+		//oWaveOut.GetExtendedInfoRef().GetSignalDetailsRef().SetDCState( EMS_DC_YES );
+	
+		// Set flag indicating whether the marker bit was found for this measurement.
+	//	oWaveOut.GetExtendedInfoRef().GetSignalDetailsRef().SetFlags( CEMSWaveExtSignalDetails::EMSWAVEEXSIGNAL_BAD_MARKER_BIT );
+		//oWaveOut.GetExtendedInfoRef().GetSignalDetailsRef().SetFlags( m_ulStartPPS );
+		oWaveOut.GetExtendedInfoRef().GetSignalDetailsRef().SetFlags( predSatIDs[ iSat ] );
+		oWaveOut.GetExtendedInfoRef().GetSignalDetailsRef().SetMeanCarrierFreq( probability[ iSat ] );
+
+		// RR added azimuth and elevation of satellite
+		oWaveOut.GetExtendedInfoRef().GetSignalDetailsRef().SetMaxModIndex( dSatAzimuth );
+		oWaveOut.GetExtendedInfoRef().GetSignalDetailsRef().SetMeanModIndex( dSatElevation );
+
+
+		// RR change for LEO calibration testing
+		//if ( ulSatID < 200 )
+		//	oWaveOut.GetExtendedInfoRef().GetSignalDetailsRef().SetPhaseModState( EMS_PHASE_MOD_YES);
+		//else
+			oWaveOut.GetExtendedInfoRef().GetSignalDetailsRef().SetPhaseModState( EMS_PHASE_MOD_NO );
+
+		dwBytes = oWaveOut.Serialize( abyData );
+		//printf("\nData Transmitter to send the buffer\n");
+		if( dwBytes > 0 )
+		{
+			int iSent = 0;
+
+			hr = _InitDT();
+			if( m_pDataTransmit )
+			{
+				hr = m_pDataTransmit->Send( dwBytes, abyData, &iSent);
+				//for debug
+				std::stringstream str;
+				str <<" Time:" << CEMSConversionUtil::ConvertToDateTimeHiResString2A(tm) << " satid:" << ulSatID << " lutid:" <<ulLutID
+					<<" index: " << iSat << " TotSats: " << culNumSats << std::endl;
+				//OutputDebugString( str.str().c_str() );
+			}
+			if(FAILED(hr) )
+			{
+				printf("Data Transmitter failed to send the buffer");
+				//for debug
+				std::stringstream str;
+				str <<" Time:" << CEMSConversionUtil::ConvertToDateTimeHiResString2A(CEMSSystemClock::GetTime() ) << " tm : " << 
+					CEMSConversionUtil::ConvertToDateTimeHiResString2A(tm) << " Error, failed to send " <<
+					" satid:" << ulSatID << " lutid:" <<ulLutID
+					<<" index: " << iSat << " TotSats: " << culNumSats << std::endl;
+				//OutputDebugString( str.str().c_str() );
+				//pDataTransmit->Disconnect();
+			}
+			else
+			{
+				//printf("Data Transmitter successfully sent the buffer");
+				//for debug
+				std::stringstream str;
+				str <<" Time:"  << CEMSConversionUtil::ConvertToDateTimeHiResString2A(CEMSSystemClock::GetTime()) << " tm: " << 
+					CEMSConversionUtil::ConvertToDateTimeHiResString2A(tm) << " Sent satid:" << ulSatID << " lutid:" <<ulLutID
+					<<" index: " << iSat << " TotSats: " << culNumSats << std::endl;
+				//OutputDebugString( str.str().c_str() );
+			}
+
+			/*			unsigned long ulBytesWritten = fwrite(abyData, 1, dwBytes, OneSecFile);
+			if( ulBytesWritten < (dwBytes) )
+				printf("\n  Error writing a wave file... ");
+
+			flushall();
+			fclose(OneSecFile);*/
+			delete[] abyData;
+			abyData = 0;
+		}
+	}
+	
+	//CEMSTime timeEnd =  CEMSSystemClock::GetTime();
+
+	//printf( "_OutputWaveEx -> Time elapsed : %f seconds for %i sats, id: %i\n" ,timeStart.SecondsDifferent( timeEnd) , culNumSats, GetCurrentThreadId()  );
+	EMSTIME timeFinish = CEMSSystemClock::GetTime();
+		INT64 i64ElapsedTime = timeFinish.intTime - timeStart.intTime;
+		double dElapsedTime = ((double) i64ElapsedTime) * 1e-9;
+		std::stringstream str1;
+		str1 <<"Outputwaveex  Timestamp: " << CEMSConversionUtil::ConvertToDateTimeHiResString2A( CEMSSystemClock::GetTime() ) << 
+			"BufferTime:" << CEMSConversionUtil::ConvertToDateTimeHiResString2A(m_timeActual) << 
+			" time taken:" << dElapsedTime << " secs " << std::endl;
+		//OutputDebugString( str1.str().c_str() );
+
+	return;
+}
+
+void
+CDigitalBeamFormer::_OutputWaveExBy2( EMSTIME tm, ULONG culNumSats  )
+{
+	EMSTIME timeStart =  CEMSSystemClock::GetTime();
+	EMS_RESULT hr = EMS_OK;
+	if( culNumSats > DBF_MAX_SATELLITES )
+		culNumSats = DBF_MAX_SATELLITES;
+	if( !m_bOutputOK )
+		return;
+	INT testSatID = 460;
+
+//	char fName[256];
+//	FILE *OneSecFile = 0;
+	int *beamID = m_qrefDBFBeamVectors.ReadFirst( ).predBeamIDs;
+	int *predSatIDs = m_qrefDBFBeamVectors.ReadFirst( ).predSatIDs;
+	double *probability = m_qrefDBFBeamVectors.ReadFirst( ).probability;
+
+	for( int iSat = 0; iSat < culNumSats; iSat++ )
+	{
+		CEMSWaveEx oWaveOut;
+
+		DWORD dwBytes = 0;
+		BYTE* abyData = 0;
+
+		ULONG ulLutID = m_aPassSchedule.rec[iSat].ulLutID;
+		//snl for test
+		std::string LutSatZero;
+		if( ulLutID == 0 )
+			LutSatZero = "ulLutID 0 ??? " ;
+		ULONG ulSatID = m_aPassSchedule.rec[iSat].ulSatID;
+		if( ulSatID == 0 )
+			LutSatZero += " ulSatID 0 ???" ;
+		if( !LutSatZero.empty() )
+		{
+			//OutputDebugString( LutSatZero.c_str() );
+			continue;
+		}
+		WORD  wPlateID = m_aPassSchedule.rec[iSat].wPlateID;
+		double dSatAzimuth = (double) m_aPassSchedule.rec[iSat].fAzimuth;
+		double dSatElevation = (double) m_aPassSchedule.rec[iSat].fElevation;
+		//if( ulSatID >= 200 && dSatElevation < 15.0 )	//snl added to check > 30 if pass sched has no elev constraints
+		if( ulSatID >= 200 && dSatElevation < MEO_MIN_ELEVATION )	//snl added to check > 30 if pass sched has no elev constraints
+		//if( ulSatID >= 200 && dSatElevation < 0.0 )	//snl added to check > 30 if pass sched has no elev constraints
+		//if( ulSatID >= 200 && dSatElevation < 5.0 )	//snl added to check > 30 if pass sched has no elev constraints
+			continue;
+	//	ULONG ulBytes = sizeof(short) * DBF_SAMPLE_SIZE;
+		ULONG ulBytes = sizeof(short) * DBF_SAMPLE_SIZE/2;
+
+		//ULONG ulIndex = culIndex * ulBytes / sizeof(short);
+	//	oWaveOut.Write( (unsigned char*)&m_asDBFVector[ulIndex], ulBytes  );
+	//	oWaveOut.Write( (unsigned char*)m_acFFTdata, DBF_FFT_COMPLEX_SIZE * sizeof( EMSCOMPLEX )  );
+	//	oWaveOut.Write( (unsigned char*)m_acFFTdata, DBF_FFT_COMPLEX_SIZE * sizeof( EMSCOMPLEX )/2  ); // RR reduced buffer size to 250kHz
+		//oWaveOut.Write( (unsigned char*)&m_acFFTdata[iSat][40000], DBF_FFT_COMPLEX_SIZE * sizeof( EMSCOMPLEX )/2  ); // RR reduced buffer size to 250kHz & added 50kHz offset
+		//oWaveOut.Write( (unsigned char*)&m_acFFTdata[iSat][0], DBF_FFT_COMPLEX_SIZE * sizeof( EMSCOMPLEX )/2  ); // RR reduced buffer size to 250kHz & added 50kHz offset
+		for ( int ix = 0;  ix < 40000; ix++ )
+		{
+			m_acFFTdata[iSat][DBF_FFT_COMPLEX_SIZE/2 + ix].re = m_acFFTdata[iSat][DBF_FFT_COMPLEX_SIZE/2-40000].re;
+		
+			m_acFFTdata[iSat][DBF_FFT_COMPLEX_SIZE/2 + ix].im = m_acFFTdata[iSat][DBF_FFT_COMPLEX_SIZE/2-40000].im;
+		}
+		oWaveOut.Write( (unsigned char*)&m_acFFTdata[iSat][40000], DBF_FFT_COMPLEX_SIZE * sizeof( EMSCOMPLEX )/2  ); // RR reduced buffer size to 250kHz & added 50kHz offset
+
+		///oWaveOut.Write( (unsigned char*)&m_acFFTdata[iSat][40000], 200000 * sizeof( EMSCOMPLEX )  ); // RR reduced buffer size to 250kHz & added 50kHz offset
+
+		oWaveOut.GetFormatChunkRef().SetAudioFormat( 1 );	// PCM
+		oWaveOut.GetFormatChunkRef().SetNumChannels( 1 );	// Mono
+		oWaveOut.GetFormatChunkRef().SetSampleRate( 1000000 );
+		oWaveOut.GetFormatChunkRef().SetBitsPerSample( 16 );
+
+
+		oWaveOut.GetExtendedInfoRef().GetLutDetailsRef().SetLutID( ulLutID );
+		oWaveOut.GetExtendedInfoRef().GetSatDetailsRef().SetSatID( ulSatID );
+		//oWaveOut.GetExtendedInfoRef().GetLutDetailsRef().SetAntennaID( wPlateID );
+		//oWaveOut.GetExtendedInfoRef().GetLutDetailsRef().SetAntennaID( beamID[iSat] );
+		WORD wAntID = 0;
+		if( beamID ) 
+		{
+			wAntID = wPlateID*100 +  (WORD) ( beamID[iSat] % 100) ;
+			oWaveOut.GetExtendedInfoRef().GetLutDetailsRef().SetAntennaID( wAntID );
+		}
+		else
+		{
+			//OutputDebugString("beamID NULL\n" );
+			wAntID = wPlateID*100 /*+  (WORD) ( beamID[iSat] % 100)*/ ;
+			oWaveOut.GetExtendedInfoRef().GetLutDetailsRef().SetAntennaID( wAntID ); // RR temporary to test satellite sensitivity to nulling
+		}
+
+		oWaveOut.GetExtendedInfoRef().GetPropertiesRef().SetTimeStart( tm );
+
+		// Set additional properties indicating whether the signal requires
+		// phase demod or down-conversion.
+		oWaveOut.GetExtendedInfoRef().GetSignalDetailsRef().SetMeanADC( m_dMeanADC );
+		oWaveOut.GetExtendedInfoRef().GetSignalDetailsRef().SetStdDevADC( m_dStdDevADC );
+
+		// Wave has not yet been downconverted:
+		oWaveOut.GetExtendedInfoRef().GetSignalDetailsRef().SetDCState( EMS_DC_NO );//EMS_DC_YES
+		//oWaveOut.GetExtendedInfoRef().GetSignalDetailsRef().SetDCState( EMS_DC_YES );
+	
+		// Set flag indicating whether the marker bit was found for this measurement.
+	//	oWaveOut.GetExtendedInfoRef().GetSignalDetailsRef().SetFlags( CEMSWaveExtSignalDetails::EMSWAVEEXSIGNAL_BAD_MARKER_BIT );
+		//oWaveOut.GetExtendedInfoRef().GetSignalDetailsRef().SetFlags( m_ulStartPPS );
+		if( predSatIDs )
+		oWaveOut.GetExtendedInfoRef().GetSignalDetailsRef().SetFlags( predSatIDs[ iSat ] );
+		if( probability )
+		oWaveOut.GetExtendedInfoRef().GetSignalDetailsRef().SetMeanCarrierFreq( probability[ iSat ] );
+
+		// RR added azimuth and elevation of satellite
+		oWaveOut.GetExtendedInfoRef().GetSignalDetailsRef().SetMaxModIndex( dSatAzimuth );
+		oWaveOut.GetExtendedInfoRef().GetSignalDetailsRef().SetMeanModIndex( dSatElevation );
+
+
+		// RR change for LEO calibration testing
+		//if ( ulSatID < 200 )
+		//	oWaveOut.GetExtendedInfoRef().GetSignalDetailsRef().SetPhaseModState( EMS_PHASE_MOD_YES);
+		//else
+			oWaveOut.GetExtendedInfoRef().GetSignalDetailsRef().SetPhaseModState( EMS_PHASE_MOD_NO );
+
+		dwBytes = oWaveOut.Serialize( abyData );
+		//printf("\nData Transmitter to send the buffer\n");
+		if( dwBytes > 0 )
+		{
+			int iSent = 0;
+
+			hr = _InitDT();
+			if( m_pDataTransmit )
+			{
+				hr = m_pDataTransmit->Send( dwBytes, abyData, &iSent);
+				//for debug
+				std::stringstream str;
+				str <<" Time:" << CEMSConversionUtil::ConvertToDateTimeHiResString2A(tm) << " satid:" << ulSatID << " lutid:" <<ulLutID
+					<<" index: " << iSat << " TotSats: " << culNumSats << std::endl;
+				//OutputDebugString( str.str().c_str() );
+			}
+			if(FAILED(hr) )
+			{
+				printf("Data Transmitter failed to send the buffer");
+				//for debug
+				std::stringstream str;
+				str <<" Time:" << CEMSConversionUtil::ConvertToDateTimeHiResString2A(CEMSSystemClock::GetTime() ) << " tm : " << 
+					CEMSConversionUtil::ConvertToDateTimeHiResString2A(tm) << " Error, failed to send " <<
+					" satid:" << ulSatID << " lutid:" <<ulLutID
+					<<" index: " << iSat << " TotSats: " << culNumSats << std::endl;
+				//OutputDebugString( str.str().c_str() );
+				//pDataTransmit->Disconnect();
+			}
+			else
+			{
+				//printf("Data Transmitter successfully sent the buffer");
+				//for debug
+				std::stringstream str;
+				str <<" Time:"  << CEMSConversionUtil::ConvertToDateTimeHiResString2A(CEMSSystemClock::GetTime()) << " tm: " << 
+					CEMSConversionUtil::ConvertToDateTimeHiResString2A(tm) << " Sent satid:" << ulSatID << " lutid:" <<ulLutID
+					<<" index: " << iSat << " TotSats: " << culNumSats << std::endl;
+				//OutputDebugString( str.str().c_str() );
+			}
+
+			/*			unsigned long ulBytesWritten = fwrite(abyData, 1, dwBytes, OneSecFile);
+			if( ulBytesWritten < (dwBytes) )
+				printf("\n  Error writing a wave file... ");
+
+			flushall();
+			fclose(OneSecFile);*/
+			delete[] abyData;
+			abyData = 0;
+		}
+	}
+	
+	//CEMSTime timeEnd =  CEMSSystemClock::GetTime();
+
+	//printf( "_OutputWaveEx -> Time elapsed : %f seconds for %i sats, id: %i\n" ,timeStart.SecondsDifferent( timeEnd) , culNumSats, GetCurrentThreadId()  );
+	EMSTIME timeFinish = CEMSSystemClock::GetTime();
+		INT64 i64ElapsedTime = timeFinish.intTime - timeStart.intTime;
+		double dElapsedTime = ((double) i64ElapsedTime) * 1e-9;
+		std::stringstream str1;
+		str1 <<"Outputwaveex  Timestamp: " << CEMSConversionUtil::ConvertToDateTimeHiResString2A( CEMSSystemClock::GetTime() ) << 
+			"BufferTime:" << CEMSConversionUtil::ConvertToDateTimeHiResString2A(m_timeActual) << 
+			" time taken:" << dElapsedTime << " secs " << std::endl;
+		//OutputDebugString( str1.str().c_str() );
+
+	return;
+}
+//---------------------------------------------------------------------------
+
+void
+CDigitalBeamFormer::_OutputWaveFile( unsigned char* aData, EMSTIME tm, ULONG culSize )
+{
+	EMS_RESULT hr = EMS_OK;
+	CEMSWaveEx oWaveOut;
+
+
+	char szFileName[256];
+	FILE *pWaveFile = 0;
+	DWORD dwBytes = 0;
+	BYTE* abyData = 0;
+
+	ULONG ulLutID = m_aPassSchedule.rec[0].ulLutID;
+	ULONG ulSatID = m_aPassSchedule.rec[0].ulSatID;
+	ULONG ulBytes = sizeof(long) * DBF_SAMPLE_SIZE/2;
+
+	oWaveOut.Write( (unsigned char*)aData, culSize * sizeof(unsigned char) );
+
+	oWaveOut.GetFormatChunkRef().SetAudioFormat( 1 );	// PCM
+	oWaveOut.GetFormatChunkRef().SetNumChannels( 1 );	// Mono
+	oWaveOut.GetFormatChunkRef().SetSampleRate( 1000000 );
+	oWaveOut.GetFormatChunkRef().SetBitsPerSample( 32 );
+
+
+	oWaveOut.GetExtendedInfoRef().GetLutDetailsRef().SetLutID( ulLutID );
+	oWaveOut.GetExtendedInfoRef().GetSatDetailsRef().SetSatID( ulSatID );
+	oWaveOut.GetExtendedInfoRef().GetLutDetailsRef().SetAntennaID( (WORD) ulLutID );
+	oWaveOut.GetExtendedInfoRef().GetPropertiesRef().SetTimeStart( tm );
+
+	// Set additional properties indicating whether the signal requires
+	// phase demod or down-conversion.
+	oWaveOut.GetExtendedInfoRef().GetSignalDetailsRef().SetMeanADC( m_dMeanADC );
+	oWaveOut.GetExtendedInfoRef().GetSignalDetailsRef().SetStdDevADC( m_dStdDevADC );
+
+	// Wave has not yet been downconverted:
+	oWaveOut.GetExtendedInfoRef().GetSignalDetailsRef().SetDCState( EMS_DC_NO );
+	
+	// Set flag indicating whether the marker bit was found for this measurement.
+	oWaveOut.GetExtendedInfoRef().GetSignalDetailsRef().SetFlags( CEMSWaveExtSignalDetails::EMSWAVEEXSIGNAL_BAD_MARKER_BIT );
+
+	if ( ulSatID < 250 )
+		oWaveOut.GetExtendedInfoRef().GetSignalDetailsRef().SetPhaseModState( EMS_PHASE_MOD_YES);
+	else
+		oWaveOut.GetExtendedInfoRef().GetSignalDetailsRef().SetPhaseModState( EMS_PHASE_MOD_NO );
+
+	dwBytes = oWaveOut.Serialize( abyData );
+	if( dwBytes > 0 )
+	{
+		memset(szFileName, 0, sizeof(szFileName) );
+//		sprintf(szFileName,"D:\\WaveOutput\\DBF_%I64d.wav", tm.intTime);
+		sprintf(szFileName,"C:\\HGT\\DBFPassData\\WaveOutput\\DBF_%I64d.bin", tm.intTime);
+//		sprintf(szFileName,"D:\\WaveOutput\\DBF_%I64d.bin", tm.intTime);
+//		sprintf(szFileName,"C:\\HGT\\DBFPassData\\WaveOutput\\DBF_%I64d.wav", tm.intTime);--> right
+//		sprintf(szFileName,"D:\\DBFPassData\\WaveOutput\\DBF_%I64d.bin", tm.intTime);
+
+		pWaveFile = fopen(szFileName,"w+b");
+		if( pWaveFile != NULL )
+		{
+//			fwrite(abyData, 1, dwBytes, pWaveFile);
+			fwrite(aData, 1, culSize, pWaveFile);
+			////snl for offline data
+			//if( m_aPassSchedule.rec[0].wProcessID == 5 )
+			//{
+			//	for( int i = 0; i < 4; i++ )
+			//	{
+			//		fwrite(&m_aPassSchedule.rec[i], 1, sizeof(EMSDBFPASSRECORD), pWaveFile);
+			//	}
+
+			//}
+			////end snl
+			fclose(pWaveFile);
+		}
+
+		delete[] abyData;
+		abyData = 0;
+	}
+
+	return;
+}
+
+//snl for testing..tbr
+#include <complex>
+unsigned long long  GetFreeDiskSpaceInGBs ()
+{
+	ULARGE_INTEGER FreeBytesAvailable = { 0 };
+    ULARGE_INTEGER TotalNumberOfBytes={ 0 };
+    ULARGE_INTEGER TotalNumberOfFreeBytes={ 0 };
+
+    BOOL ok = GetDiskFreeSpaceEx(
+        "C:\\",
+        &FreeBytesAvailable,
+        &TotalNumberOfBytes,
+        &TotalNumberOfFreeBytes
+        );
+
+    if (ok)
+    {
+        unsigned long long freeAvail = FreeBytesAvailable.QuadPart;
+        unsigned long long total = TotalNumberOfBytes.QuadPart;
+        unsigned long long totalfree = TotalNumberOfFreeBytes.QuadPart;
+
+        return (freeAvail /std::pow(1024.0,3));	//, total / 1024 / 1024, totalfree / 1024 / 1024);
+	}
+}
+
+void
+CDigitalBeamFormer::_OutpuRawDigitalDataFile( unsigned char* aData, EMSTIME tm, ULONG culSize )
+{
+	EMS_RESULT hr = EMS_OK;
+
+	char szFileName[256];
+	FILE *pRawDataFile = 0;
+	BYTE* abyData = 0;
+	ULONGLONG freeGigs = GetFreeDiskSpaceInGBs( );
+	if( culSize > 0 && freeGigs > 1.5 )
+	{
+		memset(szFileName, 0, sizeof(szFileName) );
+		sprintf(szFileName,"C:\\HGT\\DBFPassData\\WaveOutput\\DBFRawData_%I64d_%lu_%lu_%lu_%lu.bin", tm.intTime, m_aPassSchedule.rec[0].ulSatID
+			,m_aPassSchedule.rec[1].ulSatID,m_aPassSchedule.rec[2].ulSatID, m_aPassSchedule.rec[3].ulSatID);
+		pRawDataFile  = fopen(szFileName,"w+b");
+		if( pRawDataFile  != NULL )
+		{
+			fwrite(aData, 1, culSize, pRawDataFile );
+			INT sizeT = DBF_MAX_SATELLITES;
+			if ( m_aPassSchedule.rec[0].wProcessID == 5 )
+				fwrite(&m_aPassSchedule, 1, sizeof(EMSDBFPASSRECORDS), pRawDataFile );
+			fclose(pRawDataFile );
+		}
+
+		delete[] abyData;
+		abyData = 0;
+	}
+
+	return;
+}
+
+//---------------------------------------------------------------------------
+
+EMS_RESULT 
+CDigitalBeamFormer::GetPassSchedule( EMSTIME tm )
+{
+
+	EMS_RESULT hr = EMS_BAD_PARAM;
+
+	// read pass schedule information for time 'tm'
+
+//	m_aPassSchedule = m_oDBFpass.SetPassSchedule( tm );
+
+	m_ulSatellites = 0;
+	//for( int i = 0; i < 4; i++ )
+	for( int i = 0; i < DBF_MAX_SATELLITES; i++ )
+	{
+		if( m_aPassSchedule.rec[i].ulSatID > 0 ) m_ulSatellites++;
+	}
+
+	m_aMaintenance.timestamp = tm;
+	m_aMaintenance.ulSampleSize = m_ulSamplesPerChannel;
+	//m_aMaintenance.wCellID
+	m_aMaintenance.wChannelCount = m_ulChannels;
+	m_aMaintenance.wPlateID = 1;
+
+	return hr;
+}
+
+//---------------------------------------------------------------------------
+
+EMS_RESULT 
+CDigitalBeamFormer::TestDBFprocessor( int nProcess )
+{
+
+	EMS_RESULT hr = EMS_BAD_PARAM;
+
+	EMSTIME timeStart, timeFinish;
+
+	timeStart.intTime  = 0;
+	timeFinish.intTime = 0;
+
+	INT64   i64ElapsedTime = 0;
+
+	hr = GetPhaseBuffer( );
+
+	timeStart = CEMSSystemClock::GetTime();
+
+	try
+	{
+		if( nProcess == 1 )
+		{
+			hr = DBFprocessor1( m_asRawTimeSeries );
+		}
+		else if( nProcess == 2 )
+		{
+			hr = DBFprocessor2( m_asRawTimeSeries, 0 );
+		}
+		else
+		{
+			hr = DBFprocessor3( m_asRawTimeSeries );
+		}
+
+	}
+	catch( ... )
+	{
+		//printf("Unknown exception occurred (%d).\n", m_nCounter);
+	}
+  
+	timeFinish = CEMSSystemClock::GetTime();
+
+	i64ElapsedTime = timeFinish.intTime - timeStart.intTime;
+
+
+	m_nCounter++;
+	m_dElapsedTime += ((double) i64ElapsedTime) * 1e-9; 
+	m_dAverageTime = m_dElapsedTime / (double) m_nCounter;
+
+	m_timeFinish = CEMSSystemClock::GetTime();
+	i64ElapsedTime = m_timeFinish.intTime - m_timeStart.intTime;
+	double dElapsedTime = ((double) i64ElapsedTime) * 1e-9;
+
+
+
+	if( nProcess == 1 )
+	{
+/*		printf( " 1, %d, AT(sec) = %f, PT = %f, AveT = %f (%ld,%f)\n",
+			m_nCounter, dElapsedTime, m_dElapsedTime, m_dAverageTime,
+			m_ulMaxPowerIndex, m_dMaxPower);
+*/		
+		if ( m_lpTraceFile )
+		{
+			fprintf( m_lpTraceFile, "1,%d,%f,%f,%f,%ld,%f,%ld,%ld,",
+				m_nCounter, dElapsedTime, m_dElapsedTime, m_dAverageTime,
+				m_ulMaxPowerIndex, m_dMaxPower, m_ulStartPPS, m_ulStopPPS );
+			for (int i = 0; i < m_ulChannels*2; i++)
+			{
+				fprintf(m_lpTraceFile,"%d,", m_asPhaseVector[i] );
+			}
+			fprintf(m_lpTraceFile,"\n");
+		}
+
+		TCHAR cTempName1[256];
+		TCHAR cTempName2[256];
+
+		lstrcpy( cTempName1, m_cFilePath );
+			
+		_stprintf( cTempName2, TEXT( "DBFoutput-%05d.bin2" ), m_nCounter );
+				
+		lstrcat( cTempName1, cTempName2 ); 
+				
+		m_lpOutputFile = fopen( cTempName1, "wb" );
+		if ( m_lpOutputFile )
+		{
+			
+			fwrite( (float *)m_acFFTdata, sizeof(float), DBF_FFT_COMPLEX_SIZE * 2, m_lpOutputFile );
+			fclose( m_lpOutputFile );
+		}
+	}
+
+	if( nProcess == 2 )
+	{
+/*		printf( " 2, %d, AT(sec) = %f, PT = %f, AveT = %f (%ld,%f)\n",
+			m_nCounter, dElapsedTime, m_dElapsedTime, m_dAverageTime,
+			m_ulMaxPowerIndex, m_dMaxPower);
+*/
+	}
+
+	if( nProcess == 3 )
+	{
+	
+/*		printf( " 3, %d, AT(sec) = %f, PT = %f, AveT = %f (%f)\n",
+			m_nCounter, dElapsedTime, m_dElapsedTime, m_dAverageTime,
+			m_afCovariance[0] / (float)m_ulSamplesPerChannel);
+*/
+		if ( m_lpTraceFile )
+		{
+			fprintf( m_lpTraceFile, "3,%d,%f,%f,%f,%f,%f,%f,%ld,%ld\n",
+				m_nCounter, dElapsedTime, m_dElapsedTime, m_dAverageTime,
+				m_dMeanADC, m_dStdDevADC, m_dMaxPower, m_ulStartPPS, m_ulStopPPS );
+
+			for (int i = 0; i < m_ulChannels; i++)
+			{
+				fprintf( m_lpTraceFile, "3,%d,",i);
+				for (int j = 0; j < m_ulChannels; j++)
+				{
+					fprintf(m_lpTraceFile,"%f,%f,", m_acCovariance[i*m_ulChannels+j].re / (float)DBF_FFT_COMPLEX_SIZE,
+						m_acCovariance[i*m_ulChannels+j].im / (float)DBF_FFT_COMPLEX_SIZE );
+				}
+				fprintf(m_lpTraceFile,"\n");
+			}
+		}
+	}
+
+
+	return hr;
+
+}
+//---------------------------------------------------------------------------
+
+
+void
+CDigitalBeamFormer::_SetActualTimeNew()
+{
+	m_timeActual;
+
+	m_asRawTimeSeries;
+	float fScaleFactor        = (float)ADC_OFFSET;   // Scale factor for real to integer conversion
+	float fScaleFactorInverse = 1.0 / fScaleFactor;  // Scale factor for integer to real conversion
+
+	ULONG jsample, index;
+
+	for ( jsample = 0, index = 0; jsample < m_ulSamplesPerChannel;  jsample++, index += m_ulChannels )
+	{
+		m_afChan0[jsample] = (float) ( (m_asRawTimeSeries[index] & 0x000FFFFF) * fScaleFactorInverse) ;
+	}
+
+	float fTimeDiff = 0.0;
+	float fMaxTimeDiff = 0.0;
+	ULONG ulTimeMarker = 0;
+
+	for ( jsample = 0; jsample < (m_ulSamplesPerChannel - 2);  jsample++ )
+	{
+		fTimeDiff = m_afChan0[jsample + 2] - m_afChan0[jsample];
+		if( fTimeDiff > fMaxTimeDiff )
+		{
+			fMaxTimeDiff = fTimeDiff;
+			ulTimeMarker = jsample + 1;
+		}
+	}
+
+	long	lNanosecond = (long)(((float)ulTimeMarker/1000000.00) * 1e9);
+	EMSTIMEFIELDS tmFlds;
+	EMSTIMEFIELDS tmFlds_New;
+	CEMSTime oTM(m_timeActual);
+	//oTM.AddSeconds(-0.5);
+
+	oTM.GetTime(&tmFlds);
+
+	CEMSTime oActualTime;
+	oActualTime.SetTime(tmFlds.nYear, tmFlds.nMonth, tmFlds.nDay, tmFlds.nHour, tmFlds.nMinute, tmFlds.nSecond, 0 );
+	oActualTime.AddNanoseconds( -1 * lNanosecond );
+	m_timeActual = oActualTime;
+
+	CEMSTime oTM_New(m_timeActual);
+	//oTM.AddSeconds(-0.5);
+
+	oTM_New.GetTime(&tmFlds_New);
+
+	int xyz = sizeof( long );
+}
+
+void
+CDigitalBeamFormer::ProcessAll()
+{
+	if( m_ulSatellites == 0 || m_aPassSchedule.rec[0].ulSatID == 0 )
+		return;
+	//find time taken to process
+	/*EMSCOMPLEXD **asBeamMatrix;
+	EMSCOMPLEXD **acBeamMatrix;
+*/
+	
+	CEMSTime timeStart =  CEMSSystemClock::GetTime();
+
+	_SetActualTimeNew();
+//	m_aPassSchedule.rec[0].wProcessID = ;
+	//m_aPassSchedule.rec[0].wProcessID = 5;
+	m_aPassSchedule.rec[0].wProcessID = 8;
+
+	//m_aPassSchedule.rec[0].wProcessID = 2;
+	//m_aPassSchedule.rec[0].wProcessID = 7;
+	//m_aPassSchedule.rec[0].wProcessID = 6;
+
+//	m_aPassSchedule.rec[0].ulSatID = 351;
+	//m_aPassSchedule.rec[0].ulLutID = 7171;
+	m_aPassSchedule.rec[0].ulLutID = m_aPassSchedule.rec[0].ulLutID;
+
+	//m_aPassSchedule.rec[0].wProcessID = 1;
+	switch( m_aPassSchedule.rec[0].wProcessID ) 
+	{
+		case 0:
+			break;
+		case 1:
+			{
+				memset( &m_emsDBFBufferPhase, 0, sizeof(m_emsDBFBufferPhase) );
+				m_emsDBFBufferPhase.timestamp = m_timeActual;
+				m_emsDBFBufferPhase.ulSatID = m_aPassSchedule.rec[0].ulSatID;
+				m_emsDBFBufferPhase.fSatAzimuth = m_aPassSchedule.rec[0].fAzimuth;
+				m_emsDBFBufferPhase.fSatElevation = m_aPassSchedule.rec[0].fElevation;
+
+				DBFprocessor1Ex(m_aMaintenance.timestamp);
+			}
+			break;
+		case 2:
+			{
+//				m_ulSatellites = 1;
+				DBFprocessor2Ex(m_aMaintenance.timestamp);
+
+				if( m_ulSatellites /*== 4*/ )
+					DBFprocessor3Ex(m_aMaintenance.timestamp);
+
+			}
+			break;
+		case 3:
+			{
+				DBFprocessor3Ex(m_aMaintenance.timestamp);
+			}
+			break;
+		case 4:
+			{
+				DBFprocessor4(m_aMaintenance.timestamp);
+			}
+			break;
+		case 5:
+			//raw data + pass record
+				DBFprocessor5(m_aMaintenance.timestamp);
+				break;
+
+		case 6:
+				DBFprocessor6(m_aMaintenance.timestamp);
+				break;
+		case 7:
+				//DBFprocessor7();
+				break;
+		case 8:
+			//DBFprocessor8_v6(4, acBeamMatrix );
+
+			//DBFprocessor8( 4 );
+			//DBFprocessor8( 6 );
+			DBFprocessor8( m_ulSatellites );
+
+			//DBFprocessor8( m_ulSatellites + 3 );
+			//DBFprocessor8( m_ulSatellites/*,asBeamMatrix, acBeamMatrix */);
+			/*for(int i = 0; i < MAX_BEAMS; i++)
+			{
+				delete [] asBeamMatrix[i];
+			}
+			delete [] asBeamMatrix;
+
+			for(int i = 0; i < MAX_BEAMS; i++)
+			{
+				delete [] acBeamMatrix[i];
+			}
+			delete [] acBeamMatrix;*/
+
+		default:
+				break;
+	}
+	CEMSTime timeEnd =  CEMSSystemClock::GetTime();
+
+	//printf( "ProcessAll -> Time elapsed:%f seconds, id: %i \n" ,timeStart.SecondsDifferent( timeEnd) , GetCurrentThreadId() );
+}
+
+
+//---------------------------------------------------------------------------
+
+void
+CDigitalBeamFormer::_OutputCalibData( EMSTIME tm )
+{
+	if( m_aPassSchedule.rec[0].ulSatID != 0 )
+	{
+		if( !m_lpCalibFile )
+		{
+			_OpenCalibFile();
+		}
+
+		if( m_lpCalibFile )
+		{
+			EMSDBFCALIBRECORD emsDBFCalib;
+
+			memset( &emsDBFCalib, 0, sizeof(EMSDBFCALIBRECORD) );
+
+			emsDBFCalib.Pass = m_aPassSchedule.rec[0];
+
+			memcpy( emsDBFCalib.fCalibPhaseReal, m_LastCalibRecord.fCalibPhaseReal, sizeof(m_LastCalibRecord.fCalibPhaseReal) );
+			memcpy( emsDBFCalib.fCalibPhaseImag, m_LastCalibRecord.fCalibPhaseImag, sizeof(m_LastCalibRecord.fCalibPhaseImag) );
+			// Write binary Calib record
+			fwrite( &emsDBFCalib, 1, sizeof( EMSDBFCALIBRECORD ), m_lpCalibFile );
+		}
+		else
+		{
+			// error.
+		}
+	}
+}
+
+void
+CDigitalBeamFormer::_OpenCalibFile()
+{
+	if( !m_lpCalibFile )
+	{
+		char szFileName[256];
+
+		memset(szFileName, 0, sizeof(szFileName) );
+
+		sprintf(szFileName, "%s_%d.bin", c_szCalibFile, m_iObjectID ); 
+		m_lpCalibFile = fopen( szFileName, "ab" );
+	}
+}
+
+//snl
+#ifdef _LOGPHASECORR_
+
+
+CEMSCriticalSection		CDigitalBeamFormer::m_csFileHandler;
+void CDigitalBeamFormer::LogPhaseCorrection (  INT64 timeNum, std::string timeStr , ULONG channel , double dPower, 
+	ULONG ulMaxPowerIndex, EMSCOMPLEX &param1  )
+{
+	try
+	{
+		m_csFileHandler.Enter();
+		if( !m_pLogPhaseCorrection )
+		{
+			m_pLogPhaseCorrection = fopen( "c:\\DBFLogs\\phasecorrn.csv" , "at" );
+			//fprintf(m_pLogPhaseCorrection,"timestamp, timestring, channel, power, maxpowerindex,phasecorr real,phasecorr imag");
+			fprintf(m_pLogPhaseCorrection,"timestamp, channel, power, maxpowerindex,phasecorr real,phasecorr imag");
+
+			fprintf(m_pLogPhaseCorrection,"\n");
+
+		}
+		if ( m_pLogPhaseCorrection )
+		{
+			//fprintf( m_pLogPhaseCorrection, " %I64d,%s,%lu,%f,%lu,",timeNum, timeStr.c_str(), channel,dPower, ulMaxPowerIndex );
+			fprintf( m_pLogPhaseCorrection, " %I64d,%lu,%f,%lu,",timeNum, channel,dPower, ulMaxPowerIndex );
+			fprintf( m_pLogPhaseCorrection, "%f,%f",param1.re,param1.im  );
+			fprintf(m_pLogPhaseCorrection,"\n");
+			fflush( m_pLogPhaseCorrection );
+		}
+		m_csFileHandler.Leave();
+	}
+	catch( ... )
+	{
+		m_csFileHandler.Leave();
+
+	}
+}
+#endif
+
+void CDigitalBeamFormer::_EMSGetPhaseOffsets( const unsigned long *clpRawTimeSeries, ULONG ulSatMaxFreq, double *dPeakPhase )
+{
+
+	double dMean = 0;
+	double dStdDev = 0;
+	float fScaleFactor        = (float)ADC_OFFSET;   // Scale factor for real to integer conversion
+	float fScaleFactorInverse = 1.0 / fScaleFactor;  // Scale factor for integer to real conversion
+
+
+	memset( m_afTemp1, 0, DBF_FFT_REAL_SIZE*sizeof(float));
+	memset( m_afTemp2, 0, DBF_FFT_REAL_SIZE*sizeof(float));
+
+	for ( int ichan = 1; ichan < (int)m_ulChannels; ichan++ )
+	{
+		// Convert integer to float
+
+		memset( m_afTemp1, 0, DBF_FFT_REAL_SIZE*sizeof(float));
+		memset( m_afTemp2, 0, DBF_FFT_REAL_SIZE*sizeof(float));
+			
+		for ( int jsample = 0, index = ichan; jsample < m_ulSamplesPerChannel;  jsample++, index += m_ulChannels )
+		{
+			m_afTemp1[jsample] = (float) m_asRawTimeSeries[index] * fScaleFactorInverse;
+		}
+
+		dStdDev = _EMSsMeanStdDev( m_afTemp1, m_ulSamplesPerChannel, &dMean );
+
+		if( dStdDev == 0.00 )
+			continue;
+
+		_EMSsbNormalize(m_afTemp1, m_afTemp2, m_ulSamplesPerChannel, dMean, dStdDev);
+
+		emssRealFftNip( m_afTemp2, m_acTemp1, DBF_FFT_SIZE_LOG2, EMS_SPL_FWD );
+
+		dPeakPhase[ichan] = atan2( (double) m_acTemp1[ ulSatMaxFreq ].im, (double) m_acTemp1[ ulSatMaxFreq ].re );
+	}
+
+}
+
+// Performs FFT on each channel, phase corrects using frequency of maximum carrier power
+// and then extracts phase bias; the resultant phase bias is stored in phaseBias which should point to a float buffer
+// of length at least 31;
+
+//EMS_RESULT
+//CDigitalBeamFormer::DBFprocessor7( )
+//{
+//	//only for LEO
+//	if( m_aPassSchedule.rec[0].ulSatID >= 200 )
+//		return S_FALSE;
+//
+//	float phaseBias[32]; 
+//	memset( phaseBias, 0, sizeof(phaseBias ) );
+//	
+//	unsigned long *clpRawTimeSeries = m_asRawTimeSeries ;
+//
+//	EMS_RESULT hr = EMS_BAD_PARAM;
+//
+//    const float fc = 0.3;
+//	const float PI = 3.141592653589793;
+//	const int N0 = 128;
+//	const int FFT_LEN = 1048576; //2^(20)
+//	const float fScaleFactor = (float)ADC_OFFSET;   // Scale factor for real to integer conversion
+//	const float fScaleFactorInverse = 1.0 / fScaleFactor;  // Scale factor for integer to real conversion
+//		  
+//	if ( clpRawTimeSeries && phaseBias )
+//	{
+//		ULONG ichan, jsample, index;
+//		ULONG ulMaxPowerIndex = 0;
+//		double dMean   = 0.0;
+//		double dStdDev = 0.0;
+//		EMSCOMPLEX cPhaseCorrection;
+//		double dMaxPower  = 0.0;
+//		double dPower = 0.0;
+//						 
+//		float fPhase=0.0;
+//		double re =0.0;
+//		double im =0.0;
+//		double re1 = 0.0;
+//		double im1 = 0.0;
+//		double re2 = 0.0;
+//		double im2 = 0.0;
+//						 
+//		/*float afRawInputSamples[DBF_SAMPLE_SIZE];
+//						 
+//		  float afTemp1[DBF_SAMPLE_SIZE];
+//						 
+//		  float afTemp2[DBF_SAMPLE_SIZE];
+//		  
+//		  float afISeq[DBF_SAMPLE_SIZE];
+//		  
+//		  float afQSeq[DBF_SAMPLE_SIZE];*/
+//
+//		  //float *afRawInputSamples = new float[DBF_SAMPLE_SIZE];
+//						 
+//		 /*float *afTemp1= new float[DBF_SAMPLE_SIZE];
+//						 
+//		   float *afTemp2= new float[DBF_SAMPLE_SIZE];*/
+//		  /*** initialize ***********/
+//
+//		memset( m_afTemp1, 0, DBF_SAMPLE_SIZE*sizeof(float));
+//	memset( m_afTemp2, 0, DBF_SAMPLE_SIZE*sizeof(float));
+//		
+//	memset( afISeq,  0, DBF_SAMPLE_SIZE*sizeof(float));
+//	memset( afQSeq,  0, DBF_SAMPLE_SIZE*sizeof(float));
+//	memset( acIQSeq, 0, DBF_SAMPLE_SIZE*sizeof(EMSCOMPLEX));
+//		
+//	memset( afISeq1,  0, DBF_FFT_REAL_SIZE*sizeof(float));
+//	memset( afQSeq1,  0, DBF_FFT_REAL_SIZE*sizeof(float));
+//	memset( acIQSeq1, 0, DBF_FFT_REAL_SIZE*sizeof(EMSCOMPLEX));
+//		
+//	memset( acISeq2,  0, DBF_FFT_REAL_SIZE*sizeof(EMSCOMPLEX));
+//	memset( acQSeq2,  0, DBF_FFT_REAL_SIZE*sizeof(EMSCOMPLEX));
+//	memset( acIQSeq2, 0, DBF_FFT_REAL_SIZE*sizeof(EMSCOMPLEX));
+//		
+//	memset( acFFTdata, 0, DBF_FFT_REAL_SIZE*sizeof(EMSCOMPLEX));
+//		
+//	//memset(acFFTdataMatrix, 0, 31*FFT_LEN*sizeof(EMSCOMPLEX));
+//		
+//    memset( afPowerSpectrum, 0, DBF_FFT_REAL_SIZE*sizeof(float));
+//		
+//		
+//	memset( afPowerSpectrumSum, 0, DBF_FFT_REAL_SIZE*sizeof(float));
+//	/** end init **/
+//			  
+//		for ( ichan = 1; ichan < (int)m_ulChannels; ichan++ )
+//		{
+//			// Convert integer to float 
+//			memset( m_afTemp1, 0, DBF_SAMPLE_SIZE*sizeof(float));
+//			memset( m_afTemp2, 0, DBF_SAMPLE_SIZE*sizeof(float));
+//			for ( jsample = 0, index = ichan; jsample < m_ulSamplesPerChannel;  jsample++, index += m_ulChannels )
+//			{
+//				//assume no issue reading from the bin data buffer
+//				m_afTemp1[jsample] = (float) m_asRawTimeSeries[index] * fScaleFactorInverse;
+//			}
+//
+//			dStdDev = _EMSsMeanStdDev( m_afTemp1, m_ulSamplesPerChannel, &dMean );
+//
+//		    if( dStdDev == 0.00 )
+//				continue;
+//		
+//			//Nomalize the data
+//			_EMSsbNormalize(m_afTemp1, m_afTemp2, m_ulSamplesPerChannel, dMean, dStdDev);
+//									   
+//			//Bandpass FIR filtering the normalized data stored in afTemp2 
+//			//this "for loop" should be encapsulated by a function;
+//			memset( m_afTemp1, 0, DBF_SAMPLE_SIZE*sizeof(float));
+//			for (index = 0; index < DBF_SAMPLE_SIZE-(N0-1); index++)
+//			{
+//				m_afTemp1[index] = 0.0;
+//			    for(jsample=0; jsample<N0; jsample++)
+//				{
+//					m_afTemp1[index] += bandpass_filter[N0-1-jsample]*m_afTemp2[index+jsample];
+//				}             
+//			}
+//									   
+//			//Perform frequency shifting and translating 150KHz to 0 KHz
+//			memset( afISeq,  0, DBF_SAMPLE_SIZE*sizeof(float));
+//			memset( afQSeq,  0, DBF_SAMPLE_SIZE*sizeof(float));
+//			memset( acIQSeq, 0, DBF_SAMPLE_SIZE*sizeof(EMSCOMPLEX));
+//			for (index = 0; index < DBF_SAMPLE_SIZE-(N0-1); index++)
+//			{
+//				afISeq[index] =  cos(index*fc*PI)*m_afTemp1[index];
+//				afQSeq[index] = -sin(index*fc*PI)*m_afTemp1[index];    
+//				acIQSeq[index].re = afISeq[index];
+//				acIQSeq[index].im = afQSeq[index];       
+//			}
+//									   
+//			//Perform lowpass filtering;
+//			memset( afISeq1, 0, FFT_LEN*sizeof(float));
+//			memset( afQSeq1, 0, FFT_LEN*sizeof(float));
+//			memset( acIQSeq1,0, FFT_LEN*sizeof(EMSCOMPLEX));
+//			//Further optimization likely using Intel SP library calls invoking FIR filtering of complex signals						   
+//			for (index=0; index < DBF_SAMPLE_SIZE-N0-(N0-1); index++)
+//			{
+//		        afISeq1[index] =0.0;
+//			    for(jsample = 0; jsample < N0; jsample++)
+//				{
+//					afISeq1[index] += lowpass_filter[N0-1-jsample]*afISeq[index+jsample];
+//				}             
+//				afQSeq1[index] =0.0;
+//			    for(jsample=0; jsample<N0; jsample++)
+//				{
+//					afQSeq1[index] += lowpass_filter[N0-1-jsample]*afQSeq[index+jsample];
+//				}             										  
+//				acIQSeq1[index].re = afISeq1[index];
+//				acIQSeq1[index].im = afQSeq1[index];                 
+//			}
+//									   
+//			//Perform FFT 
+//		    // void emssRealFftNip(const float  *inSamps,  EMSCOMPLEX *outSamps,  int     order,    int    flags)
+//		    // void emscFftNip(const EMSCOMPLEX *inSamps,  EMSCOMPLEX *outSamps,   int    order,    int    flags)
+//									   
+//			memset( acFFTdata,  0, FFT_LEN*sizeof(EMSCOMPLEX));
+//			if( 0 )
+//			//if( 1 )
+//			{
+//				emssRealFftNip( afISeq1, acISeq2, DBF_FFT_SIZE_LOG2, EMS_SPL_FWD );
+//				emssRealFftNip( afQSeq1, acQSeq2, DBF_FFT_SIZE_LOG2, EMS_SPL_FWD );
+//													  
+//				for(index=0; index<FFT_LEN; index++)
+//				{
+//					acFFTdata[index].re = acISeq2[index].re-acQSeq2[index].im;
+//					acFFTdata[index].im = acISeq2[index].im+acQSeq2[index].re; 
+//				}
+//			}else
+//			{
+//				emscFftNip(acIQSeq1,  acFFTdata,   DBF_FFT_SIZE_LOG2, EMS_SPL_FWD);  
+//			}
+//									   
+//			//Store the FFT channel data to be used for phase bias extraction
+//			for(index=0; index<FFT_LEN; index++)
+//			{
+//				acFFTdataMatrix[ichan-1][index] = acFFTdata[index] ;         
+//			}
+//									   
+//		    //Compute signal spectrum                       
+//			//emscbPowerSpectr(m_acTemp1, m_afPowerSpectrum, DBF_FFT_COMPLEX_SIZE);
+//			_EMScbPowerSpectr( acFFTdata, afPowerSpectrum, FFT_LEN );
+//						 
+//			// accumulate the signal spectrum for all channels
+//			//_EMScbPowerSpectr(m_acFFTdata[0], m_afPowerSpectrum, DBF_FFT_COMPLEX_SIZE/2);
+//			//emscbPowerSpectr(m_acFFTdata, m_afPowerSpectrum, DBF_FFT_COMPLEX_SIZE);
+//		 
+//		    for(index=0; index<FFT_LEN; index++)
+//			{
+//				afPowerSpectrumSum[index] += afPowerSpectrum[index];          
+//			}
+//		}				 
+//		//Identify the fft bin index for LEO sat signal of maximal power
+//		dMaxPower = 0;
+//		ulMaxPowerIndex =0;
+//		for( ULONG k = 0; k < FFT_LEN; k++ )
+//		{
+//			if( dMaxPower < afPowerSpectrumSum[k] )
+//			{
+//				dMaxPower = afPowerSpectrumSum[k];
+//				ulMaxPowerIndex = k;
+//			}
+//		}
+//
+//						 
+//	    // Extract phase bias information
+//		for ( ichan = 1; ichan < (int)m_ulChannels; ichan++ )
+//		{
+//			//dPower  = acFFTdataMatrix[ichan-1][ulMaxPowerIndex].re * acFFTdataMatrix[ichan-1][ulMaxPowerIndex].re;
+//			//dPower += acFFTdataMatrix[ichan-1][ulMaxPowerIndex].im * acFFTdataMatrix[ichan-1][ulMaxPowerIndex].im;
+//			//dPower  = sqrt( dPower );
+//
+//		    // Compute steering vector phase
+//			cPhaseCorrection.re = ((float)(m_aPassSchedule.rec[0].nPhaseReal[ichan]))/32768.00;
+//			cPhaseCorrection.im = ((float)(m_aPassSchedule.rec[0].nPhaseImag[ichan]))/32768.00;
+//			fPhase = atan2( cPhaseCorrection.im, cPhaseCorrection.re );
+//									   
+//			//Remove steering vector phase
+//			re1 = acFFTdataMatrix[ichan-1][ulMaxPowerIndex].re;
+//			im1 = acFFTdataMatrix[ichan-1][ulMaxPowerIndex].im;
+//			re2 =  cos(fPhase);
+//			im2 = -sin(fPhase);
+//									   
+//			cPhaseCorrection.re = re1*re2 - im1*im2;
+//			cPhaseCorrection.im = re1*im2 + im1*re2;
+//									   
+//			phaseBias[ichan-1] = atan2( cPhaseCorrection.im, cPhaseCorrection.re );
+//									   									 									   
+//			//m_LastCalibRecord.fCalibPhaseReal[ichan] = (short)(cPhaseCorrection.re * fScaleFactor);
+//			//m_LastCalibRecord.fCalibPhaseImag[ichan] = (short)(cPhaseCorrection.im * fScaleFactor);
+//			//m_emsDBFBufferPhase.fPhase[ichan] = atan2( cPhaseCorrection.im, cPhaseCorrection.re );
+//
+//			//cPhaseCorrection.re = ((float)(m_aPassSchedule.rec[0].nPhaseReal[ichan]))/32768.00;
+//			//cPhaseCorrection.im = ((float)(m_aPassSchedule.rec[0].nPhaseImag[ichan]))/32768.00;
+//		    //m_emsDBFBufferPhase.fBias[ichan]  -= m_emsDBFBufferPhase.fPhase[ichan];
+//						 
+//		    //test no phase correction.
+//			//_EMScbMpy1( cPhaseCorrection, m_acTemp1, DBF_FFT_COMPLEX_SIZE/2);
+//
+//			//emscbAdd2( m_acTemp1, m_acFFTdata, DBF_FFT_COMPLEX_SIZE );         
+//			//_EMScbAdd2( m_acTemp1, m_acFFTdata[0], DBF_FFT_COMPLEX_SIZE/2 );    
+//		}
+//		
+//		//Normalize the phase bias with respect to the centre element (channel 23)
+//		re2 =  cos(phaseBias[22]);
+//		im2 = -sin(phaseBias[22]);
+//		for ( ichan = 1; ichan < (int)m_ulChannels; ichan++ )
+//		{
+//			re1= cos(phaseBias[ichan-1]);
+//			im1= sin(phaseBias[ichan-1]);
+//			re = re1*re2-im1*im2;
+//			im = re1*im2+re2*im1;
+//			phaseBias[ichan-1] =atan2(im,re);         
+//		}
+//
+//		//Log
+//		/*fprintf( m_pLogPhaseBias, "%I64d,%lu,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%s", 
+//				m_timeActual.intTime, m_aPassSchedule.rec[0].ulSatID, 
+//				m_aPassSchedule.rec[0].fAzimuth, m_aPassSchedule.rec[0].fElevation,
+//				m_aPassSchedule.rec[0].fPlateAzimuth,m_aPassSchedule.rec[0].fPlateElevation,
+//				phaseBias[0],phaseBias[1],phaseBias[2],phaseBias[3],phaseBias[4],phaseBias[5],phaseBias[6],
+//				phaseBias[7],phaseBias[8],phaseBias[9],phaseBias[10],phaseBias[11],phaseBias[12],phaseBias[13],
+//				phaseBias[14],phaseBias[15],phaseBias[16],phaseBias[17],phaseBias[18],phaseBias[19],phaseBias[20],
+//				phaseBias[21],phaseBias[22],phaseBias[23],phaseBias[24],phaseBias[25],phaseBias[26],phaseBias[27],
+//				phaseBias[28],phaseBias[29],phaseBias[30],phaseBias[31]        
+//			,"\n");*/
+//		float SignalFreq =0.0;
+//		 if ( ( ulMaxPowerIndex >= 0) && ( ulMaxPowerIndex <= (FFT_LEN/2 -1) ) )
+//			  {
+//				  SignalFreq = 1e6/((double)(FFT_LEN))*((double)ulMaxPowerIndex)+150000.0;
+//			  }
+//			  else
+//			  {
+//				  SignalFreq = 1e6/((double)(FFT_LEN))*(double)(ulMaxPowerIndex-FFT_LEN)+150000.0;  
+//			  }
+//				  
+//			  
+//			  
+//			  
+//			  fprintf( m_pLogPhaseBias, "%I64d, %lu, %d, %f, %f, %f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%s", 
+//                           m_timeActual.intTime, m_aPassSchedule.rec[0].ulSatID, 
+//						   ulMaxPowerIndex,  SignalFreq,   10*log10(dMaxPower*dMaxPower/(double)(31*FFT_LEN)),
+//                           m_aPassSchedule.rec[0].fAzimuth, m_aPassSchedule.rec[0].fElevation,
+//                            m_aPassSchedule.rec[0].fPlateAzimuth,m_aPassSchedule.rec[0].fPlateElevation,
+//                            phaseBias[0],phaseBias[1],phaseBias[2],phaseBias[3],phaseBias[4],phaseBias[5],phaseBias[6],
+//                           phaseBias[7],phaseBias[8],phaseBias[9],phaseBias[10],phaseBias[11],phaseBias[12],phaseBias[13],
+//                        phaseBias[14],phaseBias[15],phaseBias[16],phaseBias[17],phaseBias[18],phaseBias[19],phaseBias[20],
+//                        phaseBias[21],phaseBias[22],phaseBias[23],phaseBias[24],phaseBias[25],phaseBias[26],phaseBias[27],
+//                           phaseBias[28],phaseBias[29],phaseBias[30],phaseBias[31]        
+//                     ,"\n");
+//
+//
+//	//saving the LEO files
+//		/*	EMSTIME eTime;
+//			DBFprocessor5(eTime);*/
+//		hr = EMS_OK;
+//	}  //if ( clpRawTimeSeries && phaseBias )
+//	return hr;
+//}
+
+//EMS_RESULT
+//CDigitalBeamFormer::DBFprocessor7( )
+//{
+//	//only for LEO
+//	if( m_aPassSchedule.rec[0].ulSatID >= 200 )
+//		return S_FALSE;
+//
+//	float phaseBias[32]; 
+//	memset( phaseBias, 0, sizeof(phaseBias ) );
+//	unsigned long *clpRawTimeSeries = m_asRawTimeSeries ;
+//
+//	EMS_RESULT hr = EMS_BAD_PARAM;
+//
+//    const float fc = 0.3;
+//	const float PI = 3.141592653589793;
+//	const int N0 = 128;
+//	const int FFT_LEN = 1048576; //2^(20)
+//	const float fScaleFactor = (float)ADC_OFFSET;   // Scale factor for real to integer conversion
+//	const float fScaleFactorInverse = 1.0 / fScaleFactor;  // Scale factor for integer to real conversion
+//	
+//	if ( clpRawTimeSeries && phaseBias )
+//	{
+//		ULONG ichan, jsample, index;
+//		ULONG ulMaxPowerIndex = 0;
+//		double dMean   = 0.0;
+//		double dStdDev = 0.0;
+//		EMSCOMPLEX cPhaseCorrection;
+//		double dMaxPower  = 0.0;
+//		double dPower = 0.0;
+//		
+//		float fPhase=0.0;
+//		double re;
+//		double im;
+//
+//		double re1 = 0.0;
+//		double im1 = 0.0;
+//		double re2 = 0.0;
+//		double im2 = 0.0;
+//		
+//		/*float afRawInputSamples[DBF_SAMPLE_SIZE];
+//		
+//		float afTemp1[DBF_SAMPLE_SIZE];
+//		
+//		float afTemp2[DBF_SAMPLE_SIZE];
+//	
+//	    float afISeq[DBF_SAMPLE_SIZE];
+//	
+//	    float afQSeq[DBF_SAMPLE_SIZE];*/
+//
+//		//float *afRawInputSamples = new float[DBF_SAMPLE_SIZE];
+//		
+//		/*float *afTemp1= new float[DBF_SAMPLE_SIZE];
+//		
+//		float *afTemp2= new float[DBF_SAMPLE_SIZE];*/
+//	
+//	    
+//		for ( ichan = 1; ichan < (int)m_ulChannels; ichan++ )
+//		{
+//			// Convert integer to float 
+//			memset( m_afTemp1, 0, DBF_SAMPLE_SIZE*sizeof(float));
+//			memset( m_afTemp2, 0, DBF_SAMPLE_SIZE*sizeof(float));
+//			for ( jsample = 0, index = ichan; jsample < m_ulSamplesPerChannel;  jsample++, index += m_ulChannels )
+//			{
+//				m_afTemp1[jsample] = (float) m_asRawTimeSeries[index] * fScaleFactorInverse;
+//			}
+//
+//			dStdDev = _EMSsMeanStdDev( m_afTemp1, m_ulSamplesPerChannel, &dMean );
+//
+//			if( dStdDev == 0.00 )
+//				continue;
+//            
+//			//Nomalize the data
+//			_EMSsbNormalize(m_afTemp1, m_afTemp2, m_ulSamplesPerChannel, dMean, dStdDev);
+//			
+//			//Bandpass FIR filtering the normalized data stored in afTemp2 
+//			//this "for loop" should be encapsulated by a function;
+//			memset( m_afTemp1, 0, DBF_SAMPLE_SIZE*sizeof(float));
+//			for (index = 0; index < DBF_SAMPLE_SIZE-(N0-1); index++)
+//			{
+//				m_afTemp1[index] = 0.0;
+//                for(jsample=0; jsample<N0; jsample++)
+//				{
+//					m_afTemp1[index] += bandpass_filter[jsample]*m_afTemp2[index+jsample];
+//				}	
+//			}
+//			
+//			//Perform frequency shifting and translating 150KHz to 0 KHz
+//		    memset( afISeq,  0, DBF_SAMPLE_SIZE*sizeof(float));
+//		    memset( afQSeq,  0, DBF_SAMPLE_SIZE*sizeof(float));
+//		    memset( acIQSeq, 0, DBF_SAMPLE_SIZE*sizeof(EMSCOMPLEX));
+//			for (index=0; index< DBF_SAMPLE_SIZE-(N0-1); index++)
+//			{
+//				afISeq[index] = cos(index*fc*PI)*m_afTemp1[index];
+//				afQSeq[index] = -sin(index*fc*PI)*m_afTemp1[index];	
+//				acIQSeq[index].re = afISeq[index];
+//				acIQSeq[index].im = afQSeq[index];	
+//			}
+//			
+//			//Perform lowpass filtering;
+//			memset( afISeq1, 0, FFT_LEN*sizeof(float));
+//		    memset( afQSeq1,  0,  FFT_LEN*sizeof(float));
+//		    memset( acIQSeq1, 0,  FFT_LEN*sizeof(EMSCOMPLEX));
+//			
+//			for (index=0; index < DBF_SAMPLE_SIZE-N0-(N0-1); index++)
+//			{
+//				afISeq1[index] =0.0;
+//                for(jsample=0; jsample < N0; jsample++)
+//				{
+//					afISeq1[index] += lowpass_filter[jsample]*afISeq[index+jsample];
+//				}	
+//				
+//				afQSeq1[index] =0.0;
+//                for(jsample=0; jsample<N0; jsample++)
+//				{
+//					afQSeq1[index] += lowpass_filter[jsample]*afQSeq[index+jsample];
+//				}	
+//				
+//				acIQSeq1[index].re = afISeq1[index];
+//				acIQSeq1[index].im = afQSeq1[index];		
+//			}
+//			
+//			//Perform FFT 
+//			// void emssRealFftNip(const float  *inSamps,  EMSCOMPLEX *outSamps,  int     order,    int    flags)
+//            // void emscFftNip(const EMSCOMPLEX *inSamps,  EMSCOMPLEX *outSamps,   int    order,    int    flags)
+//			
+//			memset( acFFTdata,  0, FFT_LEN*sizeof(EMSCOMPLEX));
+//			if( 1 )
+//			{
+//			     emssRealFftNip( afISeq1, acISeq2, DBF_FFT_SIZE_LOG2, EMS_SPL_FWD );
+//				 emssRealFftNip( afQSeq1, acQSeq2, DBF_FFT_SIZE_LOG2, EMS_SPL_FWD );
+//				 
+//				 for(index=0; index<FFT_LEN; index++)
+//				 {
+//					 acFFTdata[index].re = acISeq2[index].re-acQSeq2[index].im;
+//					 acFFTdata[index].im = acISeq2[index].im+acQSeq2[index].re; 
+//				 }
+//			}else
+//			{
+//				emscFftNip(acIQSeq1,  acFFTdata,   DBF_FFT_SIZE_LOG2, EMS_SPL_FWD);	
+//			}
+//			
+//			//Store the FFT channel data to be used for phase bias extraction
+//			for(index=0; index<FFT_LEN; index++)
+//			{
+//				acFFTdataMatrix[ichan-1][index] = acFFTdata[index] ;	
+//			}
+//			
+//             //Compute signal spectrum		
+//		    //emscbPowerSpectr(m_acTemp1, m_afPowerSpectrum, DBF_FFT_COMPLEX_SIZE);
+//			_EMScbPowerSpectr( acFFTdata, afPowerSpectrum, FFT_LEN );
+//		
+//		    // accumulate the signal spectrum for all channels
+//			//_EMScbPowerSpectr(m_acFFTdata[0], m_afPowerSpectrum, DBF_FFT_COMPLEX_SIZE/2);
+//			//emscbPowerSpectr(m_acFFTdata, m_afPowerSpectrum, DBF_FFT_COMPLEX_SIZE);
+//             
+//            for(index=0; index<FFT_LEN; index++)
+//			{
+//				afPowerSpectrumSum[index] += afPowerSpectrum[index];	
+//			}
+//		}
+//		
+//		//Identify the fft bin index for LEO sat signal of maximal power
+//		dMaxPower = 0;
+//		for( ULONG k = 0; k < FFT_LEN; k++ )
+//		{
+//			if( dMaxPower < afPowerSpectrumSum[k] )
+//			{
+//					dMaxPower = afPowerSpectrumSum[k];
+//					ulMaxPowerIndex = k;
+//			}
+//		}
+//
+//		
+//        // Extract phase bias information
+//		for ( ichan = 1; ichan < (int)m_ulChannels; ichan++ )
+//		{
+//			//dPower  = acFFTdataMatrix[ichan-1][m_ulMaxPowerIndex].re * acFFTdataMatrix[ichan-1][m_ulMaxPowerIndex].re;
+//			//dPower += acFFTdataMatrix[ichan-1][m_ulMaxPowerIndex].im * acFFTdataMatrix[ichan-1][m_ulMaxPowerIndex].im;
+//			//dPower  = sqrt( dPower );
+//
+//            // Compute steering vector phase
+//			cPhaseCorrection.re = ((float)(m_aPassSchedule.rec[0].nPhaseReal[ichan]))/32768.00;
+//			cPhaseCorrection.im = ((float)(m_aPassSchedule.rec[0].nPhaseImag[ichan]))/32768.00;
+//			fPhase = atan2( cPhaseCorrection.im, cPhaseCorrection.re );
+//			
+//			//Remove steering vector phase
+//			re1 = acFFTdataMatrix[ichan-1][ulMaxPowerIndex].re;
+//			im1 = acFFTdataMatrix[ichan-1][ulMaxPowerIndex].im;
+//			re2 =  cos(fPhase);
+//			im2 = -sin(fPhase);
+//			
+//			cPhaseCorrection.re = re1*re2 - im1*im2;
+//			cPhaseCorrection.im = re1*im2 + im1*re2;
+//			
+//		    phaseBias[ichan-1] = atan2( cPhaseCorrection.im, cPhaseCorrection.re );
+//			
+//			
+//
+//			
+//			//m_LastCalibRecord.fCalibPhaseReal[ichan] = (short)(cPhaseCorrection.re * fScaleFactor);
+//			//m_LastCalibRecord.fCalibPhaseImag[ichan] = (short)(cPhaseCorrection.im * fScaleFactor);
+//			//m_emsDBFBufferPhase.fPhase[ichan] = atan2( cPhaseCorrection.im, cPhaseCorrection.re );
+//
+//			//cPhaseCorrection.re = ((float)(m_aPassSchedule.rec[0].nPhaseReal[ichan]))/32768.00;
+//			//cPhaseCorrection.im = ((float)(m_aPassSchedule.rec[0].nPhaseImag[ichan]))/32768.00;
+//            //m_emsDBFBufferPhase.fBias[ichan]  -= m_emsDBFBufferPhase.fPhase[ichan];
+//		
+//			//test no phase correction.
+//			//_EMScbMpy1( cPhaseCorrection, m_acTemp1, DBF_FFT_COMPLEX_SIZE/2);
+//
+//			//emscbAdd2( m_acTemp1, m_acFFTdata, DBF_FFT_COMPLEX_SIZE );	
+//			//_EMScbAdd2( m_acTemp1, m_acFFTdata[0], DBF_FFT_COMPLEX_SIZE/2 );	
+//
+//		}
+//		//Normalize the phase bias with respect to the centre element (channel 23)
+//		re2 =  cos(phaseBias[22]);
+//		im2 = -sin(phaseBias[22]);
+//		for ( ichan = 1; ichan < (int)m_ulChannels; ichan++ )
+//		{
+//			re1= cos(phaseBias[ichan-1]);
+//			im1= sin(phaseBias[ichan-1]);
+//			re = re1*re2-im1*im2;
+//			im = re1*im2+re2*im1;
+//			phaseBias[ichan-1] =atan2(im,re);	
+//		}
+//
+//		
+//		//Log
+//			fprintf( m_pLogPhaseBias, "%I64d,%lu,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%s", 
+//				m_timeActual.intTime, m_aPassSchedule.rec[0].ulSatID, 
+//				m_aPassSchedule.rec[0].fAzimuth, m_aPassSchedule.rec[0].fElevation,
+//				m_aPassSchedule.rec[0].fPlateAzimuth,m_aPassSchedule.rec[0].fPlateElevation,
+//				phaseBias[0],phaseBias[1],phaseBias[2],phaseBias[3],phaseBias[4],phaseBias[5],phaseBias[6],
+//				phaseBias[7],phaseBias[8],phaseBias[9],phaseBias[10],phaseBias[11],phaseBias[12],phaseBias[13],
+//				phaseBias[14],phaseBias[15],phaseBias[16],phaseBias[17],phaseBias[18],phaseBias[19],phaseBias[20],
+//				phaseBias[21],phaseBias[22],phaseBias[23],phaseBias[24],phaseBias[25],phaseBias[26],phaseBias[27],
+//				phaseBias[28],phaseBias[29],phaseBias[30],phaseBias[31]	
+//				,"\n");
+//		hr = EMS_OK;
+//		
+//	}  //if ( clpRawTimeSeries && phaseBias )
+//		
+//	return hr;
+//}
+//EMS_RESULT
+//CDigitalBeamFormer::DBFprocessor7( )
+//{
+//	//only for LEO
+//	if( m_aPassSchedule.rec[0].ulSatID >= 200 )
+//		return S_FALSE;
+//
+//	float phaseBias[32]; 
+//	memset( phaseBias, 0, sizeof(phaseBias ) );
+//	unsigned long *clpRawTimeSeries = m_asRawTimeSeries ;
+//
+//	EMS_RESULT hr = EMS_BAD_PARAM;
+//
+//    const float fc = 0.3;
+//	const float PI = 3.141592653589793;
+//	const int N0 = 128;
+//	const int FFT_LEN = 1048576; //2^(20)
+//	const float fScaleFactor = (float)ADC_OFFSET;   // Scale factor for real to integer conversion
+//	const float fScaleFactorInverse = 1.0 / fScaleFactor;  // Scale factor for integer to real conversion
+//	
+//	if ( clpRawTimeSeries && phaseBias )
+//	{
+//		ULONG ichan, jsample, index;
+//		ULONG ulMaxPowerIndex = 0;
+//		double dMean   = 0.0;
+//		double dStdDev = 0.0;
+//		EMSCOMPLEX cPhaseCorrection;
+//		double dMaxPower  = 0.0;
+//		double dPower = 0.0;
+//		
+//		float fPhase=0.0;
+//		double re1 = 0.0;
+//		double im1 = 0.0;
+//		double re2 = 0.0;
+//		double im2 = 0.0;
+//		
+//		/*float afRawInputSamples[DBF_SAMPLE_SIZE];
+//		
+//		float afTemp1[DBF_SAMPLE_SIZE];
+//		
+//		float afTemp2[DBF_SAMPLE_SIZE];
+//	
+//	    float afISeq[DBF_SAMPLE_SIZE];
+//	
+//	    float afQSeq[DBF_SAMPLE_SIZE];*/
+//
+//		//float *afRawInputSamples = new float[DBF_SAMPLE_SIZE];
+//		
+//		/*float *afTemp1= new float[DBF_SAMPLE_SIZE];
+//		
+//		float *afTemp2= new float[DBF_SAMPLE_SIZE];*/
+//	
+//	    
+//		for ( ichan = 1; ichan < (int)m_ulChannels; ichan++ )
+//		{
+//			// Convert integer to float 
+//			memset( m_afTemp1, 0, DBF_SAMPLE_SIZE*sizeof(float));
+//			memset( m_afTemp2, 0, DBF_SAMPLE_SIZE*sizeof(float));
+//			for ( jsample = 0, index = ichan; jsample < m_ulSamplesPerChannel;  jsample++, index += m_ulChannels )
+//			{
+//				m_afTemp1[jsample] = (float) m_asRawTimeSeries[index] * fScaleFactorInverse;
+//			}
+//
+//			dStdDev = _EMSsMeanStdDev( m_afTemp1, m_ulSamplesPerChannel, &dMean );
+//
+//			if( dStdDev == 0.00 )
+//				continue;
+//            
+//			//Nomalize the data
+//			_EMSsbNormalize(m_afTemp1, m_afTemp2, m_ulSamplesPerChannel, dMean, dStdDev);
+//			
+//			//Bandpass FIR filtering the normalized data stored in afTemp2 
+//			//this "for loop" should be encapsulated by a function;
+//			memset( m_afTemp1, 0, DBF_SAMPLE_SIZE*sizeof(float));
+//			for (index = 0; index < DBF_SAMPLE_SIZE-(N0-1); index++)
+//			{
+//				m_afTemp1[index] = 0.0;
+//                for(jsample=0; jsample<N0; jsample++)
+//				{
+//					m_afTemp1[index] += bandpass_filter[jsample]*m_afTemp2[index+jsample];
+//				}	
+//			}
+//			
+//			//Perform frequency shifting and translating 150KHz to 0 KHz
+//		    memset( afISeq,  0, DBF_SAMPLE_SIZE*sizeof(float));
+//		    memset( afQSeq,  0, DBF_SAMPLE_SIZE*sizeof(float));
+//		    memset( acIQSeq, 0, DBF_SAMPLE_SIZE*sizeof(EMSCOMPLEX));
+//			for (index=0; index< DBF_SAMPLE_SIZE-(N0-1); index++)
+//			{
+//				afISeq[index] = cos(index*fc*PI)*m_afTemp1[index];
+//				afQSeq[index] = -sin(index*fc*PI)*m_afTemp1[index];	
+//				acIQSeq[index].re = afISeq[index];
+//				acIQSeq[index].im = afQSeq[index];	
+//			}
+//			-------		`
+//			//Perform lowpass filtering;
+//			memset( afISeq1, 0, FFT_LEN*sizeof(float));
+//		    memset( afQSeq1,  0,  FFT_LEN*sizeof(float));
+//		    memset( acIQSeq1, 0,  FFT_LEN*sizeof(EMSCOMPLEX));
+//			
+//			for (index=0; index < DBF_SAMPLE_SIZE-N0-(N0-1); index++)
+//			{
+//				afISeq1[index] =0.0;
+//                for(jsample=0; jsample < N0; jsample++)
+//				{
+//					afISeq1[index] += lowpass_filter[jsample]*afISeq[index+jsample];
+//				}	
+//				
+//				afQSeq1[index] =0.0;
+//                for(jsample=0; jsample<N0; jsample++)
+//				{
+//					afQSeq1[index] += lowpass_filter[jsample]*afQSeq[index+jsample];
+//				}	
+//				
+//				acIQSeq1[index].re = afISeq1[index];
+//				acIQSeq1[index].im = afQSeq1[index];		
+//			}
+//			
+//			//Perform FFT 
+//			// void emssRealFftNip(const float  *inSamps,  EMSCOMPLEX *outSamps,  int     order,    int    flags)
+//            // void emscFftNip(const EMSCOMPLEX *inSamps,  EMSCOMPLEX *outSamps,   int    order,    int    flags)
+//			
+//			memset( acFFTdata,  0, FFT_LEN*sizeof(EMSCOMPLEX));
+//			if( 1 )
+//			{
+//			     emssRealFftNip( afISeq1, acISeq2, DBF_FFT_SIZE_LOG2, EMS_SPL_FWD );
+//				 emssRealFftNip( afQSeq1, acQSeq2, DBF_FFT_SIZE_LOG2, EMS_SPL_FWD );
+//				 
+//				 for(index=0; index<FFT_LEN; index++)
+//				 {
+//					 acFFTdata[index].re = acISeq2[index].re-acQSeq2[index].im;
+//					 acFFTdata[index].im = acISeq2[index].im+acQSeq2[index].re; 
+//				 }
+//			}else
+//			{
+//				emscFftNip(acIQSeq1,  acFFTdata,   DBF_FFT_SIZE_LOG2, EMS_SPL_FWD);	
+//			}
+//			
+//			//Store the FFT channel data to be used for phase bias extraction
+//			for(index=0; index<FFT_LEN; index++)
+//			{
+//				acFFTdataMatrix[ichan-1][index] = acFFTdata[index] ;	
+//			}
+//			
+//             //Compute signal spectrum		
+//		    //emscbPowerSpectr(m_acTemp1, m_afPowerSpectrum, DBF_FFT_COMPLEX_SIZE);
+//			_EMScbPowerSpectr( acFFTdata, afPowerSpectrum, FFT_LEN );
+//		
+//		    // accumulate the signal spectrum for all channels
+//			//_EMScbPowerSpectr(m_acFFTdata[0], m_afPowerSpectrum, DBF_FFT_COMPLEX_SIZE/2);
+//			//emscbPowerSpectr(m_acFFTdata, m_afPowerSpectrum, DBF_FFT_COMPLEX_SIZE);
+//             
+//            for(index=0; index<FFT_LEN; index++)
+//			{
+//				afPowerSpectrumSum[index] += afPowerSpectrum[index];	
+//			}
+//		}
+//		
+//		//Identify the fft bin index for LEO sat signal of maximal power
+//		dMaxPower = 0;
+//		for( ULONG k = 0; k < FFT_LEN; k++ )
+//		{
+//			if( dMaxPower < afPowerSpectrumSum[k] )
+//			{
+//					dMaxPower = afPowerSpectrumSum[k];
+//					ulMaxPowerIndex = k;
+//			}
+//		}
+//
+//		
+//        // Extract phase bias information
+//		for ( ichan = 1; ichan < (int)m_ulChannels; ichan++ )
+//		{
+//			//dPower  = acFFTdataMatrix[ichan-1][m_ulMaxPowerIndex].re * acFFTdataMatrix[ichan-1][m_ulMaxPowerIndex].re;
+//			//dPower += acFFTdataMatrix[ichan-1][m_ulMaxPowerIndex].im * acFFTdataMatrix[ichan-1][m_ulMaxPowerIndex].im;
+//			//dPower  = sqrt( dPower );
+//
+//            // Compute steering vector phase
+//			cPhaseCorrection.re = ((float)(m_aPassSchedule.rec[0].nPhaseReal[ichan]))/32768.00;
+//			cPhaseCorrection.im = ((float)(m_aPassSchedule.rec[0].nPhaseImag[ichan]))/32768.00;
+//			fPhase = atan2( cPhaseCorrection.im, cPhaseCorrection.re );
+//			
+//			//Remove steering vector phase
+//			re1 = acFFTdataMatrix[ichan-1][ulMaxPowerIndex].re;
+//			im1 = acFFTdataMatrix[ichan-1][ulMaxPowerIndex].im;
+//			re2 =  cos(fPhase);
+//			im2 = -sin(fPhase);
+//			
+//			cPhaseCorrection.re = re1*re2 - im1*im2;
+//			cPhaseCorrection.im = re1*im2 + im1*re2;
+//			
+//		    phaseBias[ichan-1] = atan2( cPhaseCorrection.im, cPhaseCorrection.re );
+//			
+//			
+//
+//			
+//			//m_LastCalibRecord.fCalibPhaseReal[ichan] = (short)(cPhaseCorrection.re * fScaleFactor);
+//			//m_LastCalibRecord.fCalibPhaseImag[ichan] = (short)(cPhaseCorrection.im * fScaleFactor);
+//			//m_emsDBFBufferPhase.fPhase[ichan] = atan2( cPhaseCorrection.im, cPhaseCorrection.re );
+//
+//			//cPhaseCorrection.re = ((float)(m_aPassSchedule.rec[0].nPhaseReal[ichan]))/32768.00;
+//			//cPhaseCorrection.im = ((float)(m_aPassSchedule.rec[0].nPhaseImag[ichan]))/32768.00;
+//            //m_emsDBFBufferPhase.fBias[ichan]  -= m_emsDBFBufferPhase.fPhase[ichan];
+//		
+//			//test no phase correction.
+//			//_EMScbMpy1( cPhaseCorrection, m_acTemp1, DBF_FFT_COMPLEX_SIZE/2);
+//
+//			//emscbAdd2( m_acTemp1, m_acFFTdata, DBF_FFT_COMPLEX_SIZE );	
+//			//_EMScbAdd2( m_acTemp1, m_acFFTdata[0], DBF_FFT_COMPLEX_SIZE/2 );	
+//
+//		}
+//		
+//		//Log
+//			fprintf( m_pLogPhaseBias, "%I64d,%lu,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%s", 
+//				m_timeActual.intTime, m_aPassSchedule.rec[0].ulSatID, 
+//				m_aPassSchedule.rec[0].fAzimuth, m_aPassSchedule.rec[0].fElevation,
+//				m_aPassSchedule.rec[0].fPlateAzimuth,m_aPassSchedule.rec[0].fPlateElevation,
+//				phaseBias[0],phaseBias[1],phaseBias[2],phaseBias[3],phaseBias[4],phaseBias[5],phaseBias[6],
+//				phaseBias[7],phaseBias[8],phaseBias[9],phaseBias[10],phaseBias[11],phaseBias[12],phaseBias[13],
+//				phaseBias[14],phaseBias[15],phaseBias[16],phaseBias[17],phaseBias[18],phaseBias[19],phaseBias[20],
+//				phaseBias[21],phaseBias[22],phaseBias[23],phaseBias[24],phaseBias[25],phaseBias[26],phaseBias[27],
+//				phaseBias[28],phaseBias[29],phaseBias[30],phaseBias[31]	
+//				,"\n");
+//		hr = EMS_OK;
+//		
+//	}  //if ( clpRawTimeSeries && phaseBias )
+//		
+//	return hr;
+//}
+
+
+ 
+//EMS_RESULT
+//CDigitalBeamFormerEx::DBFprocessor7( )
+//{
+//	//only for LEO
+//	if( m_aPassSchedule.rec[0].ulSatID >= 200 )
+//		return S_FALSE;
+//    float phaseBias[32]; 
+//	float phaseBias_1[32]; 
+//	float phaseBias_2[32]; 
+//    memset( phaseBias,   0, sizeof(phaseBias));
+//    memset( phaseBias_1, 0, sizeof(phaseBias_1)); 
+//    memset( phaseBias_2, 0, sizeof(phaseBias_2)); 	
+//	//EMSCOMPLEX acIQMatrix[31][DBF_SAMPLE_SIZE];
+//	
+//    unsigned long *clpRawTimeSeries = m_asRawTimeSeries ;
+//
+//    EMS_RESULT hr = EMS_BAD_PARAM;
+//
+//    const int FFT_LEN_1 = 1048576;  //2^(20)
+//	const int FFT_LEN_2 = 32768;    //2^(15)
+//                               
+//    if ( clpRawTimeSeries)
+//    {
+//        ULONG ichan, jsample, index;
+//		
+//        ULONG ulMaxPowerIndex_1 = 0;
+//		ULONG ulMaxPowerIndex_2 = 0;
+//		double dMaxPower_1  = 0.0;
+//		double dMaxPower_2  = 0.0;
+//		
+//        double dMean   = 0.0;
+//        double dStdDev = 0.0;
+//        EMSCOMPLEX cPhaseCorrection;
+//                                                                               
+//        float fPhase=0.0;
+//        double re =0.0;
+//        double im =0.0;
+//        double re1 = 0.0;
+//        double im1 = 0.0;
+//        double re2 = 0.0;
+//        double im2 = 0.0;
+//                                                                                                          
+//        memset( acFFTdata, 0, DBF_FFT_REAL_SIZE*sizeof(EMSCOMPLEX));
+//                             
+//        //memset(acFFTdataMatrix, 0, 31*FFT_LEN*sizeof(EMSCOMPLEX));
+//                             
+//		//Perform baseband IQ demodulation
+//		hr=PerformIQDemodulation(clpRawTimeSeries/*, acIQMatrix*/);
+//		 
+//        if (hr == EMS_OK)
+//        {	
+//            // Extract phase bias using FFT size FFT_LEN_1	
+//            memset( afPowerSpectrumSum, 0, FFT_LEN_1*sizeof(float));
+//			
+//            for ( ichan = 1; ichan < (int)m_ulChannels; ichan++ )
+//            { 
+//                // void emssRealFftNip(const float  *inSamps,  EMSCOMPLEX *outSamps,  int order, int flags)
+//                // void emscFftNip(const EMSCOMPLEX *inSamps,  EMSCOMPLEX *outSamps,  int order, int flags)
+//			    
+//				//Perform FFT input data zero-padding
+//			    memset( acIQSeq1,  0, FFT_LEN_1*sizeof(EMSCOMPLEX));
+//			    for(index=0; index<DBF_SAMPLE_SIZE; index++)
+//			    {
+//				   acIQSeq1[index]= acIQMatrix[ichan-1][index];
+//			    }
+//				
+//			    //Perform FFT with complex-valued input data 
+//			    memset( acFFTdata,  0, FFT_LEN_1*sizeof(EMSCOMPLEX));
+//                emscFftNip(acIQSeq1,  acFFTdata, 20, EMS_SPL_FWD);  //FFT_LEN_1=2^(20)			
+//                                           
+//                //Store the FFT channel data to be used for phase bias extraction
+//                for(index=0; index<FFT_LEN_1; index++)
+//                {
+//                   acFFTdataMatrix[ichan-1][index] = acFFTdata[index] ;         
+//                }
+//                                                                                                                                     
+//                //Compute FFT amplitude spectrum  for the channel indexed by ichan  
+//                memset( afPowerSpectrum, 0, FFT_LEN_1*sizeof(float));			
+//               _EMScbPowerSpectr( acFFTdata, afPowerSpectrum, FFT_LEN_1 );
+//                                                                                      
+//                // accumulate (average) the signal FFT amplitude spectrum over all 31 channels
+//                for(index=0; index<FFT_LEN_1; index++)
+//                {
+//                     afPowerSpectrumSum[index] += afPowerSpectrum[index];          
+//                }
+//            }                                                        
+//        
+//		    //Identify the FFT bin index for the LEO sat signal assumed to be of maximal FFT amplitude (power)
+//            dMaxPower_1 = 0;
+//            ulMaxPowerIndex_1 = 0;
+//            for( ULONG k = 0; k < FFT_LEN_1; k++ )
+//            {
+//			    if( dMaxPower_1 < afPowerSpectrumSum[k] )
+//                {
+//				    dMaxPower_1 = afPowerSpectrumSum[k];
+//                    ulMaxPowerIndex_1 = k;
+//                }
+//            }
+//        
+//		    // Extract phase bias using the FFT of length FFT_LEN_1= 2^(20)
+//            for ( ichan = 1; ichan < (int)m_ulChannels; ichan++ )
+//            {
+//                // Compute steering vector phase
+//                cPhaseCorrection.re = ((float)(m_aPassSchedule.rec[0].nPhaseReal[ichan])); // /32768.00;
+//                cPhaseCorrection.im = ((float)(m_aPassSchedule.rec[0].nPhaseImag[ichan])); // /32768.00;
+//                fPhase = atan2( cPhaseCorrection.im, cPhaseCorrection.re );
+//                                                                                                                                     
+//                //Remove steering vector phase
+//                re1 = acFFTdataMatrix[ichan-1][ulMaxPowerIndex_1].re;
+//                im1 = acFFTdataMatrix[ichan-1][ulMaxPowerIndex_1].im;
+//                re2 =  cos(fPhase);
+//                im2 = -sin(fPhase);                                                                                                                  
+//                cPhaseCorrection.re = re1*re2 - im1*im2;
+//                cPhaseCorrection.im = re1*im2 + im1*re2;
+//                                                                                                                                     
+//                phaseBias_1[ichan-1] = atan2( cPhaseCorrection.im, cPhaseCorrection.re );
+//		    }
+//                                                                                                                                                              
+//            //Normalize the phase bias with respect to the centre element (channel 23)
+//            re2 =  cos(phaseBias_1[22]);
+//            im2 = -sin(phaseBias_1[22]);
+//            for ( ichan = 1; ichan < (int)m_ulChannels; ichan++ )
+//            {
+//               re1= cos(phaseBias_1[ichan-1]);
+//               im1= sin(phaseBias_1[ichan-1]);
+//                                        
+//		       re = re1*re2-im1*im2;
+//               im = re1*im2+re2*im1;
+//               
+//			   phaseBias_1[ichan-1] =atan2(im,re);         
+//            }
+//
+//            //Log
+//                           
+//            float SignalFreq_1 =0.0;
+//            if ( ( ulMaxPowerIndex_1 >= 0) && ( ulMaxPowerIndex_1 <= (FFT_LEN_1/2 -1) ) )
+//            {
+//                SignalFreq_1 = 1e6/((double)(FFT_LEN_1))*((double)ulMaxPowerIndex_1)+150000.0;
+//            }
+//            else
+//            {
+//                SignalFreq_1 = 1e6/((double)(FFT_LEN_1))*(double)(ulMaxPowerIndex_1-FFT_LEN_1)+150000.0;  
+//            }
+//         
+//            for (int k= 0; k<31; k++)
+//            phaseBias[k]=phaseBias_1[k];			
+//                                             
+//            fprintf( m_pLogPhaseBias, "%I64d, %lu, %d, %f, %f, %f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%s", 
+//              m_timeActual.intTime, m_aPassSchedule.rec[0].ulSatID, 
+//              ulMaxPowerIndex_1,  SignalFreq_1,   10*log10(dMaxPower_1*dMaxPower_1/(double)(31*FFT_LEN_1)),
+//              m_aPassSchedule.rec[0].fAzimuth, m_aPassSchedule.rec[0].fElevation,
+//              m_aPassSchedule.rec[0].fPlateAzimuth,m_aPassSchedule.rec[0].fPlateElevation,
+//              phaseBias[0],phaseBias[1],phaseBias[2],phaseBias[3],phaseBias[4],phaseBias[5],phaseBias[6],
+//              phaseBias[7],phaseBias[8],phaseBias[9],phaseBias[10],phaseBias[11],phaseBias[12],phaseBias[13],
+//              phaseBias[14],phaseBias[15],phaseBias[16],phaseBias[17],phaseBias[18],phaseBias[19],phaseBias[20],
+//              phaseBias[21],phaseBias[22],phaseBias[23],phaseBias[24],phaseBias[25],phaseBias[26],phaseBias[27],
+//              phaseBias[28],phaseBias[29],phaseBias[30],phaseBias[31]        
+//              ,"\n");
+//			  
+//			//Now proceed to processing for FFT_LEN_2=2^(15) 
+//            
+//			
+//			/************/
+//            // Extract phase bias using FFT size FFT_LEN_2	
+//            memset( afPowerSpectrumSum, 0, FFT_LEN_2*sizeof(float));
+//			
+//            for ( ichan = 1; ichan < (int)m_ulChannels; ichan++ )
+//            { 
+//                // void emssRealFftNip(const float  *inSamps,  EMSCOMPLEX *outSamps,  int order, int flags)
+//                // void emscFftNip(const EMSCOMPLEX *inSamps,  EMSCOMPLEX *outSamps,  int order, int flags)
+//			    
+//				//Perform FFT input data zero-padding
+//			    memset( acIQSeq1,  0, FFT_LEN_1*sizeof(EMSCOMPLEX));
+//			    for(index=0; index<DBF_SAMPLE_SIZE; index++)
+//			    {
+//				   acIQSeq1[index]= acIQMatrix[ichan-1][index];
+//			    }
+//				
+//			    //Perform FFT with M = FFT_LEN_1/FFT_LEN_2 segments of the complex-valued input data 
+//				memset( acFFTdataMatrix[ichan-1],  0, FFT_LEN_2*sizeof(EMSCOMPLEX));
+//				memset( afPowerSpectrum, 0, FFT_LEN_2*sizeof(float));
+//				
+//				for (ULONG k=0; k<(FFT_LEN_1/FFT_LEN_2); k++)
+//				{
+//			         memset( acFFTdata,  0, FFT_LEN_2*sizeof(EMSCOMPLEX));
+//                     emscFftNip(acIQSeq1+k*FFT_LEN_2,  acFFTdata, 15, EMS_SPL_FWD);  //FFT_LEN_2=2^(15)			
+//                                           
+//                     //Accumulate (average) the FFT channel data from this segment, to be used for phase bias extraction
+//                     for(index=0; index<FFT_LEN_2; index++)
+//                     {
+//                         //acFFTdataMatrix[ichan-1][index] += acFFTdata[index] ;         
+//						 acFFTdataMatrix[ichan-1][index].im += acFFTdata[index].im ;         
+//						 acFFTdataMatrix[ichan-1][index].re += acFFTdata[index].re ;         
+//                     }
+//                                                                                                                                     
+//                     //Compute FFT amplitude spectrum  for the data segment for the channel ichan  			
+//                    _EMScbPowerSpectr( acFFTdata, afPowerSpectrum, FFT_LEN_2 );
+//                                                                                      
+//                     // accumulate (average) the signal FFT amplitude spectrum over all 31 channels
+//                     for(index=0; index<FFT_LEN_2; index++)
+//                     {
+//                          afPowerSpectrumSum[index] += afPowerSpectrum[index];          
+//                     }
+//                }
+//			}				
+//        
+//		    //Identify the FFT bin index for the LEO sat signal assumed to be of maximal FFT amplitude (power)
+//            dMaxPower_2 = 0;
+//            ulMaxPowerIndex_2 = 0;
+//            for( ULONG k = 0; k < FFT_LEN_2; k++ )
+//            {
+//			    if( dMaxPower_2 < afPowerSpectrumSum[k] )
+//                {
+//				    dMaxPower_2 = afPowerSpectrumSum[k];
+//                    ulMaxPowerIndex_2 = k;
+//                }
+//            }
+//        
+//		    // Extract phase bias using the FFT of length FFT_LEN_2= 2^(15)
+//            for ( ichan = 1; ichan < (int)m_ulChannels; ichan++ )
+//            {
+//                // Compute steering vector phase
+//                cPhaseCorrection.re = ((float)(m_aPassSchedule.rec[0].nPhaseReal[ichan])); // /32768.00;
+//                cPhaseCorrection.im = ((float)(m_aPassSchedule.rec[0].nPhaseImag[ichan])); // /32768.00;
+//                fPhase = atan2( cPhaseCorrection.im, cPhaseCorrection.re );
+//                                                                                                                                     
+//                //Remove steering vector phase
+//                re1 = acFFTdataMatrix[ichan-1][ulMaxPowerIndex_2].re;
+//                im1 = acFFTdataMatrix[ichan-1][ulMaxPowerIndex_2].im;
+//                re2 =  cos(fPhase);
+//                im2 = -sin(fPhase);                                                                                                                  
+//                cPhaseCorrection.re = re1*re2 - im1*im2;
+//                cPhaseCorrection.im = re1*im2 + im1*re2;
+//                                                                                                                                     
+//                phaseBias_2[ichan-1] = atan2( cPhaseCorrection.im, cPhaseCorrection.re );
+//		    }
+//                                                                                                                                                              
+//            //Normalize the phase bias with respect to the centre element (channel 23)
+//            re2 =  cos(phaseBias_2[22]);
+//            im2 = -sin(phaseBias_2[22]);
+//            for ( ichan = 1; ichan < (int)m_ulChannels; ichan++ )
+//            {
+//               re1= cos(phaseBias_2[ichan-1]);
+//               im1= sin(phaseBias_2[ichan-1]);
+//                                        
+//		       re = re1*re2-im1*im2;
+//               im = re1*im2+re2*im1;
+//               
+//			   phaseBias_2[ichan-1] =atan2(im,re);         
+//            }
+//
+//            //Log
+//                           
+//            float SignalFreq_2 =0.0;
+//            if ( ( ulMaxPowerIndex_2 >= 0) && ( ulMaxPowerIndex_2 <= (FFT_LEN_2/2 -1) ) )
+//            {
+//                SignalFreq_2 = 1e6/((double)(FFT_LEN_2))*((double)ulMaxPowerIndex_2)+150000.0;
+//            }
+//            else
+//            {
+//                SignalFreq_2 = 1e6/((double)(FFT_LEN_2))*(double)(ulMaxPowerIndex_2-FFT_LEN_2)+150000.0;  
+//            }
+//         
+//            for (int k= 0; k<31; k++)
+//            phaseBias[k]=phaseBias_2[k];			
+//                                             
+//            fprintf( m_pLogPhaseBias, "%I64d, %lu, %d, %f, %f, %f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%s", 
+//              m_timeActual.intTime, m_aPassSchedule.rec[0].ulSatID, 
+//              ulMaxPowerIndex_2,  SignalFreq_2,   10*log10(dMaxPower_2*dMaxPower_2/(double)(31*FFT_LEN_2)),
+//              m_aPassSchedule.rec[0].fAzimuth, m_aPassSchedule.rec[0].fElevation,
+//              m_aPassSchedule.rec[0].fPlateAzimuth,m_aPassSchedule.rec[0].fPlateElevation,
+//              phaseBias[0],phaseBias[1],phaseBias[2],phaseBias[3],phaseBias[4],phaseBias[5],phaseBias[6],
+//              phaseBias[7],phaseBias[8],phaseBias[9],phaseBias[10],phaseBias[11],phaseBias[12],phaseBias[13],
+//              phaseBias[14],phaseBias[15],phaseBias[16],phaseBias[17],phaseBias[18],phaseBias[19],phaseBias[20],
+//              phaseBias[21],phaseBias[22],phaseBias[23],phaseBias[24],phaseBias[25],phaseBias[26],phaseBias[27],
+//              phaseBias[28],phaseBias[29],phaseBias[30],phaseBias[31]        
+//              ,"\n"); 
+//            /************/			
+//       
+//            hr = EMS_OK;
+//		} // if IQ demodulation succeeds
+//    } //if ( clpRawTimeSeries )
+//    
+//    return hr;
+//	
+//}
+
+
+
+
+

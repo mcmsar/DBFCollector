@@ -1,0 +1,115 @@
+cpp_quote( " " )
+cpp_quote( "#include \"emserror.h\"" )
+cpp_quote( " " )
+
+cpp_quote("// {6FB2B03E-2C1E-4314-A07F-CF9BAFFA63A6}")
+cpp_quote("DEFINE_GUID( IID_IEMSConfigSettings, 0x6fb2b03e, 0x2c1e, 0x4314, 0xa0, 0x7f, 0xcf, 0x9b, 0xaf, 0xfa, 0x63, 0xa6);")
+cpp_quote(" " )
+
+cpp_quote("// Bit settings for dwFlags ")
+cpp_quote("#define EMS_ICFG_READONLY					(0x0001)")
+cpp_quote("#define EMS_ICFG_RELOADABLE				(0x0002)")
+cpp_quote("#define EMS_ICFG_CHANGED					(0x0004)")
+cpp_quote("//  ")
+cpp_quote("// Bit settings for EMSCONFIGPACKET.wFlags ")
+cpp_quote("#define EMS_ICFG_CHANGE						(0x0001)")
+cpp_quote("#define EMS_ICFG_QUERY						(0x0002)")
+cpp_quote("//  ")
+cpp_quote( " " )
+cpp_quote("#ifdef UNICODE")
+cpp_quote("#define SetConfigValue     SetConfigValueW")
+cpp_quote("#define GetConfigValue     GetConfigValueW")
+cpp_quote("#else")
+cpp_quote("#define SetConfigValue     SetConfigValueA")
+cpp_quote("#define GetConfigValue     GetConfigValueA")
+cpp_quote("#endif // UNICODE")
+cpp_quote( " " )
+
+import "unknwn.idl";
+import "emstypex.idl";
+
+#define _EMS_RPC_VERSION 1
+#define __RPC_FAR 
+
+[
+	object, uuid(6FB2B03E-2C1E-4314-A07F-CF9BAFFA63A6),
+	helpstring("IEMSConfigSettings Interface"),
+	pointer_default(unique)
+]
+
+interface IEMSConfigSettings : IUnknown
+{
+#pragma pack(1)
+
+	typedef struct _tagEMSCONFIGDATA
+	{
+		BYTE	szInstance[32+1];
+		BYTE	szField[64+1];
+		BYTE	szValue[128+1];
+	} EMSCONFIGDATA, *LPEMSCONFIGDATA;
+
+	typedef enum _tagEMSCONFIGTYPE
+	{
+		EMSConfigTypeSat = 1,
+		EMSConfigTypeLut = 2,
+		EMSConfigTypeBeacon = 3,
+		EMSConfigTypeTable = 4,
+		EMSConfigTypeUnknown = 0
+	} EMSCONFIGTYPE;
+
+	typedef enum _tagEMSCONFIGLEVEL
+	{
+		EMSConfigLevelBase = 1,
+		EMSConfigLevelInstalled = 2,
+		EMSConfigLevelCustomer = 3,
+		EMSConfigLevelDynamic = 3,
+		EMSConfigLevelTest = 4,
+		EMSConfigLevelUnknown = 0
+	} EMSCONFIGLEVEL;
+
+	typedef struct _tagEMSCONFIGRECORD
+	{
+		EMSTIME			timeModified;
+		ULONG				ulLutID;
+		ULONG				ulSourceID;
+		WORD 				wFileLevel;
+		WORD			 	wType; 
+		EMSCONFIGDATA	cfg;
+		BYTE				szUserID[ 8 + 1 ];
+	} EMSCONFIGRECORD, *LPEMSCONFIGRECORD;
+
+	typedef struct _tagEMSCONFIGPACKET
+	{
+		WORD					wFlags;
+		INT					nDestID;
+		INT					nRequestID;
+		EMSCONFIGRECORD	rec;				
+	} EMSCONFIGPACKET, *LPEMSCONFIGPACKET;
+
+#pragma pack()
+
+	HRESULT SetConfigFlags( [in] DWORD dwFlags );
+
+	HRESULT GetConfigFlags( [out] DWORD *lpdwFlags );
+
+	HRESULT ReloadConfigData( void );
+
+	HRESULT SetConfigValueA( [in, string] LPCSTR lpcszSection, 
+				[in, string ] LPCSTR lpcszKey, [in, string] LPCSTR lpcszValue );
+
+	HRESULT GetConfigValueA( [in, string] LPCSTR lpcszSection, 
+					[in, string] LPCSTR lpcszKey, 
+					[out, size_is( ulMaxLen ), length_is(*lpulRead)] char *lpszValue, 
+					[in] ULONG ulMaxLen, [out] ULONG *lpulRead );
+
+	HRESULT SetConfigValueW( [in, string] LPCWSTR lpcszSection, 
+				[in, string ] LPCWSTR lpcszKey, [in, string] LPCWSTR lpcszValue );
+
+	HRESULT GetConfigValueW( [in, string] LPCWSTR lpcszSection, 
+					[in, string ] LPCWSTR lpcszKey, 
+					[out, size_is( ulMaxLen ), length_is(*lpulRead)] WCHAR *lpszValue, 
+					[in] ULONG ulMaxLen, [out] ULONG *lpulRead );
+};
+
+typedef [unique] IEMSConfigSettings *LPEMSCONFIGSETTINGS;
+

@@ -1,0 +1,43 @@
+/*********************************************************************
+*	              Copyright (c) 2005 by EMS Technologies, Inc.,
+*										All rights reserved
+*	This program is unpublished software and contains the trade secrets
+*	and confidential information of EMS Technologies, Inc.  It may not be 
+* reproduced in whole or in part, in any form or by any means whatsoever 
+* without the express written permission of EMS Technologies, Inc.
+*
+********************************************************************/
+
+/*******************************************************************
+
+  Revision Record
+
+	$Log:
+	$
+********************************************************************/
+
+cpp_quote("// {02B8C860-5A0E-4a8e-9423-BFA53ACB4F5E}")
+cpp_quote("DEFINE_GUID(IID_IEMSSignalProcessor, 0x2b8c860, 0x5a0e, 0x4a8e, 0x94, 0x23, 0xbf, 0xa5, 0x3a, 0xcb, 0x4f, 0x5e);")
+cpp_quote(" ")
+
+cpp_quote("// {12AD37EA-B30E-4270-87EE-BDB981B98815}")
+cpp_quote("DEFINE_GUID(CLSID_EMSSPServer, 0x12ad37ea, 0xb30e, 0x4270, 0x87, 0xee, 0xbd, 0xb9, 0x81, 0xb9, 0x88, 0x15);")
+cpp_quote(" ")
+
+
+
+import "unknwn.idl";
+
+[
+	object, uuid(02B8C860-5A0E-4a8e-9423-BFA53ACB4F5E),
+	helpstring("IEMSSignalProcessor Interface"),
+	pointer_default(unique)
+]
+interface IEMSSignalProcessor : IUnknown
+{
+	HRESULT Process( [in] const ULONG culBytes, [in,size_is(culBytes)] const char* cabyInData );
+
+	HRESULT ProcessEx( [in] const ULONG culBytes, [in,size_is(culBytes)] const char* cabyInData, [in,string,unique] const wchar_t* cwszFilename );
+
+	HRESULT Init( [in,string,unique] const wchar_t* cwszConfig );
+};

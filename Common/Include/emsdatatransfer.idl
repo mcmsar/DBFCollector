@@ -1,0 +1,48 @@
+import "unknwn.idl";
+import "igateway.idl";
+
+
+cpp_quote("")
+
+cpp_quote("// {A2167182-71C9-4046-BC1C-15989BC9BA66}")
+cpp_quote("DEFINE_GUID( CLSID_EMSDataTransfer, 0xa2167182, 0x71c9, 0x4046, 0xbc, 0x1c, 0x15, 0x98, 0x9b, 0xc9, 0xba, 0x66);")
+cpp_quote("")
+cpp_quote("// {01FAC86F-C73D-4284-AB74-9A6EE1DBC35B}")
+cpp_quote("DEFINE_GUID( IID_IEMSDataTransfer, 0x1fac86f, 0xc73d, 0x4284, 0xab, 0x74, 0x9a, 0x6e, 0xe1, 0xdb, 0xc3, 0x5b);")
+cpp_quote("")
+
+[
+	object, uuid(01FAC86F-C73D-4284-AB74-9A6EE1DBC35B),
+	pointer_default(unique)
+]
+
+interface IEMSDataTransfer : IUnknown
+{
+	typedef [unique] IEMSDataTransfer *LPEMSDATATRANSFER;
+
+	HRESULT UploadData(	[in] unsigned long ulDestID,
+						[in] unsigned long ulUploadTarget,
+						[in] EMSRECORDTYPE eRecordType,
+						[in] unsigned long ulMaxPackageSize,
+						[in,string] wchar_t* wszSQLWhere );
+};
+
+[
+	uuid(07F55BAD-C62A-43a3-9111-EEA49E62EE55),
+	version(1.0),
+	helpstring("EMSDataTransfer 1.0 Type Library")
+]
+library EMSDataTransferLib
+{
+	importlib("stdole32.tlb");
+	importlib("stdole2.tlb");
+
+	[
+		uuid(A2167182-71C9-4046-BC1C-15989BC9BA66),
+		helpstring("EMSDataTransferClass")
+	]
+	coclass EMSDataTransfer
+	{
+		interface IEMSDataTransfer;
+	};
+};

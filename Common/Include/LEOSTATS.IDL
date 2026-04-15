@@ -1,0 +1,147 @@
+cpp_quote("/********************************************************************")
+cpp_quote("*	Module:			leostats.h")
+cpp_quote("*	Process ID:")
+cpp_quote("*	S/W Platforms:")
+cpp_quote("*	H/W Platforms:")
+cpp_quote("*	Compiler:")
+cpp_quote("*	Description: 	Data structures for LeoLut600 Status information")
+cpp_quote("*						")
+cpp_quote("*	Usage:")
+cpp_quote("*	Entry Point:")
+cpp_quote("*	Input Files:")
+cpp_quote("*	Output Files:")
+cpp_quote("*	Comments:")
+cpp_quote("*")
+cpp_quote("*********************************************************************")
+cpp_quote("*	              Copyright (c) 2001 by EMS Technologies, Inc.,")
+cpp_quote("*										All rights reserved")
+cpp_quote("*	This program is unpublished software and contains the trade secrets")
+cpp_quote("*	and confidential information of EMS Technologies, Inc.  It may not be ")
+cpp_quote("* reproduced in whole or in part, in any form or by any means whatsoever ")
+cpp_quote("* without the express written permission of EMS Technologies, Inc.")
+cpp_quote("*")
+cpp_quote("********************************************************************/")
+cpp_quote("")
+cpp_quote("/*******************************************************************")
+cpp_quote("")
+cpp_quote("  Revision Record")
+cpp_quote("")
+cpp_quote("	Rev	Date			Auth	Changes")
+cpp_quote("	===	====			====	=======")
+cpp_quote("")
+cpp_quote("	0.0	01/03/22		rvw	start")
+cpp_quote("")
+cpp_quote("********************************************************************/")
+cpp_quote("#ifndef INC_LEOSTATS")
+cpp_quote("#define INC_LEOSTATS")
+
+import "unknwn.idl";
+import "emstypex.idl";
+import "statant.idl";
+import "statenv.idl";
+import "statcoll.idl";
+import "statwide.idl";
+import "statcomm.idl";
+import "statpass.idl";
+import "statccbc.idl";
+import "statc406.idl";
+import "statodet.idl";
+import "stattcal.idl";
+import "statlocn.idl";
+import "statsens.idl";
+import "statcomb.idl";
+import "statsarr.idl";
+import "statgeo.idl";
+import "statlut.idl";
+
+#define _EMS_RPC_VERSION 1
+#define __RPC_FAR 
+
+[
+	uuid(CD360655-E910-11d5-8D1E-009027912866),
+	helpstring("IEMSLEOSTATUSdata"),
+	pointer_default(unique)
+]
+
+interface IEMSLEOSTATUSdata
+{
+	typedef enum _tagEMSLEOSTATUSTYPE
+	{
+		EMSAntennaStatus = 1,
+		EMSCollectorStatus = 2,
+		EMSWidebandStatus = 3,
+		EMSEnvironStatus = 4,
+		EMSCommsStatus = 5,
+		EMSPassSummaryStatus = 6,
+		EMSCalibrate406Status = 7,
+		EMSCalibrateCBCStatus = 8,
+		EMSOrbitDetermineStatus = 9,
+		EMSLocationStatus = 10,
+		EMSSensorStatus = 11,
+		EMSTCalStatus = 12,
+		EMSCombine406Status = 13,
+		EMSCalibrateSarrStatus = 14,
+		EMSSensorStatusEx = 15,
+		EMSGeoSummary = 16,
+		EMSGeoCalib406Status = 17,
+		EMSLutStatus = 18
+	} EMSLEOSTATUSTYPE;
+
+#pragma pack(1)
+
+	typedef struct _tagEMSLEOSTATUSUPDATE
+	{
+		EMSTIME	timeTag;
+		ULONG 	ulLutID;
+		ULONG	ulSatID;
+		ULONG	ulPassID;
+		EMSLEOSTATUSTYPE type;
+
+    [switch_type(EMSLEOSTATUSTYPE), switch_is((EMSLEOSTATUSTYPE)type)]
+		union
+		{
+			[ case( EMSAntennaStatus ) ]
+				EMSANTENNAINFO 	antenna;
+			[ case( EMSCollectorStatus ) ]
+				EMSCOLLECTORINFO 	collector;
+			[ case( EMSWidebandStatus ) ]
+				EMSWIDEBANDINFO	wideband;
+			[ case( EMSEnvironStatus ) ]
+				EMSENVIRONINFO		environ;
+			[ case( EMSCommsStatus  ) ]
+				EMSCOMMSINFO		comms;
+			[ case( EMSPassSummaryStatus  ) ]
+				EMSPASSSUMMARYINFO3		pass;
+			[ case( EMSCalibrate406Status ) ]
+				EMSCALIBRATE406INFOEX		calib406;
+			[ case( EMSCalibrateCBCStatus ) ]
+				EMSCALIBRATECBCINFO		calibCBC;
+			[ case( EMSOrbitDetermineStatus ) ]
+				EMSORBITDETERMINEINFOEX	orbitDet;
+			[ case( EMSLocationStatus ) ]
+				EMSLOCATIONINFO		location;
+			[ case( EMSSensorStatus ) ]
+				EMSSENSORINFO			sensor;
+			[ case( EMSTCalStatus ) ]
+				EMSTCALINFO				tcal;
+			[ case ( EMSCombine406Status ) ]
+				EMSCOMBINE406INFO		combine406;
+			[ case ( EMSCalibrateSarrStatus ) ]
+				EMSSARRCALIBINFO		sarrCalib;
+			[ case( EMSSensorStatusEx ) ]
+				EMSSENSORINFOEX		sensorEx;
+			[ case( EMSGeoSummary ) ]
+				EMSGEOSUMMARYINFO		geoSummary;
+			[ case( EMSGeoCalib406Status ) ]
+				EMSGEOCALIB406INFO	geoCalib406Info;
+			[ case( EMSLutStatus ) ]
+				EMSLUTSTATUSINFO	lutStatusInfo;
+			[default]
+				;
+		} data;
+	} EMSLEOSTATUSUPDATE, *LPEMSLEOSTATUSUPDATE;
+}
+#pragma pack()
+
+cpp_quote("#endif // INC_LEOSTATS")
+

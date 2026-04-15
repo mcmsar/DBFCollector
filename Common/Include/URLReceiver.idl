@@ -1,0 +1,16 @@
+cpp_quote("// {DDE3BE53-35CF-4586-BF33-4D4FA701DAA6}")
+cpp_quote("DEFINE_GUID(IID_IEMSURLReceiver, 0xdde3be53, 0x35cf, 0x4586, 0xbf, 0x33, 0x4d, 0x4f, 0xa7, 0x1, 0xda, 0xa6);")
+
+
+import "unknwn.idl";
+
+[
+	uuid(DDE3BE53-35CF-4586-BF33-4D4FA701DAA6),
+	helpstring("IEMSURLReceiver"),
+	pointer_default(unique)
+]
+interface IEMSURLReceiver : IUnknown
+{
+	//! Set the value retrieved from a URL.
+	HRESULT	 Set( [in,string] const wchar_t* cwszValue );
+};

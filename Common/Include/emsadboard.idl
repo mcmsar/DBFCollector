@@ -1,0 +1,75 @@
+
+cpp_quote("// {46E23647-EEF1-4be7-872A-C94C6F8E74E5}")
+cpp_quote("DEFINE_GUID( CLSID_EMSADBoard, 0x46e23647, 0xeef1, 0x4be7, 0x87, 0x2a, 0xc9, 0x4c, 0x6f, 0x8e, 0x74, 0xe5);")
+cpp_quote(" ")
+
+cpp_quote("// {9BA6B8EC-F069-485b-AEEE-1F1F517BDD54}")
+cpp_quote("DEFINE_GUID( IID_IEMSADBoard, 0x9ba6b8ec, 0xf069, 0x485b, 0xae, 0xee, 0x1f, 0x1f, 0x51, 0x7b, 0xdd, 0x54);")
+cpp_quote(" " )
+
+cpp_quote("// {E638A167-CC54-4b53-8A13-8E765AD04C40}")
+cpp_quote("DEFINE_GUID( IID_IEMSADMultiBoard, 0xe638a167, 0xcc54, 0x4b53, 0x8a, 0x13, 0x8e, 0x76, 0x5a, 0xd0, 0x4c, 0x40);")
+cpp_quote(" " )
+
+cpp_quote("#ifdef UNICODE")
+cpp_quote("#define GetVersionInfo GetVersionInfoW")
+cpp_quote("#else")
+cpp_quote("#define GetVersionInfo GetVersionInfoA")
+cpp_quote("#endif")
+
+import "unknwn.idl";
+import "emstypex.idl";
+
+#define _EMS_RPC_VERSION 1
+#define __RPC_FAR 
+
+[
+	object, uuid(9BA6B8EC-F069-485b-AEEE-1F1F517BDD54),
+	helpstring("IEMSADBoard Interface"),
+	pointer_default(unique)
+]
+
+interface IEMSADBoard : IUnknown
+{
+	HRESULT Init( DWORD dwBufferSize, DWORD dwSampleSize, DWORD dwSampleRate );
+	HRESULT Reset( void );
+	HRESULT Start( void );
+	HRESULT Stop( void );
+	HRESULT Pause( void );
+	HRESULT Continue( void );
+
+	HRESULT SetTransferBuffer( short *lpBuffer );
+	HRESULT LockBuffer( BOOL bWait );
+	HRESULT UnlockBuffer( void );
+
+	HRESULT GetBlockCount( INT64 *lpi64Count );
+	HRESULT GetDropoutCount( INT64 *lpi64Count );
+	HRESULT SetDropoutCount( INT64 i64Count );
+
+	HRESULT GetBufferTime( EMSTIME *lpTime );
+	HRESULT GetMarkerTimeOffset( INT64 *lpi64TimeOffset );
+
+	HRESULT SetEventNameA( char *lpszEventName );
+	HRESULT SetEventNameW( WCHAR *lpszEventName );
+	HRESULT GetVersionInfoA	( WORD *lpwVersion, char *lpszModel, WORD wMax, WORD *lpwLength );
+	HRESULT GetVersionInfoW	( WORD *lpwVersion, WCHAR *lpszModel, WORD wMax, WORD *lpwLength );
+};
+
+typedef [unique] IEMSADBoard *LPEMSADBOARD;
+
+[
+	object, uuid(E638A167-CC54-4b53-8A13-8E765AD04C40),
+	helpstring("IEMSADMultiBoard Interface"),
+	pointer_default(unique)
+]
+
+interface IEMSADMultiBoard : IUnknown
+{
+	HRESULT GetChannelCount( [out] WORD *lpwCount );
+	HRESULT GetChannelInterface( [in] WORD wChannel, [out] LPEMSADBOARD *lplpInterface );
+	HRESULT StopAll( void );
+};
+
+typedef [unique] IEMSADMultiBoard *LPEMSADMULTIBOARD;
+
+

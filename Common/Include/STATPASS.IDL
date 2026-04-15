@@ -1,0 +1,208 @@
+cpp_quote("/********************************************************************")
+cpp_quote("*	Module:			statpass.h")
+cpp_quote("*	Process ID:")
+cpp_quote("*	S/W Platforms:")
+cpp_quote("*	H/W Platforms:")
+cpp_quote("*	Compiler:")
+cpp_quote("*	Description: 	Interface and data structures to access IEMSPassSummaryStatus")
+cpp_quote("*						data")
+cpp_quote("*						")
+cpp_quote("*")
+cpp_quote("*	Usage:")
+cpp_quote("*	Entry Point:")
+cpp_quote("*	Input Files:")
+cpp_quote("*	Output Files:")
+cpp_quote("*	Comments:")
+cpp_quote("*")
+cpp_quote("*********************************************************************")
+cpp_quote("*	              Copyright (c) 2001 by EMS Technologies, Inc.,")
+cpp_quote("*										All rights reserved")
+cpp_quote("*	This program is unpublished software and contains the trade secrets")
+cpp_quote("*	and confidential information of EMS Technologies, Inc.  It may not be ")
+cpp_quote("* reproduced in whole or in part, in any form or by any means whatsoever ")
+cpp_quote("* without the express written permission of EMS Technologies, Inc.")
+cpp_quote("*")
+cpp_quote("********************************************************************/")
+cpp_quote("")
+cpp_quote("/*******************************************************************")
+cpp_quote("")
+cpp_quote("  Revision Record")
+cpp_quote("")
+cpp_quote("	Rev	Date			Auth	Changes")
+cpp_quote("	===	====			====	=======")
+cpp_quote("")
+cpp_quote("	0.0	01/03/22		rvw	start")
+cpp_quote("")
+cpp_quote("********************************************************************/")
+cpp_quote("#ifndef INC_STATPASS")
+cpp_quote("#define INC_STATPASS")
+cpp_quote("")
+cpp_quote("// {CD360656-E910-11d5-8D1E-009027912866}")
+cpp_quote("DEFINE_GUID( IID_IEMSPassSummaryStatus, 0xcd360656, 0xe910, 0x11d5, 0x8d, 0x1e, 0x0, 0x90, 0x27, 0x91, 0x28, 0x66);")
+cpp_quote(" " )
+cpp_quote("// {5FF57DEB-6485-49fd-9F46-6B09189730E4}")
+cpp_quote("DEFINE_GUID( IID_IEMSPassSummaryStatus2, 0x5ff57deb, 0x6485, 0x49fd, 0x9f, 0x46, 0x6b, 0x9, 0x18, 0x97, 0x30, 0xe4);")
+cpp_quote(" " )
+cpp_quote("// {12C998E7-EB80-43f8-8EF2-0057C51C7E5A}")
+cpp_quote("DEFINE_GUID(IID_IEMSPassSummaryStatus3, 0x12c998e7, 0xeb80, 0x43f8, 0x8e, 0xf2, 0x0, 0x57, 0xc5, 0x1c, 0x7e, 0x5a);")
+cpp_quote(" " )
+
+import "unknwn.idl";
+import "emstypex.idl";
+import "emstatus.idl";
+import "emstrack.idl";
+
+#define _EMS_RPC_VERSION 1
+#define __RPC_FAR 
+
+#pragma pack(1)
+
+[
+	object, uuid(CD360656-E910-11d5-8D1E-009027912866),
+	helpstring("IEMSPassSummaryStatus Interface"),
+	pointer_default(unique)
+]
+
+interface IEMSPassSummaryStatus : IEMSStatus
+{
+	typedef struct _tagEMSPASSSUMMARYINFO
+	{
+		EMSSATELLITETRACK track;
+		unsigned short  uPassStatus;       // pass status
+	   unsigned short  uCarrierLossCount; // from Collector
+		WORD 	wSarpTotalFrames;				// from Wideband
+		WORD wValidSarpRecords;			// Calibrate i.e. duplicated
+		WORD 	wTotalCbc121Solutions;
+		WORD wTotalCbc243Solutions;
+		WORD wTotalCbc406Solutions;
+		WORD wTotal406SarrSolutions;
+		WORD wTotal406SarpSolutions;
+	} EMSPASSSUMMARYINFO, *LPEMSPASSSUMMARYINFO;
+
+	HRESULT ResetPassSummaryInfo( void );
+
+	HRESULT SetPassSummaryInfo( [in] EMSPASSSUMMARYINFO *lpInfo );
+	HRESULT GetPassSummaryInfo( [out] EMSPASSSUMMARYINFO *lpInfo );
+};
+
+typedef [unique] IEMSPassSummaryStatus *LPEMSPASSSUMMARYSTATUS;
+
+[
+	object, uuid(5FF57DEB-6485-49fd-9F46-6B09189730E4),
+	helpstring("IEMSPassSummaryStatus2 Interface"),
+	pointer_default(unique)
+]
+
+interface IEMSPassSummaryStatus2 : IEMSPassSummaryStatus
+{
+	typedef struct _tagEMSPASSSUMMARYINFO2
+	{
+		EMSSATELLITETRACK thisTrack;
+		EMSSATELLITETRACK nextTrack;
+		WORD					wSecsDuration;
+		WORD					wSecsCollecting;
+		WORD					wPercentageCollecting;
+		INT 					nPDSRecoveryRate;
+		WORD					wFramesMissed;
+		INT					nTotalPDSCount;
+		INT					nDistinctPDSCount;
+		WORD					wSarrMessages;
+		EMSTIME				timeOrbitEpoch;
+		EMSVECTOR			vOrbitPosition;
+		EMSVECTOR			vOrbitVelocity;
+		WORD					wOrbitUpdateStatus;
+		float					fOrbitPositionOffset;
+		float					fOrbitVelocityOffset;
+		EMSTIME				timeCalibration;
+		EMSTIME				timeRollover;
+		float					fUSOFreq;
+		float					fSARR406FreqOff;
+		EMSTIME				timeSolnProcessing;
+		WORD					w121Transmitters;
+		WORD					w243Transmitters;
+		WORD					w406Interferers;
+		WORD					w406LocatedBeacons;
+		WORD					w406UnlocatedBeacons;
+		WORD					wUnlocatedAlerts;
+		WORD					wWarnings;
+		WORD					wAlarms;
+	} EMSPASSSUMMARYINFO2, *LPEMSPASSSUMMARYINFO2;
+	HRESULT ResetPassSummary2Info( void );
+
+	HRESULT SetPassSummary2Info( [in] EMSPASSSUMMARYINFO2 *lpInfo );
+	HRESULT GetPassSummary2Info( [out] EMSPASSSUMMARYINFO2 *lpInfo );
+};
+
+typedef [unique] IEMSPassSummaryStatus2 *LPEMSPASSSUMMARYSTATUS2;
+
+[
+	object, uuid(12C998E7-EB80-43f8-8EF2-0057C51C7E5A),
+	helpstring("IEMSPassSummaryStatus3 Interface"),
+	pointer_default(unique)
+]
+
+interface IEMSPassSummaryStatus3 : IEMSPassSummaryStatus // yikesIEMSPassSummaryStatus2
+{
+	typedef struct _tagEMSPASSSUMMARYINFO3
+	{
+		EMSSATELLITETRACK		thisTrack;
+		EMSSATELLITETRACK		nextTrack;
+		WORD					wSecsDuration;
+		WORD					wSecsCollecting;
+		WORD					wPercentageCollecting;
+		INT 					nPDSRecoveryRate;
+		WORD					wFramesMissed;
+		INT						nTotalPDSCount;
+		INT						nDistinctPDSCount;
+		WORD					wSarrMessages;
+		EMSTIME					timeOrbitEpoch;
+		EMSVECTOR				vOrbitPosition;
+		EMSVECTOR				vOrbitVelocity;
+		WORD					wOrbitUpdateStatus;
+		float					fOrbitPositionOffset;
+		float					fOrbitVelocityOffset;
+		EMSTIME					timeCalibration;
+		EMSTIME					timeRollover;
+		double					dUSOFreq;
+		double					dSARR406FreqOff;
+		EMSTIME					timeSolnProcessing;
+		WORD					w121Transmitters;
+		WORD					w243Transmitters;
+		WORD					w406Interferers;
+		WORD					w406LocatedBeacons;
+		WORD					w406UnlocatedBeacons;
+		WORD					wUnlocatedAlerts;
+		WORD					wWarnings;
+		WORD					wAlarms;
+
+		// Extended fields
+		EMSTIME					timeLastClockSync;
+		EMSTIME					timeMsgSARPCalibNewest;
+		EMSTIME					timeMsgSARPCalibOldest;
+		WORD					wMedianLocnErrorSampleCount;
+		double					dMedianLocnError;
+		ULONG					ulOrbitNumberAtEpoch;
+
+		// Reserved for Future Use
+		WORD					wGeneralStatus;
+		double					dUnused1;
+		double					dUnused2;
+		double					dUnused3;
+		double					dUnused4;
+		INT						iUnused1;
+		INT						iUnused2;
+		EMSTIME					timeUnused1;
+		EMSTIME					timeUnused2;
+
+	} EMSPASSSUMMARYINFO3, *LPEMSPASSSUMMARYINFO3;
+	HRESULT ResetPassSummary3Info( void );
+
+	HRESULT SetPassSummary3Info( [in] EMSPASSSUMMARYINFO3 *lpInfo );
+	HRESULT GetPassSummary3Info( [out] EMSPASSSUMMARYINFO3 *lpInfo );
+};
+
+typedef [unique] IEMSPassSummaryStatus3 *LPEMSPASSSUMMARYSTATUS3;
+
+#pragma pack()
+
+cpp_quote("#endif //INC_STATPASS")

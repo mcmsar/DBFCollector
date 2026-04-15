@@ -1,0 +1,176 @@
+
+cpp_quote("// {F91A0EEE-E66A-4078-AA71-6F5887ABC5E5}")
+cpp_quote("DEFINE_GUID(IID_IScheduleGenerator, 0xf91a0eee, 0xe66a, 0x4078, 0xaa, 0x71, 0x6f, 0x58, 0x87, 0xab, 0xc5, 0xe5);")
+cpp_quote(" ")
+
+cpp_quote("#define EMS_ANTENNACFG_MAX_SATELLITES (128)")
+#define EMS_ANTENNACFG_MAX_SATELLITES (128)
+cpp_quote("#define EMS_MAX_SITE_PROFILE_COUNT (64)")
+#define EMS_MAX_SITE_PROFILE_COUNT (64)
+
+cpp_quote("#define MAX_TEST_LOCATIONS (4)")
+#define MAX_TEST_LOCATIONS (4)			// Maximum number of test locations to be evaluated for JDOP
+
+cpp_quote("// Maximum Number of Optimized Satellite Passes")
+cpp_quote("#define EMS_MAX_NUM_OPT_SAT_PASSES (8192)")
+cpp_quote(" ")
+
+cpp_quote("//")
+cpp_quote("//Definitions for Flags")
+cpp_quote("//")
+cpp_quote("// mask & 0x00F = status")
+cpp_quote("//")
+cpp_quote("#define EMS_PASSFLAG_STATUS_MASK	(0x00F)")
+cpp_quote("#define EMS_PASSFLAG_SUPPRESS		(0x001)")
+cpp_quote("#define EMS_PASSFLAG_SKIP 			EMS_PASSFLAG_SUPPRESS")
+cpp_quote("#define EMS_PASSFLAG_PROCESS		(0x002)")
+cpp_quote("#define EMS_PASSFLAG_REDUNDANT	(0x004)")
+cpp_quote("//")
+cpp_quote("// mask & 0x0F0 = origin")
+cpp_quote("//")
+cpp_quote("#define EMS_PASSFLAG_ORIGIN_MASK	(0x0F0)")
+cpp_quote("#define EMS_PASSFLAG_LUT			(0x010)")
+cpp_quote("#define EMS_PASSFLAG_MCC			(0x020)")
+cpp_quote("#define EMS_PASSFLAG_RCC			(0x040)")
+cpp_quote("#define EMS_PASSFLAG_OPERATOR		(0x080)")
+cpp_quote("//")
+cpp_quote("// mask & 0xF00 = disposition")
+cpp_quote("//")
+cpp_quote("#define EMS_PASSFLAG_RESULT_MASK	(0xF00)")
+cpp_quote("#define EMS_PASSFLAG_SUCCESS		(0x100)")
+cpp_quote("#define EMS_PASSFLAG_ABORT			(0x200)")
+cpp_quote("#define EMS_PASSFLAG_ERROR			(0x400)")
+
+// Processing Flags
+cpp_quote("// Process Flags " )
+cpp_quote("#define EMS_PASSFLAG_EXTPROCESSING	(0x0001) ")
+cpp_quote(" " )
+
+import "unknwn.idl";
+import "emstypex.idl";
+import "antennacfg.idl";
+
+[
+	object, uuid(F91A0EEE-E66A-4078-AA71-6F5887ABC5E5),
+	helpstring("IScheduleGenerator Interface"),
+	pointer_default(unique)
+]
+interface IScheduleGenerator : IUnknown
+{
+#pragma pack(1)
+
+	typedef struct _tagEMSSATELLITEPASS
+	{
+		ULONG		ulSatelliteID;
+		ULONG		ulFlags;
+		ULONG		ulOrbitNumber;
+		EMSTIME	timeAOS;
+		EMSTIME	timeLOS;	
+		EMSTIME	timePeak;
+		EMSDEGREES degMaxElevation;
+		EMSDEGREES degMinElevation;
+		EMSDEGREES degAzimuthAOS;
+		EMSDEGREES degAzimuthLOS;
+	} EMSSATELLITEPASS, *LPEMSSATELLITEPASS;
+
+	typedef struct _tagEMSSATELLITETRACK2
+	{
+		ULONG ulLutID;
+		ULONG ulAntennaID;
+		EMSSATELLITEPASS PassInfo;
+		EMSTIME actualStartTime;
+		EMSTIME actualEndTime;
+		double dWeight;
+	} EMSSATELLITETRACK2, *LPEMSSATELLITETRACK2;
+
+	typedef struct _tagEMSSATTRACKRECORD2
+	{
+		EMSTIME timeSched;
+		WORD	wSeq;
+		WORD	wCount;
+		EMSSATELLITETRACK2 track;
+	}	EMSSATTRACKRECORD2, *LPEMSSATTRACKRECORD2;
+
+	typedef struct _tagANTENNAINFO
+	{
+		EMSANTENNACONFIG	cfg;
+		ULONG 				ulSatCount;	// subset of satellites for this antenna
+		ULONG 				ulSatellites[ EMS_ANTENNACFG_MAX_SATELLITES ];
+		double				dExtraWeight[ EMS_ANTENNACFG_MAX_SATELLITES ];
+		ULONG 			 	ulNumPasses;
+	} ANTENNAINFO, *LPANTENNAINFO;
+
+	typedef struct _tagEMSLUTDATABLOCK
+	{
+		ULONG 		ulLutID;
+		ULONG		ulSiteProfileCount;
+		EMSAZEL		lutSiteProfile[ EMS_MAX_SITE_PROFILE_COUNT ];
+		EMSLOCATION	location;
+	} EMSLUTDATABLOCK, *LPEMSLUTDATABLOCK;
+
+	typedef struct _tagEMSSATPASSLIMITS
+	{
+		ULONG ulMinSatID;
+		ULONG ulMaxSatID;
+		double	dMaxMinutes;
+	} EMSSATPASSLIMITS, *LPEMSSATPASSLIMITS;
+
+	typedef struct _tagEMSSATELLITETRACK
+	{
+		ULONG ulLutID;
+		EMSSATELLITEPASS PassInfo;
+		EMSTIME actualStartTime;
+		EMSTIME actualEndTime;
+		double dWeight;
+	} EMSSATELLITETRACK, *LPEMSSATELLITETRACK;
+
+	typedef struct _tagEMSSATTRACKRECORD
+	{
+		EMSTIME timeSched;
+		WORD	wSeq;
+		WORD	wCount;
+		EMSSATELLITETRACK track;
+	}	EMSSATTRACKRECORD, *LPEMSSATTRACKRECORD;
+
+	typedef struct  _tagSATELLITEDATA
+		{
+			ULONG  ulSatID;
+			ULONG  ulNORADID;
+			ULONG  ulSatPriority;
+			double dDownlinkFreq;
+			EMSTIME tOutageTimeStart;
+			EMSTIME tOutageTimeEnd;
+			ULONG  ulStatus;
+		} SATELLITEDATA, *LPSATELLITEDATA;
+
+#pragma pack()
+
+	HRESULT	SetJDopFactor( double dFactor );
+	HRESULT	SetMinSeparationAngle( double dAngle );
+	HRESULT	SetPassDuration( ULONG ulMinDuration, ULONG ulMaxDuration );
+	HRESULT SetTestLocations( ULONG ulNbTestLoc, const EMSLOCATION * pTestLocation );
+
+	HRESULT	SetFlags( DWORD dwFlags );
+
+	HRESULT SetTrackingLimit( DWORD dwMinSatID, DWORD dwMaxSatID, double dMinutes );
+
+	HRESULT SetLuts( int cbCount, ANTENNAINFO  *pAntennaInfo );
+
+	HRESULT	SetLutDataBlocks( int iAntennaCount, EMSLUTDATABLOCK * pLutDataBlock );
+
+	HRESULT SetSatellites( ULONG cbCount, const SATELLITEDATA  *pSatelliteData );
+
+	HRESULT SetPassProcessingTime(	ULONG ulPrePass, ULONG ulPostPass );
+
+	HRESULT SetMinElevationAngle( const double cdMinEl );
+
+	HRESULT GenerateSchedule( [in] EMSTIME const startTime, 
+							  [in] EMSTIME const stopTime );
+
+	HRESULT GetOptSchedule2( [in] ULONG cbCount, 
+		[in] ULONG ulLutID, 
+		[out, size_is(cbCount), length_is(*pcbResult) ] EMSSATELLITETRACK2 *pvPass,
+		[out] ULONG *pcbResult, 
+		[ out ] EMSTIME *lpStartTime, [ out ] EMSTIME *lpStopTime );
+};
+

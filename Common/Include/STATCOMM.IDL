@@ -1,0 +1,51 @@
+cpp_quote("// {56628AF8-97FC-11d5-8C04-009027912866}")
+cpp_quote("DEFINE_GUID( IID_IEMSCommsStatus, 0x56628af8, 0x97fc, 0x11d5, 0x8c, 0x4, 0x0, 0x90, 0x27, 0x91, 0x28, 0x66);")
+cpp_quote(" " )
+
+import "unknwn.idl";
+import "emstypex.idl";
+import "emstatus.idl";
+
+#define _EMS_RPC_VERSION 1
+#define __RPC_FAR 
+
+[
+	object, uuid(56628AF8-97FC-11d5-8C04-009027912866),
+	helpstring("IEMSCommsStatus Interface"),
+	pointer_default(unique)
+]
+
+interface IEMSCommsStatus : IEMSStatus
+{
+#pragma pack(1)
+	typedef struct _tagEMSCOMMSINFO
+	{
+		WORD wCommsStatus;       // comms device status
+		ULONG ulMsgID;
+		ULONG ulRouteID;
+		EMSTIME	timeTx;
+		EMSTIME	timeRx;
+		ULONG	ulRetryCount;
+		ULONG ulLossCount;
+		ULONG ulLossDuration;
+	} EMSCOMMSINFO, *LPEMSCOMMSINFO;
+#pragma pack()
+
+	typedef enum _tagEMSCOMMSSTATUS
+	{
+		EMS_COMMS_STATUS_UNKNOWN = 0,
+		EMS_COMMS_STATUS_OK = 1,
+		EMS_COMMS_STATUS_WARN = 2,
+		EMS_COMMS_STATUS_ALARM = 3
+	} EMSCOMMSSTATUS;
+
+	HRESULT ResetCommsInfo( void );
+
+	HRESULT SetCommsInfo( [in] EMSCOMMSINFO *lpInfo );
+	HRESULT GetCommsInfo( [out] EMSCOMMSINFO *lpInfo );
+};
+
+typedef [unique] IEMSCommsStatus *LPEMSCOMMSSTATUS;
+
+
+

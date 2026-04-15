@@ -1,0 +1,91 @@
+cpp_quote("#ifndef INC_STATC406")
+cpp_quote("#define INC_STATC406")
+cpp_quote("")
+
+cpp_quote("// {ACB9B761-F181-11d5-8D38-009027912866}")
+cpp_quote("DEFINE_GUID( IID_IEMSCalibrate406Status, 0xacb9b761, 0xf181, 0x11d5, 0x8d, 0x38, 0x0, 0x90, 0x27, 0x91, 0x28, 0x66);")
+cpp_quote(" " )
+cpp_quote("// {24EC971E-12F4-4abc-9BB7-744434D4478F}")
+cpp_quote("DEFINE_GUID( IID_IEMSCalibrate406Status2, 0x24ec971e, 0x12f4, 0x4abc, 0x9b, 0xb7, 0x74, 0x44, 0x34, 0xd4, 0x47, 0x8f);")
+cpp_quote(" ")
+
+import "unknwn.idl";
+import "emstypex.idl";
+import "emstatus.idl";
+
+#define _EMS_RPC_VERSION 1
+#define __RPC_FAR 
+
+[
+	object, uuid(ACB9B761-F181-11d5-8D38-009027912866),
+	helpstring("IEMSCalibrate406Status Interface"),
+	pointer_default(unique)
+]
+
+interface IEMSCalibrate406Status : IEMSStatus
+{
+	typedef [v1_enum] enum _tagEMSCALIB406STATE
+	{
+		EMS_C406S_Idle = 0,
+		EMS_C406S_Initialized = 1,
+		EMS_C406S_Processing = 2
+	} EMSCALIB406STATE;
+
+#pragma pack(1)
+
+	typedef struct _tagEMSCALIBRATE406INFO
+	{
+		WORD 				  	wStatus;       // Calibrate406 status
+		EMSCALIB406STATE		state;
+		ULONG					ulSatID;
+		ULONG					ulBufferedRecords;
+		ULONG					ulHistoryRecords;
+		ULONG					ulCalibratedRecords;
+	} EMSCALIBRATE406INFO, *LPEMSCALIBRATE406INFO;
+
+	typedef struct _tagEMSCALIBRATE406INFOEX
+	{
+		WORD					wStatus;
+		ULONG					ulBufferedRecords;
+		ULONG					ulHistoryRecords;
+		ULONG					ulCalibratedRecords;
+		ULONG					ulNumBeacons;
+		ULONG					ulNumRefBeaconRecords;
+		ULONG					ulSarrRecords;
+		ULONG					ulSarpRecords;
+	} EMSCALIBRATE406INFOEX, *LPEMSCALIBRATE406INFOEX;
+
+
+#pragma pack()
+	HRESULT ResetCalibrate406Info( void );
+
+	HRESULT SetCalibrate406Info( [in] EMSCALIBRATE406INFOEX *lpInfo );
+	HRESULT GetCalibrate406Info( [out] EMSCALIBRATE406INFOEX *lpInfo );
+};
+
+typedef [unique] IEMSCalibrate406Status *LPEMSCALIBRATE406STATUS;
+
+[
+	object, uuid(24EC971E-12F4-4abc-9BB7-744434D4478F),
+	helpstring("IEMSCalibrate406Status2 Interface"),
+	pointer_default(unique)
+]
+
+interface IEMSCalibrate406Status2 : IEMSCalibrate406Status
+{
+	typedef struct _tagEMSCALIBRATE406INFOEX2
+	{
+		EMSCALIBRATE406INFOEX	infoEx;
+		EMSTIME					timeMsgSARPCalibNewest;
+		EMSTIME					timeMsgSARPCalibOldest;
+	} EMSCALIBRATE406INFOEX2, *LPEMSCALIBRATE406INFOEX2;
+
+#pragma pack()
+	HRESULT SetCalibrate406Info2( [in] EMSCALIBRATE406INFOEX2 *lpInfo );
+	HRESULT GetCalibrate406Info2( [out] EMSCALIBRATE406INFOEX2 *lpInfo );
+};
+
+typedef [unique] IEMSCalibrate406Status2 *LPEMSCALIBRATE406STATUS2;
+
+cpp_quote("")
+cpp_quote("#endif")

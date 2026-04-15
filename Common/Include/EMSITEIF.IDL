@@ -1,0 +1,631 @@
+cpp_quote( " " )
+cpp_quote( "#include \"emserror.h\"" )
+cpp_quote( " " )
+
+cpp_quote("// {47C5A1B1-B987-11d5-8C6D-009027912866}")
+cpp_quote("DEFINE_GUID( CLSID_EMSSiteInfo, 0x47c5a1b1, 0xb987, 0x11d5, 0x8c, 0x6d, 0x0, 0x90, 0x27, 0x91, 0x28, 0x66);")
+
+cpp_quote("// {C28EB166-045F-4d3f-AABB-D9E3A83D3529}")
+cpp_quote("DEFINE_GUID( IID_IEMSSiteInfo, 0xc28eb166, 0x45f, 0x4d3f, 0xaa, 0xbb, 0xd9, 0xe3, 0xa8, 0x3d, 0x35, 0x29);")
+
+cpp_quote("// {3FD55374-41F4-4f64-96BE-CC1F4EC1202A}")
+cpp_quote("DEFINE_GUID( IID_IEMSDestinationsInfo, 0x3fd55374, 0x41f4, 0x4f64, 0x96, 0xbe, 0xcc, 0x1f, 0x4e, 0xc1, 0x20, 0x2a);")
+
+cpp_quote("// {520F4DFC-FCE4-45d0-BDB6-46025FBA891C}")
+cpp_quote("DEFINE_GUID( IID_IEMSDestinationsInfo3, 0x520f4dfc, 0xfce4, 0x45d0, 0xbd, 0xb6, 0x46, 0x2, 0x5f, 0xba, 0x89, 0x1c);")
+
+cpp_quote("// {48EBD324-2101-4572-8026-4A0DC439DC36}")
+cpp_quote("DEFINE_GUID( IID_IEMSSystemTestSettings, 0x48ebd324, 0x2101, 0x4572, 0x80, 0x26, 0x4a, 0xd, 0xc4, 0x39, 0xdc, 0x36);")
+cpp_quote( " " )
+
+cpp_quote("// {B73D76CD-2160-44ff-9AC5-E08EA6AF207D}")
+cpp_quote("DEFINE_GUID( IID_IEMSSiteType, 0xb73d76cd, 0x2160, 0x44ff, 0x9a, 0xc5, 0xe0, 0x8e, 0xa6, 0xaf, 0x20, 0x7d );")
+
+cpp_quote("// {6435FB6A-A496-460d-9830-13FB88CCA195}")
+cpp_quote("DEFINE_GUID( IID_IEMSMsgArchiveConfig, 0x6435fb6a, 0xa496, 0x460d, 0x98, 0x30, 0x13, 0xfb, 0x88, 0xcc, 0xa1, 0x95);")
+
+cpp_quote("// {9C603A34-0C3C-4847-8A61-E657A2D10B89}")
+cpp_quote("DEFINE_GUID( IID_IEMSSitMsgProperties, 0x9c603a34, 0xc3c, 0x4847, 0x8a, 0x61, 0xe6, 0x57, 0xa2, 0xd1, 0xb, 0x89);")
+
+cpp_quote("// {2B02EDF5-880A-4555-B67E-577BBF157220}")
+cpp_quote("DEFINE_GUID(IID_IEMSAutoSendSit, 0x2b02edf5, 0x880a, 0x4555, 0xb6, 0x7e, 0x57, 0x7b, 0xbf, 0x15, 0x72, 0x20);")
+
+cpp_quote("// {9E586623-5E8A-48d0-B650-966FCA6B4221}")
+cpp_quote("DEFINE_GUID( IID_IEMSRouteInfo, 0x9e586623, 0x5e8a, 0x48d0, 0xb6, 0x50, 0x96, 0x6f, 0xca, 0x6b, 0x42, 0x21);")
+
+cpp_quote("// {3A3D750F-E940-4abf-93C7-93E2A63C254D}")
+cpp_quote("DEFINE_GUID(IID_IEMSRouteInfo2, 0x3a3d750f, 0xe940, 0x4abf, 0x93, 0xc7, 0x93, 0xe2, 0xa6, 0x3c, 0x25, 0x4d);")
+
+cpp_quote("// {7CE97B78-51F2-4d81-BAC3-360B3F5B36D4}")
+cpp_quote("DEFINE_GUID(IID_IEMSOffline, 0x7ce97b78, 0x51f2, 0x4d81, 0xba, 0xc3, 0x36, 0xb, 0x3f, 0x5b, 0x36, 0xd4);")
+
+cpp_quote("// {7A92B265-E833-4403-B937-5CACAEDF51CE}")
+cpp_quote("DEFINE_GUID(IID_IEMSCollectorPPS, 0x7a92b265, 0xe833, 0x4403, 0xb9, 0x37, 0x5c, 0xac, 0xae, 0xdf, 0x51, 0xce);")
+
+
+cpp_quote("#define EMS_MAX_SERVICES		  (32)")
+cpp_quote("#define EMS_MAX_ROUTES			  (256)")
+cpp_quote("#define EMS_MAX_SOURCES			  (32)")
+cpp_quote("#define EMS_MAX_DESTINATIONS	  (32)")
+cpp_quote("#define EMS_MAX_TRANS_TABLE_NAMELEN	  (32)")
+cpp_quote("#define EMS_MAX_TRANS_TABLE_NUM  (32)")
+cpp_quote("#define EMS_MAX_TRANS_TABLE_LEN  (32)")
+cpp_quote("#define EMS_MAX_TRANS_RECORD_LEN  (10)")
+cpp_quote("#define EMS_SERVICE_NAME_LENGTH (32)")
+cpp_quote("#define EMS_ROUTE_NAME_LENGTH  (32)")
+
+
+cpp_quote(" ")
+cpp_quote("// dwFlags ")
+cpp_quote("#define EMS_SERVICE_FLAG_START  (0x1)")
+cpp_quote("#define EMS_SERVICE_FLAG_RESTART  (0x2)")
+cpp_quote("#define EMS_SERVICE_FLAG_ESSENTIAL (0x4)")
+cpp_quote(" ")
+cpp_quote("// RouteInfo & DestInfo dwFlags ")
+cpp_quote("#define EMS_DESTFLAG_SUPPRESS_REF_BEACONS ( 0x0001 )")
+cpp_quote("#define EMS_DESTFLAG_SUPPRESS_ORB_BEACONS ( 0x0002 )")
+cpp_quote("#define EMS_DESTFLAG_SUPPRESS_WARNINGS 	( 0x0004 )")
+cpp_quote("#define EMS_DESTFLAG_HIRES_MF3			( 0x0000008 )")
+cpp_quote("#define EMS_DESTFLAG_CALC_NEXTVIS		( 0x0000010 )")
+//cpp_quote("#define EMS_DESTFLAG_ERR_LAST_MSG		( 0x0010000 )")
+cpp_quote("#define EMS_DESTFLAG_TIMEOUT_SHIFT		( 16 )")
+cpp_quote("#define EMS_DESTFLAG_TIMEOUT_MASK		( 0xFFF )")
+cpp_quote(" ")
+
+cpp_quote(" ")
+cpp_quote("// EMSFILTERINFO.dwFlags settings")
+cpp_quote(" ")
+cpp_quote("#define EMS_FILTER_FREQBAND_121			( 0x00000001 )")
+cpp_quote("#define EMS_FILTER_FREQBAND_243			( 0x00000002 )")
+cpp_quote("#define EMS_FILTER_FREQBAND_406			( 0x00000004 )")
+cpp_quote("#define EMS_FILTER_DATA_SARR				( 0x00000008 )")
+cpp_quote("#define EMS_FILTER_DATA_SARP				( 0x00000010 )")
+cpp_quote("#define EMS_FILTER_DATA_CBC				( 0x00000020 )")
+cpp_quote("#define EMS_FILTER_DETECT_INTERFERER	( 0x00000040 )")
+cpp_quote("#define EMS_FILTER_DETECT_UNKNOWN		( 0x00000080 )")
+cpp_quote("#define EMS_FILTER_DETECT_DISTRESS		( 0x00000100 )")
+cpp_quote("#define EMS_FILTER_DETECT_UNLOCATED		( 0x00000200 )")
+cpp_quote("#define EMS_FILTER_MODE_SELFTEST	   	( 0x00000400 )")
+cpp_quote("#define EMS_FILTER_MODE_OPERATIONAL	   ( 0x00000800 )")
+cpp_quote("#define EMS_FILTER_BEACON_INVALID	   ( 0x00001000 )")
+
+cpp_quote("#define EMS_FILTER_SUPPRESS_REF_BEACONS 		( 0x00002000 )")
+cpp_quote("#define EMS_FILTER_SUPPRESS_ORB_BEACONS 		( 0x00004000 )")
+cpp_quote("#define EMS_FILTER_SUPPRESS_TEST_BEACONS 		( 0x00008000 )")
+cpp_quote("#define EMS_FILTER_SUPPRESS_INVERTED_FRAME_SYNC ( 0x00010000 )")
+cpp_quote("#define EMS_FILTER_SUPPRESS_WARNINGS 	 		(	0x00020000 )")
+cpp_quote("#define EMS_FILTER_SUPPRESS_INVALID_BEACONS  (	0x00040000 )")
+cpp_quote("#define EMS_FILTER_SUPPRESS_INVALID_UNLOCATED1 (0x00080000 )")
+cpp_quote("#define EMS_FILTER_SUPPRESS_INVALID_UNLOCATED2 (0x00100000 )")
+cpp_quote("#define EMS_FILTER_SUPPRESS_406_BEACONS        (0x00200000)")
+cpp_quote("#define EMS_FILTER_SUPPRESS_INVALID_FIXED_BITS (0x00400000)")
+cpp_quote("#define EMS_FILTER_ENABLED					  (0x10000000 )")
+cpp_quote(" ")
+
+cpp_quote(" ")
+cpp_quote("// EMSABLFILTERINFO.dwFlags settings")
+cpp_quote(" ")
+cpp_quote("#define EMS_ABLFILTER_SUPPRESS_NORMAL	( 0x00000001 )")
+cpp_quote("#define EMS_ABLFILTER_ALLOW_RESERVED		( 0x00000002 )")
+cpp_quote("#define EMS_ABLFILTER_CC					( 0x00000004 )")
+
+cpp_quote("// Structure array sizes")
+cpp_quote("#define EMS_MAX_COUNTRY_CODES		( 32 )")
+cpp_quote("#define EMS_MAX_USER_TYPES			( 32 )")
+cpp_quote("#define EMS_MAX_ALLOWRESERVE_COUNT	( 32 )")
+
+import "unknwn.idl";
+import "emstypex.idl";
+import "emsicfg.idl";
+import "netconnmgr.idl";
+
+#define _EMS_RPC_VERSION 1
+#define __RPC_FAR 
+
+	typedef struct _tagEMSREPLICATEINFO
+	{
+		DWORD dwFlags;
+		double dFrequency;		// Frequency of replication ( hrs )
+	} EMSREPLICATEINFO, *LPEMSREPLICATEINFO;
+
+	#define EMS_MAX_COUNTRY_CODES		( 32 )
+	#define EMS_MAX_USER_TYPES			( 32 )
+	#define EMS_MAX_ALLOWRESERVE_COUNT	( 32 )
+
+	typedef struct _tagEMSRETRYINFO
+	{
+		double dCheckMinutes;
+		double dRetryMinutes;
+		int	nRetryLimit;
+	} EMSRETRYINFO, *LPEMSRETRYINFO;
+
+	typedef struct _tagEMSFILTERINFO
+	{
+		DWORD dwFlags;
+		ULONG ulMaxBCHErrors;
+		int 	nCountryCodesCount;
+		ULONG	ulCountryCodes[ EMS_MAX_COUNTRY_CODES ];	
+		int 	nUserTypeCount;
+		ULONG	ulUserTypes[ EMS_MAX_USER_TYPES ];	
+	} EMSFILTERINFO, *LPEMSFILTERINFO;
+
+	typedef struct _tagEMSABLFILTERINFO
+	{
+		DWORD	dwFlags;
+		ULONG	ulCountryCode;
+		short	sAllowReservedCount;
+		short	asAllowReserved[ EMS_MAX_ALLOWRESERVE_COUNT ];
+	} EMSABLFILTERINFO, *LPEMSABLFILTERINFO;
+
+cpp_quote("// dwFlags ")
+cpp_quote("#define EMS_SYSTEST_ON_PREPASS	( 0x0000001 )")
+cpp_quote("#define EMS_SYSTEST_ON_STARTUP	( 0x0000002 )")
+cpp_quote("#define EMS_SYSTEST_AVOID_CONFLICT ( 0x0000004 )")
+cpp_quote(" ")
+
+	typedef struct _tagEMSSYSTEMTESTINFO
+	{
+		DWORD		dwFlags;
+		WORD		wSwitchID;
+		double	dThreshold;
+		EMSAZEL 	azelTestHorn;
+		EMSAZEL	azelSweepFrom;	
+		EMSAZEL	azelSweepTo;
+		double	dMinDuration;			// seconds required to perform system test
+	} EMSSYSTEMTESTINFO, *LPEMSSYSTEMTESTINFO;
+
+	typedef struct _tagEMSAGCINFO
+	{
+		DWORD		dwFlags;
+		WORD		wSwitchID;
+	} EMSAGCINFO, *LPEMSAGCINFO;
+
+   const DWORD c_dwDefaultAGCFlags = 0;
+   const WORD c_wDefaultAGCSwitchID = 24;
+
+	const unsigned short EMS_ROUTE_MAX_PATHLEN         = 256;
+	const unsigned short EMS_ROUTE_SHORT_NAMELEN       = 8;
+	const unsigned short EMS_ROUTE_LONG_NAMELEN        = 256;
+	const unsigned short EMS_ROUTE_SIT_LIST_LENGTH     = 256;
+	const unsigned short EMS_ROUTE_FILTER_LIST_LENGTH  = 256;
+
+	typedef enum _tagEMSROUTEDIRECTION
+	{
+		EMS_RD_Unknown = 0,
+		EMS_RD_Outbound = 1, 
+		EMS_RD_Inbound = 2 
+	} EMSROUTEDIRECTION;
+
+	typedef enum _tagEMSROUTEMSGFMT
+	{
+		EMS_RMF_Unknown = 0,
+		EMS_RMF_Sit = 1,
+		EMS_RMF_MultiSit = 2
+	} EMSROUTEMSGFMT;
+
+	typedef enum _tagEMSROUTECOMMTYPE
+	{
+		EMS_RCT_Unknown = 0,
+		EMS_RCT_Direct = 1,
+		EMS_RCT_FTP = 2,
+		EMS_RCT_TCPIP = 3
+	} EMSROUTECOMMTYPE;
+
+	typedef struct _tagEMSROUTEDIRINFO
+	{
+		char szPath[ EMS_ROUTE_MAX_PATHLEN ];
+	} EMSROUTEDIRINFO, *LPEMSROUTEDIRINFO;
+
+	typedef struct _tagEMSROUTEFTPINFO
+	{
+		int nPort;
+		char szHost[64];
+		char szLogin[64];
+		char szPassword[64];
+		char szPath[ EMS_ROUTE_MAX_PATHLEN ];
+	} EMSROUTEFTPINFO, *LPEMSROUTEFTPINFO;
+
+	const unsigned long  EMS_MAX_SIT_MSG_NUMBERS = 64;
+	const unsigned long  EMS_TRANS_TABLE_NAMELEN = 32;
+
+	typedef struct _tagEMSSITTRANSTABLE
+	{
+		int		nCounts;
+		char	szName[EMS_TRANS_TABLE_NAMELEN];
+		DWORD	dwCode[EMS_MAX_SIT_MSG_NUMBERS];
+		DWORD	dwSit[EMS_MAX_SIT_MSG_NUMBERS];
+	} EMSSITTRANSTABLE, *LPEMSSITTRANSTABLE;
+
+
+	typedef struct _tagEMSSITMSGLIST
+	{
+		int nCount;
+		DWORD dwSitCodes [ EMS_MAX_SIT_MSG_NUMBERS ];
+		int	nSitNumbers[ EMS_MAX_SIT_MSG_NUMBERS ];
+	} EMSSITMSGLIST, *LPEMSSITMSGLIST;
+
+	typedef struct _tagEMSROUTEINFO
+	{
+		EMSROUTECOMMTYPE	commType;
+		DWORD					dwFlags;
+		EMSROUTEMSGFMT		msgFmt;
+		EMSROUTEDIRECTION direction;
+		EMSSITMSGLIST		sitMsgs;
+		EMSRETRYINFO		retry;
+		char szShortName[ EMS_ROUTE_SHORT_NAMELEN ];
+		char szLongName[ EMS_ROUTE_LONG_NAMELEN ];
+		char szFilterList[ EMS_ROUTE_FILTER_LIST_LENGTH ];
+    [switch_type(EMSROUTECOMMTYPE), switch_is((EMSROUTECOMMTYPE)commType)]
+		union
+		{
+			[case(EMS_RCT_FTP)]
+				EMSROUTEFTPINFO ftp;
+			[case(EMS_RCT_Direct)]
+				EMSROUTEDIRINFO dir;
+			[default]
+				;
+		} info;
+	} EMSROUTEINFO, *LPEMSROUTEINFO;
+
+	typedef struct _tagEMSDESTINATIONINFO
+	{
+		DWORD				dwFlags;
+		ULONG				ulSeqNumber;
+		ULONG				ulID;
+		EMSRETRYINFO		retry;
+		char 				szShortName[ EMS_ROUTE_SHORT_NAMELEN ];
+		EMSROUTEMSGFMT		msgFmt;
+		EMSSITMSGLIST		sitMsgs;
+		EMSFILTERINFO		filterInfo;
+		int					nRouteIndex;
+		int					nTransIndex;
+	} EMSDESTINATIONINFO, *LPEMSDESTINATIONINFO;
+
+	typedef struct _tagEMSDESTINATIONINFO2
+	{
+		DWORD				dwFlags;
+		ULONG				ulSeqNumber;
+		ULONG				ulRouteIdentifier;
+		ULONG				ulID;
+		EMSRETRYINFO		retry;
+		char 				szShortName[ EMS_ROUTE_SHORT_NAMELEN ];
+		char 				szSrcShortName[ EMS_ROUTE_SHORT_NAMELEN ];
+		EMSROUTEMSGFMT		msgFmt;
+		EMSSITMSGLIST		sitMsgs;
+		EMSFILTERINFO		filterInfo;
+		int					nRouteIndex;
+		int					nTransIndex;
+	} EMSDESTINATIONINFO2, *LPEMSDESTINATIONINFO2;
+
+	typedef struct _tagEMSDESTINATIONINFO3
+	{
+		EMSDESTINATIONINFO2	info2;
+		EMSABLFILTERINFO	ablFilterInfo;
+	} EMSDESTINATIONINFO3, *LPEMSDESTINATIONINFO3;
+
+	typedef struct _tagEMSSOURCEINFO
+	{
+		DWORD				dwFlags;
+		ULONG				ulSeqNumber;
+		ULONG				ulID;
+		EMSRETRYINFO		retry;
+		char 				szShortName[ EMS_ROUTE_SHORT_NAMELEN ];
+		int					nRouteIndex;
+	} EMSSOURCEINFO, *LPEMSSOURCEINFO;
+
+   const DWORD c_dwDefaultSourceInfoFlags = 0;
+
+	typedef struct _tagEMSSERVICEINFO
+	{
+		char		szName[32];
+		WORD		wFlags;		
+	} EMSSERVICEINFO, *LPEMSSERVICEINFO;
+
+[
+	object, uuid(C28EB166-045F-4d3f-AABB-D9E3A83D3529),
+	helpstring("IEMSSiteInfo Interface"),
+	pointer_default(unique)
+]
+
+interface IEMSSiteInfo : IEMSConfigSettings
+{	
+	HRESULT GetLutID( [out] ULONG *lpulLutID );
+
+	HRESULT GetLutName( [out, size_is(cb), length_is(*pcbLength)]	char *pv,
+						[in] ULONG cb,	[out] ULONG *pcbLength );
+
+	HRESULT GetSecondaryLuts( 
+		[out, size_is(ulMax), length_is(*ulActual)]	ULONG *lpulLuts,
+		[in] ULONG ulMax,	[out] ULONG *ulActual );
+
+	HRESULT GetServiceInfo( 
+		[out, size_is(ulMax), length_is(*ulActual)]	EMSSERVICEINFO *lpInfo,
+		[in] ULONG ulMax,	[out] ULONG *ulActual );
+
+	HRESULT GetMonitorFrequency( [out] ULONG *lpulFrequency );
+
+	HRESULT GetGuardFrequency( [out] ULONG *lpulFrequency );
+
+
+	HRESULT  GetTranslationTableInfo( 
+		[out, size_is(ulMax), length_is(*ulActual)] EMSSITTRANSTABLE *lpInfo,
+		[in] ULONG ulMax, [out] ULONG *ulActual );
+
+	HRESULT GetRouteInfo( 
+		[out, size_is(ulMax), length_is(*ulActual)]	EMSROUTEINFO *lpInfo,
+		[in] ULONG ulMax,	[out] ULONG *ulActual );
+
+	HRESULT GetDestinationsInfo( 
+		[out, size_is(ulMax), length_is(*ulActual)]	EMSDESTINATIONINFO *lpInfo,
+		[in] ULONG ulMax,	[out] ULONG *ulActual );
+
+	HRESULT GetSourcesInfo( 
+		[out, size_is(ulMax), length_is(*ulActual)]	EMSSOURCEINFO *lpInfo,
+		[in] ULONG ulMax,	[out] ULONG *ulActual );
+
+	HRESULT GetDataDirectory( [out, size_is(cb), length_is(*pcbRead)]	BYTE *pv,
+						[in] ULONG cb,	[out] ULONG *pcbRead );
+
+	HRESULT GetRecvMsgDirectory( [out, size_is(cb), length_is(*pcbRead)]	BYTE *pv,
+						[in] ULONG cb,	[out] ULONG *pcbRead );
+
+	HRESULT GetProcessedMsgDirectory( [out, size_is(cb), length_is(*pcbRead)]	BYTE *pv,
+						[in] ULONG cb,	[out] ULONG *pcbRead );
+
+	HRESULT GetSendMsgDirectory( [out, size_is(cb), length_is(*pcbRead)]	BYTE *pv,
+						[in] ULONG cb,	[out] ULONG *pcbRead );
+
+	HRESULT GetSentMsgDirectory( [out, size_is(cb), length_is(*pcbRead)]	BYTE *pv,
+						[in] ULONG cb,	[out] ULONG *pcbRead );
+
+	HRESULT GetUndeliveredMsgDirectory( [out, size_is(cb), length_is(*pcbRead)]	BYTE *pv,
+						[in] ULONG cb,	[out] ULONG *pcbRead );
+
+	HRESULT SetRecvdMsgNumber( [ in, string ] char *lpszShortRouteName, [in] ULONG ulMsgNumber );
+
+	HRESULT SetSentMsgNumber( [ in, string ] char *lpszShortRouteName, [in] ULONG ulMsgNumber );
+
+	HRESULT GetGpsAllowedDifference( [ out ] double *lpdSeconds );
+
+	HRESULT GetGpsCheckFrequency( [ out ] double *lpdSeconds );
+
+	HRESULT GetSystemTestInfo( [ out ] EMSSYSTEMTESTINFO *lpInfo );
+
+	HRESULT GetReplicationInfo( [ out ] EMSREPLICATEINFO *lpInfo );
+
+	HRESULT GetAGCInfo( [ out ] EMSAGCINFO *lpInfo );
+};
+
+typedef [unique] IEMSSiteInfo *LPEMSSITEINFO;
+
+[
+	object, uuid(7CE97B78-51F2-4d81-BAC3-360B3F5B36D4),
+	helpstring("IEMSOffline Interface"),
+	pointer_default(unique)
+]
+interface IEMSOffline : IUnknown
+{
+	HRESULT GetOfflineMsgDirectory( [out, size_is(cb), length_is(*pcbRead)]	BYTE *pv,
+						[in] ULONG cb,	[out] ULONG *pcbRead );
+
+	HRESULT GetMaxOfflinefilesCount( [out] ULONG *lpulMaxFileCnt);
+};
+
+typedef [unique] IEMSOffline *LPEMSOFFLINE;
+
+
+[
+	object, uuid(7A92B265-E833-4403-B937-5CACAEDF51CE),
+	helpstring("IEMSCollectorPPS Interface"),
+	pointer_default(unique)
+]
+interface IEMSCollectorPPS : IUnknown
+{
+	HRESULT GetMinPPSLostCountToAlarm( [out] ULONG *lpulMinCnt);
+};
+
+typedef [unique] IEMSCollectorPPS *LPEMSCollectorPPS;
+
+
+[
+	object, uuid(3FD55374-41F4-4f64-96BE-CC1F4EC1202A),
+	helpstring("IEMSDestinationsInfo Interface"),
+	pointer_default(unique)
+]
+interface IEMSDestinationsInfo : IUnknown
+{	
+	HRESULT GetDestinationsInfo2( 
+		[out, size_is(ulMax), length_is(*ulActual)]	EMSDESTINATIONINFO2 *lpInfo,
+		[in] ULONG ulMax,	[out] ULONG *ulActual );
+};
+
+typedef [unique] IEMSDestinationsInfo *LPEMSDESTINATIONSINFO;
+
+[
+	object, uuid(520F4DFC-FCE4-45d0-BDB6-46025FBA891C),
+	helpstring("IEMSDestinationsInfo3 Interface"),
+	pointer_default(unique)
+]
+interface IEMSDestinationsInfo3 : IEMSDestinationsInfo
+{	
+	HRESULT GetDestinationsInfo3( 
+		[out, size_is(ulMax), length_is(*ulActual)]	EMSDESTINATIONINFO3 *lpInfo,
+		[in] ULONG ulMax,	[out] ULONG *ulActual );
+};
+typedef [unique] IEMSDestinationsInfo3 *LPEMSDESTINATIONSINFO3;
+
+
+[
+	object, uuid(48EBD324-2101-4572-8026-4A0DC439DC36),
+	helpstring("IEMSSystemTestSettings Interface"),
+	pointer_default(unique)
+]
+
+interface IEMSSystemTestSettings : IUnknown
+{	
+
+	typedef struct _tagEMSSYSTEMTESTINFO2
+	{
+		DWORD		dwFlags;
+		WORD		wSwitchID;
+		double	dThreshold;
+		EMSAZEL 	azelTestHorn;
+		EMSAZEL	azelSweepFrom;	
+		EMSAZEL	azelSweepTo;
+		double	dMinDuration;			// seconds required to perform system test
+		double	dMaxModIndex;			// ModIndex must be less than this value
+		double	dReserved1;
+		LONG		lReserved2;
+	} EMSSYSTEMTESTINFO2, *LPEMSSYSTEMTESTINFO2;
+
+	HRESULT GetSystemTestInfo2( [ out ] EMSSYSTEMTESTINFO2 *lpInfo );
+};
+
+typedef [unique] IEMSSystemTestSettings *LPEMSSYSTEMTESTSETTINGS;
+
+typedef struct _tagEMSMSGARCHIVEINFO
+{
+	double		dCheckIntervalDays;
+	double		dSentMsgsDays;					
+	double		dSendMsgsDays;					
+	double		dRecvMsgsDays;					
+	double		dUndeliveredMsgsDays;					
+	double		dProcessedMsgsDays;					
+} EMSMSGARCHIVEINFO, *LPEMSMSGARCHIVEINFO;
+
+const double c_dSiteInfoMsgArchiveIntervalDays = 1.0;
+
+[
+	object, uuid(B73D76CD-2160-44ff-9AC5-E08EA6AF207D),
+	helpstring("IEMSSiteType Interface"),
+	pointer_default(unique)
+]
+
+interface IEMSSiteType : IUnknown
+{
+	HRESULT GetSiteType( [out] LPWORD lpwSiteType );
+	HRESULT GetSiteVersion( [out] LPWORD lpwSiteVersion );
+};
+
+typedef [unique] IEMSSiteType *LPEMSSITETYPE;
+
+[
+	object, uuid(6435FB6A-A496-460d-9830-13FB88CCA195),
+	helpstring("IEMSMsgArchiveConfig Interface"),
+	pointer_default(unique)
+]
+
+interface IEMSMsgArchiveConfig : IUnknown
+{
+	HRESULT GetMsgArchiveConfigData( [out] LPEMSMSGARCHIVEINFO lpConfigData );
+};
+
+typedef [unique] IEMSMsgArchiveConfig *LPEMSMSGARCHIVECONFIG;
+
+[
+	object, uuid(9C603A34-0C3C-4847-8A61-E657A2D10B89),
+	helpstring("IEMSSitMsgProperties Interface"),
+	pointer_default(unique)
+]
+interface IEMSSitMsgProperties : IUnknown
+{
+	HRESULT GetMaxSizeInBytes( [out] ULONG* pulMaxBytes );
+};
+
+typedef [unique] IEMSSitMsgProperties *LPEMSSITMSGPROPERTIES;
+
+[
+	object, uuid(2B02EDF5-880A-4555-B67E-577BBF157220),
+	helpstring("IEMSAutoSendSit Interface"),
+	pointer_default(unique)
+]
+interface IEMSAutoSendSit : IUnknown
+{
+	HRESULT GetAutoSend( [in] ULONG ulDestID, [in] ULONG ulSitCode, [out] BOOL* pbAutoSend );
+};
+
+typedef [unique] IEMSAutoSendSit *LPEMSAUTOSENDSIT;
+
+[
+	object, uuid(9E586623-5E8A-48d0-B650-966FCA6B4221),
+	helpstring("IEMSRouteInfo Interface"),
+	pointer_default(unique)
+]
+interface IEMSRouteInfo : IUnknown
+{
+	cpp_quote("#define EMS_MAX_CONNECTION_LEN 255")
+	#define EMS_MAX_CONNECTION_LEN 255
+
+	cpp_quote("#define EMS_MAX_CONNECTIONS 8")
+	#define EMS_MAX_CONNECTIONS 8
+
+	typedef struct _tagEMSCOMMSPATH
+	{
+		EMSROUTECOMMTYPE	eCommType;
+	    [switch_type(EMSROUTECOMMTYPE), switch_is((EMSROUTECOMMTYPE)eCommType)]
+		union
+		{
+			[case(EMS_RCT_FTP)]
+				EMSROUTEFTPINFO ftp;
+			[case(EMS_RCT_Direct)]
+				EMSROUTEDIRINFO dir;
+			[default]
+				;
+		} info;
+		ULONG	ulTimeout;
+		ULONG	ulAlternateConnections;
+		BOOL    bCompress;
+		wchar_t awszConnections[ EMS_MAX_CONNECTIONS][ EMS_MAX_CONNECTION_LEN + 1];
+
+	} EMSCOMMSPATH, *PEMSCOMMSPATH;
+
+	typedef struct _tagEMSCOMMSROUTE
+	{
+		ULONG				ulRouteID;
+		DWORD				dwFlags;
+		EMSROUTEDIRECTION	eDirection;
+		EMSRETRYINFO		retry;
+		char szShortName[ EMS_ROUTE_SHORT_NAMELEN ];
+		char szLongName[ EMS_ROUTE_LONG_NAMELEN ];
+		ULONG				ulAlternateMaxDuration;
+		EMSCOMMSPATH		strPathPrimary;
+		EMSCOMMSPATH		strPathAlternate;
+	} EMSCOMMSROUTE, *PEMSCOMMSROUTE;
+
+	HRESULT GetRouteInfo2( [out, size_is(culMax), length_is(*pulActual)] EMSCOMMSROUTE* aRouteInfo,
+						[in] const ULONG culMax,
+						[out] ULONG* pulActual );
+
+};
+
+typedef [unique] IEMSRouteInfo *PEMSROUTEINFO;
+
+
+[
+	object, uuid(3A3D750F-E940-4abf-93C7-93E2A63C254D),
+	helpstring("IEMSRouteInfo2 Interface"),
+	pointer_default(unique)
+]
+interface IEMSRouteInfo2 : IEMSRouteInfo
+{
+
+	typedef struct _tagEMSCOMMSROUTE2
+	{
+		ULONG				ulRouteID;
+		DWORD				dwFlags;
+		EMSROUTEDIRECTION	eDirection;
+		EMSRETRYINFO		retry;
+		char szShortName[ EMS_ROUTE_SHORT_NAMELEN ];
+		char szLongName[ EMS_ROUTE_LONG_NAMELEN ];
+		ULONG				ulAlternateMaxDuration;
+		EMSCOMMSPATH		strPathPrimary;
+		EMSCOMMSPATH		strPathAlternate;
+		double              dUndeliverableAge;
+	} EMSCOMMSROUTE2, *PEMSCOMMSROUTE2;
+
+	HRESULT GetRouteInfo3( [out, size_is(culMax), length_is(*pulActual)] EMSCOMMSROUTE2* aRouteInfo,
+						[in] const ULONG culMax,
+						[out] ULONG* pulActual );
+};
+
+typedef [unique] IEMSRouteInfo2 *PEMSROUTEINFO2;

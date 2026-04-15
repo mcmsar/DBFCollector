@@ -1,0 +1,28 @@
+/*********************************************************************
+* Copyright (c) 2011 by EMS Technologies, Inc.,
+* All rights reserved
+* This program is unpublished software and contains the trade secrets
+* and confidential information of EMS Technologies, Inc.  It may not be 
+* reproduced in whole or in part, in any form or by any means whatsoever 
+* without the express written permission of EMS Technologies, Inc.
+*
+********************************************************************/
+#pragma warning(disable:4786)
+
+#include "emsit151.h"
+
+CEMSSit151::CEMSSit151()
+{
+	SetSitNumber( 151 );
+}
+
+CEMSSit151::CEMSSit151( const CEMSSit151& x ) : CEMSSitSimpleMEOAlertMessageBase( x )
+{
+	SetSitNumber( 151 );
+}
+
+CEMSSit151::~CEMSSit151()
+{
+}
+
+

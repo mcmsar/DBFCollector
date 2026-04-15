@@ -1,0 +1,56 @@
+
+import "unknwn.idl";
+import "igateway.idl";
+
+
+cpp_quote("")
+
+cpp_quote("// {DC36C7F3-7E85-42f4-BD85-5BB1744A77B9}")
+cpp_quote("DEFINE_GUID( CLSID_EMSAuthentication, 0xdc36c7f3, 0x7e85, 0x42f4, 0xbd, 0x85, 0x5b, 0xb1, 0x74, 0x4a, 0x77, 0xb9);")
+cpp_quote("")
+cpp_quote("// {BD39F8D5-6FF2-48fe-923C-95BA613F0472}")
+cpp_quote("DEFINE_GUID( IID_IEMSAuthentication, 0xbd39f8d5, 0x6ff2, 0x48fe, 0x92, 0x3c, 0x95, 0xba, 0x61, 0x3f, 0x4, 0x72);")
+cpp_quote("")
+
+[
+	object, uuid(BD39F8D5-6FF2-48fe-923C-95BA613F0472),
+	pointer_default(unique)
+]
+
+interface IEMSAuthentication : IUnknown
+{
+	typedef [unique] IEMSAuthentication *LPEMSAUTHENTICATION;
+
+	HRESULT Authenticate( [in] unsigned long ulNetworkID,
+						  [in] unsigned long ulLUTID,
+						  [out] LPEMSGATEWAYTOKEN lpSecurityToken );
+
+	HRESULT AuthenticateA( [in] unsigned long ulNetworkID,
+						   [in] unsigned long ulLUTID,
+						   [in,size_is(lUserAccountSize)] BYTE userAccount[],
+						   [in] long lUserAccountSize,
+						   [in,size_is(lPasswordSize)] BYTE password[],
+						   [in] long lPasswordSize,
+						   [out] LPEMSGATEWAYTOKEN lpSecurityToken );
+};
+
+[
+	uuid(83C9C175-0E0B-450a-8337-8BAE4CD50348),
+	version(1.0),
+	helpstring("EMSAuthentication 1.0 Type Library")
+]
+
+library EMSAuthenticationLib
+{
+	importlib("stdole32.tlb");
+	importlib("stdole2.tlb");
+
+	[
+		uuid(DC36C7F3-7E85-42f4-BD85-5BB1744A77B9),
+		helpstring("EMSAuthenticationClass")
+	]
+	coclass EMSAuthentication
+	{
+		interface IEMSAuthentication;
+	};
+};

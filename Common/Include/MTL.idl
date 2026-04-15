@@ -1,0 +1,117 @@
+
+cpp_quote("// {98C74BAD-87BD-4b0f-B78F-FABA78559D43}")
+cpp_quote("DEFINE_GUID(IID_IEMSMsgServer, 0x98c74bad, 0x87bd, 0x4b0f, 0xb7, 0x8f, 0xfa, 0xba, 0x78, 0x55, 0x9d, 0x43);")
+
+cpp_quote("// {0450518F-CADC-46ba-ADF0-6C3245202802}")
+cpp_quote("DEFINE_GUID(CLSID_EMSSITServer, 0x450518f, 0xcadc, 0x46ba, 0xad, 0xf0, 0x6c, 0x32, 0x45, 0x20, 0x28, 0x2);")
+
+cpp_quote("// {32C3B0AF-822C-4c2f-A917-517A4E32A5FC}")
+cpp_quote("DEFINE_GUID(CLSID_EMSBinaryServer, 0x32c3b0af, 0x822c, 0x4c2f, 0xa9, 0x17, 0x51, 0x7a, 0x4e, 0x32, 0xa5, 0xfc);")
+
+cpp_quote("// {6FC3A854-65FE-4136-B5BA-544B062CD7A9}")
+cpp_quote("DEFINE_GUID(CLSID_EMSMTLClient, 0x6fc3a854, 0x65fe, 0x4136, 0xb5, 0xba, 0x54, 0x4b, 0x6, 0x2c, 0xd7, 0xa9);")
+
+cpp_quote("// {459C9AD9-753F-4a23-B4B7-559A143880ED}")
+cpp_quote("DEFINE_GUID(IID_IEMSMTLClient, 0x459c9ad9, 0x753f, 0x4a23, 0xb4, 0xb7, 0x55, 0x9a, 0x14, 0x38, 0x80, 0xed);")
+
+cpp_quote("// {2795E98A-3D07-4845-A7B6-F5D30036EFBC}")
+cpp_quote("DEFINE_GUID(IID_IEMSTransmitEphemeris, 0x2795e98a, 0x3d07, 0x4845, 0xa7, 0xb6, 0xf5, 0xd3, 0x0, 0x36, 0xef, 0xbc);")
+
+cpp_quote("// {DE16331C-E8E4-491d-82F8-529E3865A095}")
+cpp_quote("DEFINE_GUID(IID_IEMSSendSolution, 0xde16331c, 0xe8e4, 0x491d, 0x82, 0xf8, 0x52, 0x9e, 0x38, 0x65, 0xa0, 0x95);")
+
+cpp_quote("// {0A9FC803-7D70-427f-884C-645754E03B5C}")
+cpp_quote("DEFINE_GUID(IID_IEMSSendStatus, 0xa9fc803, 0x7d70, 0x427f, 0x88, 0x4c, 0x64, 0x57, 0x54, 0xe0, 0x3b, 0x5c);")
+
+cpp_quote("// {7863162D-A57C-492e-9966-FA6571B6484D}")
+cpp_quote("DEFINE_GUID(IID_IEMSSendDetection,0x7863162d, 0xa57c, 0x492e, 0x99, 0x66, 0xfa, 0x65, 0x71, 0xb6, 0x48, 0x4d);")
+
+
+import "unknwn.idl";
+import "gpsephem.idl";
+import "calib406ext.idl";
+
+typedef enum eInputType
+{
+	IT_UNKNOWN = 0,
+	IT_FILESPEC = 1,
+	IT_RAWDATA = 2,
+	IT_FILESPEC_XML = 3,
+	IT_FILESPEC_CSV = 4,
+	IT_LAST
+} EMSINPUTTYPE;
+
+[
+	uuid(98C74BAD-87BD-4b0f-B78F-FABA78559D43),
+	helpstring("IEMSMsgServer"),
+	pointer_default(unique)
+]
+interface IEMSMsgServer : IUnknown
+{
+	HRESULT OnMsgReceived(	[in] EMSINPUTTYPE eInputType,
+							[in] unsigned long ulLength,
+							[in,size_is(ulLength)] byte abyStream[] );
+};
+
+
+[
+	uuid(459C9AD9-753F-4a23-B4B7-559A143880ED),
+	helpstring("IEMSMTLClient"),
+	pointer_default(unique)
+]
+interface IEMSMTLClient : IUnknown
+{
+	HRESULT Connect( [in] const unsigned long culSourceLutID,
+					 [in] const DWORD cdwFlags );
+};
+
+[
+	uuid(2795E98A-3D07-4845-A7B6-F5D30036EFBC),
+	helpstring("IEMSTransmitEphemeris"),
+	pointer_default(unique)
+]
+interface IEMSTransmitEphemeris : IUnknown
+{
+	HRESULT SendEphemeris( [in] const ULONG culRecs, [in,size_is(culRecs)] const EMSSCALEDEPHEMERISDATAEX caEphemeris[] );
+};
+
+[
+	uuid(DE16331C-E8E4-491d-82F8-529E3865A095),
+	helpstring("IEMSSendSolution"),
+	pointer_default(unique)
+]
+interface IEMSSendSolution : IUnknown
+{
+	HRESULT SendSolution( [in,string] const wchar_t* cszSerializedSolution );
+};
+
+[
+	uuid(0A9FC803-7D70-427f-884C-645754E03B5C),
+	helpstring("IEMSSendStatus"),
+	pointer_default(unique)
+]
+interface IEMSSendStatus : IUnknown
+{
+	HRESULT BroadcastStatus( [in,string] const wchar_t* cszType,
+	                         [in,string] const wchar_t* cszSource,
+							 [in,string] const wchar_t* cszStatus, 
+							 [in,string] const wchar_t* cszStatusMsg );
+
+	HRESULT BroadcastMsg( [in] const BYTE cMsgType,
+	                      [in,string] const wchar_t* cszSource, 
+						  [in,string] const wchar_t* cszMsg );
+
+};
+
+[
+	uuid(7863162D-A57C-492e-9966-FA6571B6484D),
+	helpstring("IEMSSendDetection"),
+	pointer_default(unique)
+]
+interface IEMSSendDetection : IUnknown
+{
+	HRESULT SendDetection( [in] const EMSCALIB406DATAEXT cDetection );
+};
+
+
+

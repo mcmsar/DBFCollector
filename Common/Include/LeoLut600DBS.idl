@@ -1,0 +1,696 @@
+cpp_quote("#ifndef INC_LEODBSIDL")
+cpp_quote("#define INC_LEODBSIDL")
+cpp_quote("")
+cpp_quote("#include \"sgbtypes.h\"")
+
+// LeoLut600DBS.idl : IDL source for LeoLut600DBS.dll
+//
+
+// This file will be processed by the MIDL tool to
+// produce the type library (LeoLut600DBS.tlb) and marshalling code.
+
+import "oaidl.idl";
+import "ocidl.idl";
+
+import "cbcdata.idl";
+import "sarpdata.idl";
+import "sarrdata.idl";
+import "spectrum.idl";
+import "leostats.idl";
+import "emslog.idl";
+import "locate.idl";
+import "cbcout.idl";
+import "calib406.idl";
+import "emstle.idl";
+import "emsalarm.idl";
+import "residual.idl";
+import "emsicfg.idl";
+import "combine406.idl";
+import "sarpcalib.idl";
+import "sarrcalib.idl";
+import "emsaudio.idl";
+import "calib406ext.idl";
+import "ABLData.idl";
+import "HealthStatusTypes.idl";
+import "BeaconAdvisoryTypes.idl";
+
+
+import "sgbtypes.h";
+
+cpp_quote("// NOTE:  The BeaconID parameter is currently ignored by all software except for the SitGenerator")
+cpp_quote("// If you add code to use this ... please use -1 to indicate that the parameter is to be ignored")
+cpp_quote("// as a value of 0 (zero) is actually a valid beacon identifier")
+typedef struct tagSelectionCriteria
+{
+	ULONG ulSatID1;
+	ULONG ulSatID2;
+	ULONG ulOrbitNumber1;
+	ULONG ulOrbitNumber2;
+	EMSTIME timeStart;
+	EMSTIME timeEnd;
+	INT64	i64BeaconID;
+	BOOL bOrderByTimestamp;
+	BOOL bOrderDescending;
+	ULONG	ulMaxRecords;
+} EMSSELECTCRITERIA;
+
+	[
+		object,
+		uuid(C9794F50-63B5-4BC2-87E8-5D7435804878),
+		helpstring("ICCBCData Interface"),
+		pointer_default(unique)
+	]
+	interface ICCBCData : IUnknown
+	{
+		[helpstring("init")]          HRESULT  init();
+		[helpstring("get_cbcData")]   HRESULT  get_cbcData([in, out] EMSCBCDATA *pVal);
+		[helpstring("put_cbcData")]   HRESULT  put_cbcData([in] EMSCBCDATA* newVal);
+	  [helpstring("get_cbcDataSet")] HRESULT get_cbcDataSet( [in] EMSSELECTCRITERIA* pCriteria,
+															 [in,out] long* plCount,
+															 [out,size_is(,*plCount)] LPEMSCBCDATA** papData );
+	};
+
+	[
+		object,
+		uuid(D00C36F0-4F1A-4ef3-9220-858896575BB4),
+		helpstring("ISARPData Interface"),
+		pointer_default(unique)
+	]
+	interface ISARPData : IUnknown
+	{
+		[helpstring("init")]          HRESULT  init();
+		[helpstring("get_sarpData")]  HRESULT  get_sarpData([in, out] EMSSARPDATA *pVal);
+		[helpstring("put_sarpData")]  HRESULT  put_sarpData([in] EMSSARPDATA *newVal);
+	};
+
+   [
+      object,
+		uuid(BC010FE6-F1CB-4bab-947B-A220978C17E5),
+		helpstring("ISARRData Interface"),
+		pointer_default(unique)
+	]
+	interface ISARRData : IUnknown
+	{
+		[helpstring("init")]          HRESULT  init();
+		[helpstring("get_sarrData")] HRESULT   get_sarrData([in, out] EMSSARRDATA *pVal);
+		[helpstring("put_sarrData")]  HRESULT  put_sarrData([in] EMSSARRDATA *newVal);
+	};
+
+	[
+		object,
+		uuid(85444CEB-20BE-476C-A23A-0D2FE217DB64),
+		helpstring("ISpectrum Interface"),
+		pointer_default(unique)
+	]
+	interface ISpectrum : IUnknown
+	{
+		[helpstring("init")]          HRESULT  init();
+		[helpstring("get_spectrum")]  HRESULT  get_spectrum([in, out] EMSSPECTRUM* pVal);
+		[helpstring("put_spectrum")]  HRESULT  put_spectrum([in] EMSSPECTRUM* newVal);
+      [helpstring("get_IDSet")]     HRESULT  get_IDSet( 
+         [in] EMSSIGDATAID minID, 
+         [in] EMSSIGDATAID maxID,
+         [in] ULONG sizeIn,
+         [out, size_is(sizeIn)] EMSSIGDATAID pIDMatches[],
+         [out] ULONG *pIDMatchesCount);
+	  [helpstring("get_spectrumDataSet")] HRESULT get_spectrumDataSet( [in] EMSSELECTCRITERIA* pCriteria,
+															 [in,out] long* plCount,
+															 [out,size_is(,*plCount)] LPEMSSPECTRUM** papData );
+	};
+
+	[
+		object,
+		uuid(49F79346-37DF-4529-80C7-AD9417D85100),
+	
+		helpstring("ILeoStatus Interface"),
+		pointer_default(unique)
+	]
+	interface ILeoStatus : IUnknown
+	{
+		[helpstring("init")]          HRESULT  init();
+		[helpstring("put_leoStats")]  HRESULT  put_leoStats([in] EMSLEOSTATUSUPDATE *newVal);
+		[helpstring("get_leoStatsDataSet")] HRESULT get_leoStatsDataSet( [in] EMSSELECTCRITERIA* pCriteria,
+																		 [in] const EMSLEOSTATUSTYPE ceType,
+																		 [in,out] long* plCount,
+																		 [out,size_is(,*plCount)] LPEMSLEOSTATUSUPDATE** papData );
+	};
+	[
+		object,
+		uuid(CC9C5777-17B8-4CA5-8145-7A966E86DFFA),
+	
+		helpstring("IEMSLogger Interface"),
+		pointer_default(unique)
+	]
+	interface IEMSLogger : IUnknown
+	{
+		[helpstring("init")]       HRESULT  init();
+		[helpstring("get_logger")] HRESULT  get_logData([in, out] EMSLOGDATA  *pVal);
+      [helpstring("put_logger")] HRESULT  put_logData([in]      EMSLOGDATA  *pNewVal);
+	  [helpstring("get_logDataSet")] HRESULT get_logDataSet( [in] EMSSELECTCRITERIA* pCriteria,
+															 [in,out] long* plCount,
+															 [out,size_is(,*plCount)] LPEMSLOGDATA** papData );
+
+	};
+	[
+		object,
+		uuid(EC4EEC24-54A1-4D28-AE46-078AF0C9CC7A),
+	
+		helpstring("IEMSLocate Interface"),
+		pointer_default(unique)
+	]
+	interface IEMSLocate : IUnknown
+	{
+		[helpstring("init")]             HRESULT  init();
+		[helpstring("get_locateData")]   HRESULT  get_locateData([in, out]   EMSLOCATE*  pVal );
+      [helpstring("put_locateData")]   HRESULT  put_locateData([in]        EMSLOCATE*  pNewVal );
+	  [helpstring("get_locateDataSet")]  HRESULT  get_locateDataSet([in] EMSSELECTCRITERIA* pCriteria,
+																		[in,out] long* plCount,
+																		[out,size_is(,*plCount)] LPEMSLOCATE**  papData );
+	};
+	[
+		object,
+		uuid(9CDFEC2D-0742-48CE-B94D-518B10974508),
+	
+		helpstring("ICalibrate406 Interface"),
+		pointer_default(unique)
+	]
+	interface ICalibrate406 : IUnknown
+	{
+		[helpstring("init")]          HRESULT  init();
+      [helpstring("put_calib406")]  HRESULT  put_calib406([in] EMSCALIB406DATA*  pNewVal );
+
+	  [helpstring("get_calib406DataSet")]  HRESULT  get_calib406DataSet([in] EMSSELECTCRITERIA* pCriteria,
+																		[in,out] long* plCount,
+																		[out,size_is(,*plCount)] LPEMSCALIB406DATA**  papData );
+
+	};
+	[
+		object,
+		uuid(9A328FB0-AFE1-4623-831A-3A40637161C8),
+	
+		helpstring("ICBCOut Interface"),
+		pointer_default(unique)
+	]
+	interface ICBCOut : IUnknown
+	{
+		[helpstring("init")]             HRESULT  init();
+      [helpstring("put_cbcOutData")]   HRESULT  put_cbcOutData([in]  EMSCBCOUTPUTDATA*  pNewVal );
+	};
+	[
+		object,
+		uuid(B24B8C75-EBDC-452A-B960-C7B66A4DE6F5),
+	
+		helpstring("IEMSTLE Interface"),
+		pointer_default(unique)
+	]
+	interface IEMSTLE : IUnknown
+	{
+		[helpstring("init")]          HRESULT  init();
+      [helpstring("put_tleData")]   HRESULT  put_tleData([in] EMSTLERECORD*  pNewVal );
+	  [helpstring("get_tleDataSet")]  HRESULT  get_tleDataSet([in] EMSSELECTCRITERIA* pCriteria,
+																		[in,out] long* plCount,
+																		[out,size_is(,*plCount)] LPEMSTLERECORD**  papData );
+	  
+	};
+	[
+		object,
+		uuid(7C3ED967-7F3A-427A-B091-889782F5EAA8),
+	
+		helpstring("IAlarmData Interface"),
+		pointer_default(unique)
+	]
+	interface IAlarmData : IUnknown
+	{
+		[helpstring("init")]          HRESULT  init();
+      [helpstring("put_alarmData")] HRESULT  put_alarmData([in] EMSALARMDATA*  pNewVal );
+	};
+	[
+		object,
+		uuid(BAB87800-EB68-4BCA-92B5-874CD9C0367B),
+	
+		helpstring("ISatTrack Interface"),
+		pointer_default(unique)
+	]
+	interface ISatTrack : IUnknown
+	{
+
+		[helpstring("init")]                HRESULT  init();
+      [helpstring("put_satTrackRecord")]  HRESULT  put_satTrackRecord([in] EMSSATTRACKRECORD*  pNewVal );
+	  [helpstring("get_satTrackRecords")]  HRESULT  get_satTrackRecords([in] EMSSELECTCRITERIA* pCriteria,
+																		[in,out] long* plCount,
+																		[out,size_is(,*plCount)] LPEMSSATTRACKRECORD**  papData );
+	};
+	[
+	   object,
+	   uuid( FAB32507-D244-4665-8D6D-0D9231FEC795 ),
+	   helpstring("IResidualData Interface"),
+	   pointer_default(unique)
+	]
+	interface IResidualData : IUnknown
+	{
+	   [helpstring("init")]              HRESULT  init();
+	   [helpstring("get_residualData")]  HRESULT  get_residualData([in, out] EMSRESIDUALDATA* pVal );
+	   [helpstring("put_residualData")]  HRESULT  put_residualData([in]      EMSRESIDUALDATA* newVal );
+	};
+	[
+		object,
+		uuid(D1FD29BB-2A5D-4B2B-A81D-889E76B7CF97),
+		helpstring("IConfigData Interface"),
+		pointer_default(unique)
+	]
+
+	interface IConfigData : IUnknown
+	{
+		[helpstring("init")]            HRESULT  init();
+		[helpstring("get_configData")]	HRESULT  get_configData([in, out] EMSCONFIGRECORD* pVal );
+		[helpstring("put_configData")]	HRESULT  put_configData([in]      EMSCONFIGRECORD* newVal );
+	};
+	[
+		object,
+		uuid(FF4846DB-3F97-4D39-BA98-1DC1B8394257),
+		helpstring("ICombined406Data Interface"),
+		pointer_default(unique)
+	]
+	interface ICombined406Data : IUnknown
+	{
+		[helpstring("init")]              HRESULT  init();
+		[helpstring("get_combined406Data")]  HRESULT  get_combined406Data([in, out] EMSCOMBINE406DATA* pVal );
+		[helpstring("put_combined406Data")]  HRESULT  put_combined406Data([in]      EMSCOMBINE406DATA* newVal );
+	};
+	[
+		object,
+		uuid(BBA571BA-312B-4C4C-85AA-5A7AD0192A1C),
+	
+		helpstring("ISarpCalibData Interface"),
+		pointer_default(unique)
+	]
+	interface ISarpCalibData : IUnknown
+	{
+		[helpstring("init")]              HRESULT  init();
+		[helpstring("get_sarpCalibDataSet")]  HRESULT  get_sarpCalibDataSet([in] EMSSELECTCRITERIA* pCriteria,
+																		[in,out] long* plCount,
+																		[out,size_is(,*plCount)] LPEMSSARPCALIBDATA**  papData );
+		[helpstring("put_sarpCalibData")]  HRESULT  put_sarpCalibData([in]  EMSSARPCALIBDATA* newVal );
+	};
+	[
+		object,
+		uuid(2DA81053-2E59-40A1-8851-BC6A96447061),
+	
+		helpstring("ISarrCalibData Interface"),
+		pointer_default(unique)
+	]
+	interface ISarrCalibData : IUnknown
+	{
+		[helpstring("init")] HRESULT  init();
+		[helpstring("get_sarrCalibDataSet")]  HRESULT  get_sarrCalibDataSet([in] EMSSELECTCRITERIA* pCriteria,
+																		[in,out] long* plCount,
+																		[out,size_is(,*plCount)] LPEMSSARRCALIBDATA**  papData );
+		[helpstring("put_sarrCalibData")]  HRESULT  put_sarrCalibData([in]  EMSSARRCALIBDATA* newVal );
+	};
+	[
+		object,
+		uuid(4E566532-09F0-4E41-B685-C64EFA36FA5A),
+	
+		helpstring("IAudioRiff Interface"),
+		pointer_default(unique)
+	]
+	interface IAudioRiff : IUnknown
+	{
+		[helpstring("init")]             HRESULT  init();
+		[helpstring("get_audioRiffData")]   HRESULT  get_audioRiffData([in, out]   EMSAUDIODATARECORD_RIFF*  pVal );
+      [helpstring("put_audioRiffData")]   HRESULT  put_audioRiffData([in]        EMSAUDIODATARECORD_RIFF*  pNewVal );
+	  [helpstring("get_audioRiffDataSet")]  HRESULT  get_audioRiffDataSet([in] EMSAUDIOSELECTCRITERIA* pAudioCriteria,
+																		[in,out] long* plCount,
+																		[out,size_is(,*plCount)] LPEMSAUDIODATARECORD_RIFF**  papData );
+	};
+
+	[
+		object,
+		uuid(ACB1CB0B-79EB-40C1-BA27-779FDEA7B436),
+		helpstring("ICalibrate406Ex Interface"),
+		pointer_default(unique)
+	]
+	interface ICalibrate406Ex : IUnknown
+	{
+		[helpstring("init")]          HRESULT  init();
+		[helpstring("put_calib406ex")]  HRESULT  put_calib406ex([in] EMSCALIB406DATAEXT*  pNewVal );
+
+		[helpstring("get_calib406exDataSet")]  HRESULT  get_calib406exDataSet([in] EMSSELECTCRITERIA* pCriteria,
+																		[in,out] long* plCount,
+																		[out,size_is(,*plCount)] LPEMSCALIB406DATAEXT**  papData );
+	};
+
+
+
+	[
+		object,
+		uuid(EF65B3C4-FF67-40fe-A39E-8FCBDB162018),
+		helpstring("ICalibrate406_2 Interface"),
+		pointer_default(unique)
+	]
+
+
+	interface ICalibrate406_2 : IUnknown
+	{
+		[helpstring("init")]          HRESULT  init();
+
+		[helpstring("put_calib406_2")]  HRESULT  put_calib406_2(
+					[in] EMSCALIB406DATA2*  pNewVal );
+
+		[helpstring("get_calib406_2DataSet")]  HRESULT  get_calib406_2DataSet( 
+					[in] EMSSELECTCRITERIA* pCriteria,
+					[in,out] long* plCount,
+					[out,size_is(,*plCount)] LPEMSCALIB406DATA2**  papData );
+	};
+
+	[
+		object,
+		uuid(7E157C7D-E1D1-464F-A1C3-08428F267E31),
+		helpstring("IABLData Interface"),
+		pointer_default(unique)
+	]
+	interface IABLData : IUnknown
+	{
+		[helpstring("init")]            HRESULT  init();
+		[helpstring("put_abldata")]     HRESULT  put_abldata( [in] EMSABLData*  pNewVal );
+
+		[helpstring("get_ablDataSet")]  HRESULT  get_ablDataSet( [in] EMSSELECTCRITERIA* pCriteria,
+																 [in,out] long* plCount,
+																 [out,size_is(,*plCount)] LPEMSABLData**  papData );
+	};
+	
+	[
+		object,
+		uuid(FA7B2A46-2239-4294-BDF0-6148C9604740),
+		helpstring("IHealthStatus Database Interface"),
+		pointer_default(unique)
+	]
+
+
+	interface IHealthStatus : IUnknown
+	{
+		[helpstring("init")]          HRESULT  init();
+
+		[helpstring("put_healthStatus")]  HRESULT  put_healthStatus(
+					[in] EMSHEALTHSTATUS*  pNewVal );
+
+		[helpstring("get_healthStatus_DataSet")]  HRESULT  get_healthStatus_DataSet( 
+					[in] EMSSELECTCRITERIA* pCriteria,
+					[in,out] long* plCount,
+					[out,size_is(,*plCount)] EMSHEALTHSTATUS**  papData );
+
+	};
+
+	[
+		object,
+		uuid(F0A383C6-D7AF-47f1-BD7F-1BC3DA517054),
+		helpstring("IHealthDetections Database Interface"),
+		pointer_default(unique)
+	]
+
+
+	interface IHealthDetections : IUnknown
+	{
+		[helpstring("init")]          HRESULT  init();
+
+		[helpstring("put_healthDetections")]  HRESULT  put_healthDetections(
+					[in] EMSHEALTHDETECTIONS*  pNewVal );
+
+		[helpstring("get_healthDetections_DataSet")]  HRESULT  get_healthDetections_DataSet( 
+					[in] EMSSELECTCRITERIA* pCriteria,
+					[in,out] long* plCount,
+					[out,size_is(,*plCount)] EMSHEALTHDETECTIONS**  papData );
+	};
+
+
+	[
+		object,
+		uuid(2FB132FE-ADF4-4517-A2EC-DAEF834D5C5D),
+		helpstring("IBeaconAdvisory Database Interface"),
+		pointer_default(unique)
+	]
+
+
+	interface IBeaconAdvisory : IUnknown
+	{
+		[helpstring("init")]          HRESULT  init();
+
+		[helpstring("put_beaconAdvisory")]  HRESULT  put_beaconAdvisory(
+					[in] EMS_BEACON_ADVISORY*  pBeacon );
+
+		[helpstring("get_beaconAdvisory_DataSet")]  HRESULT  get_beaconAdvisory_DataSet( 
+					[in] EMSSELECTCRITERIA* pCriteria,
+					[in,out] long* plCount,
+					[out,size_is(,*plCount)] EMS_BEACON_ADVISORY**  papData );
+
+	};
+
+	[
+		object,
+		uuid(465B8836-094A-4135-9900-4AFEC6BD4212),		
+		helpstring("IRawSGBData Database Interface"),
+		pointer_default(unique)
+	]
+
+
+	interface IRawSGBData : IUnknown
+	{
+		[helpstring("init")]          HRESULT  init();
+
+		[helpstring("put_RawSGBData")]  HRESULT  put_sgbData(
+					[in] SGBCSVDATA*  pBeacon );
+
+		[helpstring("get_RawSGB_Data")]  HRESULT  get_sgbData( 
+					[in] EMSSELECTCRITERIA* pCriteria,
+					[in,out] long* plCount,
+					[out,size_is(,*plCount)] SGBCSVDATA**  papData );
+
+	};
+
+[
+	uuid(4AF4DE17-CC21-46D0-A7F0-EEE6E472692C),
+	version(1.0),
+	helpstring("LeoLut600DBS 1.0 Type Library")
+]
+library LEOLUT600DBSLib
+{
+	importlib("stdole32.tlb");
+	importlib("stdole2.tlb");
+
+	[
+		uuid(21B267E6-5C43-43C9-BB8C-A47162FE3DA5),
+		helpstring("CCBCData Class")
+	]
+	coclass CCBCData
+	{
+		[default] interface ICCBCData;
+	};
+
+
+	[
+		uuid(CECD73DC-CBA4-41ae-A33D-F225C344AAC7),
+		helpstring("SARPData Class")
+	]
+	coclass SARPData
+	{
+		[default] interface ISARPData;
+	};
+
+
+	[
+		uuid(DB012CE2-7DE2-4b2d-B7A6-8CF5EBCC416D),
+		helpstring("SARRData Class")
+	]
+	coclass SARRData
+	{
+		[default] interface ISARRData;
+	};
+
+
+	[
+		uuid(E17224FC-479A-42F5-9100-D69F6DC72804),
+		helpstring("Spectrum Class")
+	]
+	coclass Spectrum
+	{
+		[default] interface ISpectrum;
+	};
+	[
+		uuid(6C27DF54-9DA1-4982-ADA3-4CF17CCE9E9C),
+		helpstring("LeoStatus Class")
+	]
+	coclass LeoStatus
+	{
+		[default] interface ILeoStatus;
+	};
+	[
+		uuid(F97B4ABB-318B-41D4-9636-AE3CDAB6C6B6),
+		helpstring("EMSLogger Class")
+	]
+	coclass EMSLogger
+	{
+		[default] interface IEMSLogger;
+	};
+	[
+		uuid(0CB72146-7D0B-46E9-BCC1-859F59E278E3),
+		helpstring("EMSLocate Class")
+	]
+	coclass EMSLocate
+	{
+		[default] interface IEMSLocate;
+	};
+	[
+		uuid(E7D38C4E-15C0-4DA9-AE8E-23BA559ED100),
+		helpstring("Calibrate406 Class")
+	]
+	coclass Calibrate406
+	{
+		[default] interface ICalibrate406;
+	};
+	[
+		uuid(BFC1B1E1-8811-4775-A3C8-639A77AB6131),
+		helpstring("CBCOut Class")
+	]
+	coclass CBCOut
+	{
+		[default] interface ICBCOut;
+	};
+	[
+		uuid(3A8C993A-8FB0-4033-8CA0-A80187D298C4),
+		helpstring("EMSTLE Class")
+	]
+	coclass EMSTLE
+	{
+		[default] interface IEMSTLE;
+	};
+	[
+		uuid(0E800B99-9448-4CA7-99A0-5DF1C6DBA1E4),
+		helpstring("AlarmData Class")
+	]
+	coclass AlarmData
+	{
+		[default] interface IAlarmData;
+	};
+	[
+		uuid(9C71DA27-2F24-4CE2-9B97-F5473C626FE3),
+		helpstring("SatTrack Class")
+	]
+	coclass SatTrack
+	{
+		[default] interface ISatTrack;
+	};
+	[
+		uuid(513D6E4A-B6F5-450b-B86D-F04C0BD90E76),
+		helpstring("ResidualData Class")
+	]
+	coclass ResidualData
+	{
+		[default] interface IResidualData;
+	};
+
+	[
+		uuid(92AF213E-1752-44F5-8F6C-0DC2E83751BB),
+		helpstring("ConfigData Class")
+	]
+	coclass ConfigData
+	{
+		[default] interface IConfigData;
+	};
+	[
+		uuid(506B448D-580C-41C1-B0ED-2114E7E36450),
+		helpstring("Combined406Data Class")
+	]
+	coclass Combined406Data
+	{
+		[default] interface ICombined406Data;
+	};
+	[
+		uuid(0929DB03-9651-4069-B239-118F080495E0),
+		helpstring("SarpCalibData Class")
+	]
+	coclass SarpCalibData
+	{
+		[default] interface ISarpCalibData;
+	};
+	[
+		uuid(0FB7EAFD-130A-4755-8DFC-6973698359A3),
+		helpstring("SarrCalibData Class")
+	]
+	coclass SarrCalibData
+	{
+		[default] interface ISarrCalibData;
+	};
+	[
+		uuid(1184594E-7981-4E8A-89EC-423EF9556E28),
+		helpstring("AudioRiff Class")
+	]
+	coclass AudioRiff
+	{
+		[default] interface IAudioRiff;
+	};
+
+	[
+		uuid(E5A3066E-4DDD-4746-A00B-BD8175F84ECC),
+		helpstring("Calibrate406Ex Class")
+	]
+	coclass Calibrate406Ex
+	{
+		[default] interface ICalibrate406Ex;
+	};
+
+
+	[
+		uuid(3F6DBDB4-4C3B-40cc-86B0-08DABF836A73),
+		helpstring("Calibrate406_2 Class")
+	]
+	coclass Calibrate406_2
+	{
+		[default] interface ICalibrate406_2;
+	};
+
+	[
+		uuid(253FA651-6099-4375-B502-F0F378B04785),
+		helpstring("RawSGBData Class")
+	]
+	coclass RawSGBData
+	{
+		[default] interface IRawSGBData;
+	};
+
+	[
+		uuid(9AC9E0AD-2E51-4370-BF25-0A9314EDC483),
+		helpstring("ABLData Class")
+	]
+	coclass ABLData
+	{
+		[default] interface IABLData;
+	};
+
+	[
+		uuid(2B035B0D-6808-4ae1-A4CB-5DB0C365EB37),
+		helpstring("HealthStatus Database Access Class")
+	]
+	coclass HealthStatus
+	{
+		[default] interface IHealthStatus;
+	};
+
+	[
+		uuid(F47C58C2-630F-417c-B892-CFCBBDC9D827),
+		helpstring("HealthDetections Database Access Class")
+	]
+	coclass HealthDetections
+	{
+		[default] interface IHealthDetections;
+	};
+
+	[
+		uuid(AE4D9BF1-5DBB-4e14-A935-C1256EBDA255),
+		helpstring("BeaconAdvisory Database Access Class")
+	]
+	coclass BeaconAdvisory
+	{
+		[default] interface IBeaconAdvisory;
+	};
+};
+cpp_quote("#endif //INC_LEODBSIDL")

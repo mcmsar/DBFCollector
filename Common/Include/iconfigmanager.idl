@@ -1,0 +1,135 @@
+// iconfigmanager.idl : IDL source for IEMSConfigurationManager
+//
+
+// This file will be processed by the MIDL tool to
+// produce the type library (cm.tlb) and marshalling code.
+
+cpp_quote("// {8D31C737-0DE2-4e26-AF07-B49A1B5D4DDE}")
+cpp_quote("DEFINE_GUID(CLSID_EMSConfigurationManager, 0x8d31c737, 0xde2, 0x4e26, 0xaf, 0x7, 0xb4, 0x9a, 0x1b, 0x5d, 0x4d, 0xde);")
+cpp_quote(" ")
+
+cpp_quote("// {A46A208B-797C-4626-9DB3-434A8FF21D81}")
+cpp_quote("DEFINE_GUID(IID_IEMSConfigurationManager, 0xa46a208b, 0x797c, 0x4626, 0x9d, 0xb3, 0x43, 0x4a, 0x8f, 0xf2, 0x1d, 0x81);")
+cpp_quote(" ")
+
+cpp_quote("// {41E06ED4-1247-439a-A20B-61F4575E7783}")
+cpp_quote("DEFINE_GUID(IID_IEMSConfigurationManagerSec, 0x41e06ed4, 0x1247, 0x439a, 0xa2, 0xb, 0x61, 0xf4, 0x57, 0x5e, 0x77, 0x83);")
+cpp_quote(" ")
+
+cpp_quote("// constant declarations:")
+cpp_quote(" ")
+cpp_quote("const wchar_t c_pwcsNoGroupID[] = L\"\";")
+
+
+//import "oaidl.idl";
+//import "ocidl.idl";
+import "unknwn.idl";
+import "configmanagertypes.idl";
+import "emstypex.idl";
+
+	[
+		object,
+		uuid(A46A208B-797C-4626-9DB3-434A8FF21D81),
+	
+		helpstring("IEMSConfigurationManager Interface"),
+		pointer_default(unique)
+	]
+	interface IEMSConfigurationManager : IUnknown
+	{
+
+      HRESULT GetGroupTypes(  [out]                            int*        pCount, 
+                              [out,string,size_is(,*pCount)]   wchar_t***  ppaGroupTypes );
+
+      HRESULT GetGroupIDs( [in, string]                     const wchar_t*    pwcsGroupType,
+                           [out]                            int*              pCount, 
+                           [out,string,size_is(,*pCount)]   wchar_t***        ppaGroupIDs );
+
+      HRESULT Get(   [in, string]   const wchar_t*    pwcsGroupType,
+                     [in, string]   const wchar_t*    pwcsGroupID,
+                     [in, string]   const wchar_t*    pwcsKeyName,
+                     [out]          EMSVARITYPE*      pValue );
+
+
+      HRESULT GetEx( [in, string]                  const wchar_t*          pwcsGroupType,
+                     [in, string]                  const wchar_t*          pwcsGroupID,
+                     [in, string, size_is(count)]  const wchar_t**         pawcsKeyNames,
+                     [in]                          int                     count,
+                     [in,out,size_is(count)]       EMSCONFIGURATIONITEM    aValues[],
+                     [out, retval]                 int*                    pResult );
+
+      HRESULT GetGroup( [in, string]            const wchar_t*          pwcsGroupType,
+                        [in, string]            const wchar_t*          pwcsGroupID,
+                        [out]                   int*                    pCount,
+                        [out,size_is(,*pCount)] EMSCONFIGURATIONITEM*** ppaValues );
+
+      HRESULT GetKeyTime(  [in, string]   const wchar_t*    pwcsGroupType,
+                           [in, string]   const wchar_t*    pwcsGroupID,
+                           [in, string]   const wchar_t*    pwcsKeyName,
+                           [out]          EMSTIME*          pTime );
+
+      HRESULT Set(   [in, string]   const wchar_t*    pwcsGroupType,
+                     [in, string]   const wchar_t*    pwcsGroupID,
+                     [in, string]   const wchar_t*    pwcsKeyName,
+                     [in]           EMSVARITYPE       value );
+
+      HRESULT SetString(   [in, string]   const wchar_t*    pwcsGroupType,
+                           [in, string]   const wchar_t*    pwcsGroupID,
+                           [in, string]   const wchar_t*    pwcsKeyName,
+                           [in, string]   const wchar_t*    pwcsValue );
+
+      HRESULT SetEx( [in, string]         const wchar_t*          pwcsGroupType,
+                     [in, string]         const wchar_t*          pwcsGroupID,
+                     [in]                 int                     count,
+                     [in,size_is(count)]  EMSCONFIGURATIONITEM    aKeyValuePairs[] );
+	};
+
+import "emsauthorization.idl";
+
+	[
+		object,
+		uuid(41E06ED4-1247-439a-A20B-61F4575E7783),
+	
+		helpstring("IEMSConfigurationManagerSec Interface"),
+		pointer_default(unique)
+	]
+
+	interface IEMSConfigurationManagerSec : IUnknown
+	{
+      HRESULT Get(   
+                     [in]           const EMSAUTHORIZATIONINFO*   pIdentificationInfo,
+                     [in, string]   const wchar_t*                pwcsGroupType,
+                     [in, string]   const wchar_t*                pwcsGroupID,
+                     [in, string]   const wchar_t*                pwcsKeyName,
+                     [out]          EMSVARITYPE*                  pValue );
+
+      HRESULT SetString(   
+                           [in]           const EMSAUTHORIZATIONINFO*   pIdentificationInfo,
+                           [in, string]   const wchar_t*                pwcsGroupType,
+                           [in, string]   const wchar_t*                pwcsGroupID,
+                           [in, string]   const wchar_t*                pwcsKeyName,
+                           [in, string]   const wchar_t*                pwcsValue );
+   }
+
+[
+	uuid(7B99BAAB-4103-4d0f-84E1-D2437C8141E2),
+	version(1.0),
+	helpstring("server2 1.0 Type Library")
+]
+library SERVER2Lib
+{
+	importlib("stdole32.tlb");
+	importlib("stdole2.tlb");
+
+	[
+		uuid(8D31C737-0DE2-4e26-AF07-B49A1B5D4DDE),
+		helpstring("EMSConfigurationManager Class")
+	]
+	coclass EMSConfigurationManager
+	{
+		[default] interface IEMSConfigurationManager;
+		          interface IEMSConfigurationManagerSec;
+	};
+};
+
+typedef [unique] IEMSConfigurationManager *LPEMSCONFIGURATIONMANAGER;
+

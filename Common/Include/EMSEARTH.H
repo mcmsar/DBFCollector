@@ -1,0 +1,64 @@
+/********************************************************************
+*	Module:			emsearth.h
+*	Process ID:
+*	S/W Platforms:
+*	H/W Platforms:
+*	Compiler:
+*	Description: 	
+*
+*	Usage:
+*	Entry Point:
+*	Input Files:
+*	Output Files:
+*	Comments:	
+*
+*********************************************************************
+*	              Copyright (c) 2001 by EMS Technologies, Inc.,
+*										All rights reserved
+*	This program is unpublished software and contains the trade secrets
+*	and confidential information of EMS Technologies, Inc.  It may not be 
+* reproduced in whole or in part, in any form or by any means whatsoever 
+* without the express written permission of EMS Technologies, Inc.
+*
+********************************************************************/
+
+/*******************************************************************
+
+  Revision Record
+
+	Rev	Date			Auth	Changes
+	===	====			====	=======
+
+	0.0	2001/03/22	rvw	start
+
+********************************************************************/
+
+#ifndef INC_EMSEARTH
+#define INC_EMSEARTH
+
+#include "emstypes.h"
+#include "emstime.h"
+#include "emsconst.h"
+//#include "emsvectr.h"
+
+class CEMSEarth
+{
+protected:	
+	CEMSEarth() { }
+	~CEMSEarth() { }
+
+public:
+	inline static double KmRadius( void ) { return c_dEarthKmRadius; }
+	inline static double Eccentricity( void ) { return c_dEarthEccentricity; }
+	static double GreenwichSiderealTime( EMSTIME emsTime );
+	static double LocalSiderealTime( EMSTIME emsTime, EMSDEGREES degLongitude );
+	static double Radius( void ) { return c_dEarthKmRadius; }
+	static double Radius( EMSVECTOR vIntersect );
+
+private:
+	static double _GreenwichSiderealTime( EMSTIME emsTime );
+	static double _Modulo2PI( double dRadians );
+
+};
+
+#endif // INC_EMSEARTH

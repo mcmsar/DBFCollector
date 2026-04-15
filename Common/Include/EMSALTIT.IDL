@@ -1,0 +1,46 @@
+cpp_quote( " " )
+cpp_quote( "#include \"emserror.h\"" )
+cpp_quote( " " )
+
+cpp_quote("// {A614E4A3-8B7F-48d6-9ACB-1168B8AA301B} " )
+cpp_quote("DEFINE_GUID( CLSID_EMSAltit, 0xa614e4a3, 0x8b7f, 0x48d6, 0x9a, 0xcb, 0x11, 0x68, 0xb8, 0xaa, 0x30, 0x1b); " )
+cpp_quote(" " )
+
+cpp_quote("// {288DEDC0-11A5-4563-8C8D-6F09A15C55D0} ")
+cpp_quote("DEFINE_GUID( IID_IEMSAltit, 0x288dedc0, 0x11a5, 0x4563, 0x8c, 0x8d, 0x6f, 0x9, 0xa1, 0x5c, 0x55, 0xd0); ")
+cpp_quote(" " )
+
+import "unknwn.idl";
+import "emstypex.idl";
+
+#define _EMS_RPC_VERSION 1
+#define __RPC_FAR 
+
+[
+    object, uuid(288DEDC0-11A5-4563-8C8D-6F09A15C55D0),
+    helpstring("IEMSAltitude Interface"),
+    pointer_default(unique)
+]
+
+interface IEMSAltit : IUnknown
+{
+
+    typedef enum _tagEMSTERRAINENUMTYPE
+    {
+        TERRAIN_UNKNOWN,
+        TERRAIN_LAND,
+        TERRAIN_WATER,
+        TERRAIN_MOUNTAINEOUS,
+        TERRAIN_FOREST,
+        TERRAIN_URBAN
+    }   EMSTERRAINENUMTYPE, *LPEMSTERRAINENUMTYPE;
+
+    HRESULT LoadAltitudeData(        [in]     LPEMSLOCATION        lpLocation );
+
+    HRESULT GetLocationAltitudeInfo( [in,out] LPEMSLOCATION        lpLocation,
+                                     [out]    double               *pdAltitError,
+                                     [out]    LPEMSTERRAINENUMTYPE peTerrainType );
+
+};
+
+typedef [unique] IEMSAltit *LPEMSAltit;

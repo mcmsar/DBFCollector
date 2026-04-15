@@ -1,0 +1,72 @@
+/*********************************************************************
+*	              Copyright (c) 2005 by EMS Technologies, Inc.,
+*										All rights reserved
+*	This program is unpublished software and contains the trade secrets
+*	and confidential information of EMS Technologies, Inc.  It may not be 
+* reproduced in whole or in part, in any form or by any means whatsoever 
+* without the express written permission of EMS Technologies, Inc.
+*
+********************************************************************/
+
+/*******************************************************************
+
+  Revision Record
+
+	$Log:
+	$
+********************************************************************/
+
+cpp_quote( "// {D17267E7-4183-4d77-9297-34264EEF8EBD}" )
+cpp_quote( "DEFINE_GUID(CLSID_EMSSatIdEngine, 0xd17267e7, 0x4183, 0x4d77, 0x92, 0x97, 0x34, 0x26, 0x4e, 0xef, 0x8e, 0xbd);")
+cpp_quote( " " )
+
+cpp_quote( "// {EDCE6E49-7E63-428d-BFA3-FC9D965B6D43}" )
+cpp_quote( "DEFINE_GUID( IID_IEMSSATIDEngine, 0xedce6e49, 0x7e63, 0x428d, 0xbf, 0xa3, 0xfc, 0x9d, 0x96, 0x5b, 0x6d, 0x43);")
+cpp_quote( " " )
+
+import "unknwn.idl";
+
+//#define _EMS_RPC_VERSION 1
+
+
+[
+	object, uuid(EDCE6E49-7E63-428d-BFA3-FC9D965B6D43),
+	helpstring("IEMSSATIDEngine Interface"),
+	pointer_default(unique)
+]
+interface IEMSSATIDEngine : IUnknown
+{
+	typedef enum _tagStatus
+	{
+		ENGINE_NOT_INITIALIZED = 0,
+		ENGINE_INITIALIZED = 1,
+		ENGINE_RUNNING = 2,
+		ENGINE_PAUSED = 3,
+		ENGINE_DONE = 4,
+		ENGINE_STOPPED = 5,
+		ENGINE_STOPPED_WITH_ERROR = 6
+	} EMSSATIDSTATUS;
+
+	typedef enum _tagOperationMode
+	{
+	    SATID_INVALID_MODE = 0,
+		SATID_PATERN_CALIBRATION = 1,
+		SATID_SIGNAL_VALIDATION = 2
+	} EMSSATIDOPERATIONMODE;
+
+	HRESULT  Initialize( [in,string] const wchar_t* cwszXmlConfigStr );
+
+	HRESULT  StartSatId( );
+	HRESULT  StopSatId( );
+	HRESULT  PauseSatId( );
+	HRESULT  ResumeSatId( );
+	HRESULT  Reset( );
+
+	HRESULT  OutputPatern( );
+
+	HRESULT  GetStatus( [out] EMSSATIDSTATUS* peStatus );
+	HRESULT  GetOPMode( [out] EMSSATIDOPERATIONMODE* peOpMode );
+
+	HRESULT  GetNumOfRecords( [out] long* pulNReadRecs );
+
+};

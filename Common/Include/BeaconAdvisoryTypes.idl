@@ -1,0 +1,62 @@
+cpp_quote("/********************************************************************")
+cpp_quote("*	Module:			BeaconAdvisoryTypes.h ") 
+cpp_quote("*********************************************************************")
+cpp_quote("*	              Copyright (c) 2009 by EMS Technologies, Inc.,")
+cpp_quote("*										All rights reserved")
+cpp_quote("*	This program is unpublished software and contains the trade secrets")
+cpp_quote("*	and confidential information of EMS Technologies, Inc.  It may not be ")
+cpp_quote("* reproduced in whole or in part, in any form or by any means whatsoever ")
+cpp_quote("* without the express written permission of EMS Technologies, Inc.")
+cpp_quote("*")
+cpp_quote("********************************************************************/")
+cpp_quote("#ifndef INC_BEACONADVISORYTYPES_IDL")
+cpp_quote("#define INC_BEACONADVISORYTYPES_IDL")
+
+#define _EMS_RPC_VERSION 1
+#define __RPC_FAR 
+
+import "unknwn.idl";
+import "emstypex.idl";
+
+typedef enum _tagEMSTxMode
+{	EMSTXMODE_UNKNOWN		= 0,
+	EMSTXMODE_TESTONLY		= 1,
+	EMSTXMODE_COMBINED		= 2,
+	EMSTXMODE_COMBINEDONLY	= 3
+} EMSTXMODE;
+
+cpp_quote("#define INVALID_LATITUDE	99.9999")
+cpp_quote("#define INVALID_LONGITUDE	999.9999")
+
+typedef struct _tagEMS_BEACON_ADVISORY
+{
+	EMSTIME		timestamp;
+	ULONG		ulLUTID;
+	ULONG		ulSatID;		// most recent detection by this satellite
+	ULONG		ulPassID;		// and this pass
+	INT64		i64BeaconID;	// Beacon Identifier 
+	BYTE		cBeaconMsg[18];	// The last detected beacon message
+	EMSTIME		timeFirstDetect;
+	EMSTIME		timeLastDetect;
+	ULONG		ulTestBurstCount;
+	ULONG		ulTotalBurstCount;
+	EMSTXMODE	eTxMode;
+	double		dDegLatitude;
+	double		dDegLongitude;
+	// These allow us to track how many records go out in a single report
+	// They are not saved to the database
+	WORD		wSeq;
+	WORD		wCount;
+	// reserved to allow for additional criteria
+	ULONG		ulReserved1;
+	ULONG		ulReserved2;
+	ULONG		ulReserved3;
+	ULONG		ulReserved4;
+	double		dReserved1;
+	double		dReserved2;
+	double		dReserved3;
+	double		dReserved4;
+	EMSTIME		timeReserved;
+} EMS_BEACON_ADVISORY;
+
+cpp_quote("#endif //INC_BEACONADVISORYTYPES_IDL")

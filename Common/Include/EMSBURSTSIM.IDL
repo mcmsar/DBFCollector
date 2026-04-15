@@ -1,0 +1,67 @@
+/*********************************************************************
+*	              Copyright (c) 2005 by EMS Technologies, Inc.,
+*										All rights reserved
+*	This program is unpublished software and contains the trade secrets
+*	and confidential information of EMS Technologies, Inc.  It may not be 
+* reproduced in whole or in part, in any form or by any means whatsoever 
+* without the express written permission of EMS Technologies, Inc.
+*
+********************************************************************/
+
+/*******************************************************************
+
+  Revision Record
+
+	$Log:
+	$
+********************************************************************/
+
+cpp_quote( "// {416B70A6-EEFF-4b62-B4C8-90E8C72BAE8D}" )
+cpp_quote( "DEFINE_GUID( CLSID_EMSBURSTSIM, 0x416b70a6, 0xeeff, 0x4b62, 0xb4, 0xc8, 0x90, 0xe8, 0xc7, 0x2b, 0xae, 0x8d);")
+cpp_quote( " " )
+
+cpp_quote( "// {AB625676-9BF6-4943-A586-AC11B4108994}" )
+cpp_quote( "DEFINE_GUID( IID_IEMSBURSTSIM, 0xab625676, 0x9bf6, 0x4943, 0xa5, 0x86, 0xac, 0x11, 0xb4, 0x10, 0x89, 0x94);")
+cpp_quote( " " )
+
+import "unknwn.idl";
+import "emstypex.idl";
+
+//#define _EMS_RPC_VERSION 1
+#define HEXBEACONMSGLENGTH 36
+
+[
+	object, uuid(AB625676-9BF6-4943-A586-AC11B4108994),
+	helpstring("IEMSBURSTSIM Interface"),
+	pointer_default(unique)
+]
+interface IEMSBURSTSIM : IUnknown
+{
+	typedef struct _tagEMSBSBCNBURSTDATA //beacon sim beacon burst data
+	{
+		long      lSampleRate;
+		double    dStartTime;
+		EMSTIME   timeBurst;
+		int       iNumOfBits;
+		float     fBitRate;
+		float     fRiseTime;
+		float     fFallTime;
+		float     fModIndex;
+		char      cBeaconMsg[HEXBEACONMSGLENGTH];
+		float     fDuration;
+		float     fCarrierDuration;
+		float     fTrailingDuration;
+		double    dBaseBandFreq;
+		double    dRefFreq;
+		float     fFreqDrift;
+		float     fAmplitude;
+		float     fMaxAmplitude;
+		long      lScaleFactor;
+		int       iEncodeType;
+	} EMSBSBCNBURSTDATA, *LPEMSBSBCNBURSTDATA;
+
+	HRESULT GenerateBeaconBurst( [in] EMSBSBCNBURSTDATA* pBurstData,
+	                             [out] unsigned long* pulSigSize,
+								 [out,size_is(,*pulSigSize)] BYTE** arrbSignal );
+
+};

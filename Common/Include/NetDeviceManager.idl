@@ -1,0 +1,40 @@
+/*********************************************************************
+*	              Copyright (c) 2006 by EMS Technologies, Inc.,
+*										All rights reserved
+*	This program is unpublished software and contains the trade secrets
+*	and confidential information of EMS Technologies, Inc.  It may not be 
+* reproduced in whole or in part, in any form or by any means whatsoever 
+* without the express written permission of EMS Technologies, Inc.
+*
+********************************************************************/
+
+/*******************************************************************
+
+  Revision Record
+
+	$Log:
+	$
+********************************************************************/
+
+cpp_quote("// {D762BC96-7C7C-43de-8DBD-C8534DFA6D1A}")
+cpp_quote("DEFINE_GUID(IID_IEMSNetDeviceManager, 0xd762bc96, 0x7c7c, 0x43de, 0x8d, 0xbd, 0xc8, 0x53, 0x4d, 0xfa, 0x6d, 0x1a);")
+
+cpp_quote( "// {1DC13991-0A6E-4acd-A61A-CBD01C6D5573}")
+cpp_quote( "DEFINE_GUID(CLSID_EMSStormManager, 0x1dc13991, 0xa6e, 0x4acd, 0xa6, 0x1a, 0xcb, 0xd0, 0x1c, 0x6d, 0x55, 0x73);")
+
+
+import "unknwn.idl";
+[
+	uuid(D762BC96-7C7C-43de-8DBD-C8534DFA6D1A),
+	helpstring("IEMSNetDeviceManager"),
+	pointer_default(unique)
+]
+interface IEMSNetDeviceManager : IUnknown
+{
+	HRESULT Init( [in,string] const wchar_t* cwszConfig );
+	HRESULT CheckDevices();
+	HRESULT Activate( [in] const int ciID );
+	HRESULT Deactivate( [in] const int ciID );
+	HRESULT IsActive( [in] const int ciID, [in,out] BOOL* pbActive );
+};
+

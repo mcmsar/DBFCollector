@@ -1,0 +1,21 @@
+#ifndef INC_SARTASK
+#define INC_SARTASK
+
+// System Message Types
+typedef const enum
+{
+  MsgTrace = 0, MsgDebug, MsgData, MsgInfo, MsgWarn,
+  MsgAlarm, MsgComms, MsgState, MsgFatal
+} TOutputMessage;
+
+class CSARTask
+{
+public:
+	CSARTask( LPCTSTR lpcszTaskName=0 ) { }
+	~CSARTask( void ) { }
+	
+  int OutputMessage( TOutputMessage Type, LPCTSTR lpcszMessage ) { return 0; }
+};
+
+#endif // INC_SARTASK
+

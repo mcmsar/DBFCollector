@@ -1,0 +1,443 @@
+<HTML>
+<HEAD>
+<TITLE>Intel&#174; Integrated Performance Primitives for Windows* Release Notes</TITLE>
+<style>
+<!--
+ li.MsoNormal
+	{mso-style-parent:"";
+	margin-bottom:.0001pt;
+	font-size:10.0pt;
+	font-family:Arial;
+	margin-left:0in; margin-right:0in; margin-top:0in}
+div.Section1
+	{page:Section1;}
+-->
+</style>
+</HEAD>
+
+<em><H1 align="center"><font face="Arial">Intel<sup>&#174;</sup> Integrated 
+Performance Primitives v5.2&nbsp; for Windows* on IA-32 Intel® Architecture&nbsp; <BR>
+Release Notes</font></H1></em>
+
+<H2><font face="Arial">Contents</font></H2>
+<h5><font face="Arial"><A HREF="#Overview">Overview</A><BR>
+<A HREF="#Whats_New">What Is New in the Intel&#174; IPP Version 5.2 ?</A><BR>
+<A HREF="#System_Requirements">System Requirements</A><BR>
+<A HREF="#Installation">Installation</A><BR>
+<A HREF="#Library_Use">Resources for Addition Information</A><BR>
+<A HREF="#Technical_Support">Technical Support and Feedback</A><BR>
+<A HREF="#License_Definitions">License Definitions</A></font></h5>
+<A NAME="Overview">
+<H2><font face="Arial">Overview</font></H2>
+</A>
+<p><font face="Arial">The Intel&#174; Integrated Performance Primitives (Intel&#174; IPP) 
+5.2&nbsp; for Windows* contains
+4
+separate install packages. </font> </p>
+<ul type="disc" style="margin-bottom: 0in">
+	<li class="MsoNormal"><span style="font-size: 12.0pt">Intel® IPP 5.2 for 
+	Windows* on IA-32 Intel® Architecture </span></li>
+	<li class="MsoNormal"><span style="font-size: 12.0pt">Intel® IPP 5.2 for 
+	Windows* on Intel® Itanium® Architecture</span></li>
+	<li class="MsoNormal"><span style="font-size: 12.0pt">Intel® IPP 5.2 for 
+	Windows* on Intel® 64 (Intel® EM64T) architecture</span></li>
+	<li class="MsoNormal"><span style="font-size: 12.0pt">Intel® IPP 5.2 for 
+	Windows* on Intel® IXP4XX Network Processors </span></li>
+</ul>
+<p><font face="Arial">This Release Notes file refers to the Intel&#174; IPP 5.2&nbsp; for Windows* on 
+IA-32 Intel® Architecture .</font></p>
+<p><font face="Arial">Intel&#174; Integrated Performance Primitives (Intel IPP) is a software library
+which provides a broad range of functionality including general signal, image,
+speech, graphics, data compression, cryptography, text strings and audio processing, vector
+manipulation and matrix math, as well as more sophisticated primitives for
+construction of audio, video and speech codecs such as MP3 (MPEG-1 Audio, Layer
+3), MPEG-4, H.264, VC-1,H.263, JPEG, JPEG2000, GSM-AMR* and G.729, plus computer vision. By supporting
+a variety of data types and layouts for each function and minimizing the number
+of data structures used, the Intel IPP library delivers a rich set of options
+for developers to choose from while designing and optimizing an application.
+</font> </p>
+<p><font face="Arial">The Intel IPP application programming interface (API) is a 
+cross-platform, low-level software interface that abstracts multimedia and 
+signal processing functionality from the processor underneath. This allows 
+transparent use of recent Intel® architecture enhancements such as Intel® Core™2 
+Quad and&nbsp; Intel® Core™ 
+2 Duo Microarchitectures, Intel® 64 Technology (Intel® 
+EM64T), Streaming SIMD Extensions (SSE), SSE2, SSE3, SSSE3, MMX™ technology, and 
+Intel XScale® technology. Intel IPP is optimized for the broad range of Intel® 
+microprocessors: Intel® Core™2 Quad processors, Intel® Core™ 2 Duo Processors, Intel® Xeon® processors, Intel® 
+Pentium® 4 processor, the Intel® Itanium® 2 processor and Intel® IXP4XX&nbsp; Network Processors. With a single API across the range of 
+architectures, application developers can have platform compatibility and reduced cost of 
+development. Using Intel IPP, you can simplify integration of basic functions 
+and focus more of your time and efforts on building the value-add functionality 
+that will differentiate your product in the market. </font></p>
+<font FACE="Arial"><b>
+<p ALIGN="LEFT">Processor Terminology<br>
+</b>Intel IPP supports 4 platforms: general combinations of processor and 
+operating system type. This section explains the terms that Intel uses to 
+describe the platforms in its documentation, installation procedures and product 
+web site.</p>
+</font><font FACE="Arial"><b>
+<p ALIGN="LEFT">IA-32: </b>Any systems based on 32-bit processors generally 
+compatible with the Intel Pentium®&nbsp; processor, (for example, Intel® Core™2 
+Duo, Intel® Core™,&nbsp; Pentium® 4, Pentium® D, Centrino®, Celeron® or Intel® 
+Xeon®), or processors from other manufacturers supporting the same instruction 
+set, running a 32-bit operating system.</p>
+</font><font FACE="Arial"><b>
+<p ALIGN="LEFT"><span style="font-size: 12.0pt">Intel® 64 </span></b>(Intel® 
+Extended Memory 64 Technology): any systems based on IA-32 processors which have 
+64-bit architectural extensions, (for example, <span class="myst.item">
+<span class="myst.item.title.trigger">Quad-Core Intel® Xeon® Processor and 
+Intel® Core™2 Duo processor),&nbsp; </span></span>running a 64-bit operating 
+system such as Microsoft* Windows* XP Professional x64 Edition or Microsoft 
+Windows Server 2003 x64 Edition. </p>
+</font><font FACE="Arial"><b>
+<p ALIGN="LEFT">Intel Itanium® </b>:any systems based on the Intel Itanium® 2 
+processor running a 64-bit operating system.</p>
+</font>
+<p><font face="Arial"><b>Intel® IXP4XX Network Processors: </b>
+any systems based on Intel® IXP4XX communications and embedded 
+networking&nbsp;processors, and extension to Intel XScale® technology for 
+embedded operating systems. </font></p>
+<h2><font face="Arial"><a name="Whats_New">What Is New in </a>the Intel® IPP 
+5.2 ?</font>&nbsp;&nbsp;&nbsp; </h2>
+<ul type="disc" style="margin-bottom: 0in">
+	<li class="MsoNormal"><span lang="EN-US"><font size="3">Expanded 
+	Optimizations in&nbsp;latest Intel Microarchitecture </font></span>
+	<ul type="circle" style="margin-bottom: 0in">
+		<li class="MsoNormal"><span lang="EN-US"><font size="3">Intel® Core™ 2 
+		Duo Processors for Intel® 64 (Intel® EM64T) architecture </font></span>
+		</li>
+		<li class="MsoNormal"><span lang="EN-US"><font size="3">Intel® Core™ 2 
+		Quad processor optimizations in functions and code sample </font></span>
+		</li>
+	</ul>
+	</li>
+	<li class="MsoNormal"><font size="3">Expanded Mac OS* Support </font>
+	<ul type="circle" style="margin-bottom: 0in">
+		<li class="MsoNormal"><span lang="EN-US"><font size="3">New 
+		optimizations for 64-bit Intel® Architecture </font></span></li>
+		<li class="MsoNormal"><span lang="EN-US"><font size="3">Added new 
+		samples for JPEG &amp; Image Processing (See Mac OS samples) </font></span>
+		</li>
+	</ul>
+	</li>
+	<li class="MsoNormal"><span lang="EN-US"><font size="3">New support 
+	for Microsoft* Windows* Vista* operating system. </font></span></li>
+	<li class="MsoNormal"><span lang="EN-US"><font size="3">Data Compression: 
+	Performance Improvement and Expanded Functionality (See Data Compression 
+	Sample) </font></span>
+	<ul type="circle" style="margin-bottom: 0in">
+		<li class="MsoNormal"><span lang="EN-US"><font size="3">Improvements on 
+		Compression and Decompression performance for Intel IPP based zlib 
+		primitives </font></span></li>
+		<li class="MsoNormal"><span lang="EN-US"><font size="3">Improvement on 
+		ease of integration from open source zlib library* to Intel IPP based 
+		zlib functionality </font></span></li>
+		<li class="MsoNormal"><span lang="EN-US"><font size="3">Improvements on 
+		performance for Intel IPP based LZSS primitives </font></span></li>
+		<li class="MsoNormal"><span lang="EN-US"><font size="3">Primitives 
+		necessary for implementing the libbzip2 API set </font></span></li>
+	</ul>
+	</li>
+	<li class="MsoNormal"><span lang="EN-US"><font size="3">Expanded new 
+	features and optimizations for High Definition (HD) video applications
+	</font></span>
+	<ul type="circle" style="margin-bottom: 0in">
+		<li class="MsoNormal"><span lang="EN-US"><font size="3">&nbsp;Added SMPTE 
+		421M video codec standard (VC-1) support </font></span>
+		<ul type="square" style="margin-bottom: 0in">
+			<li class="MsoNormal"><span lang="EN-US"><font size="3">VC-1 
+			Simple/Main/Advanced Profiles video decoder support functions </font>
+			</span></li>
+			<li class="MsoNormal"><span lang="EN-US"><font size="3">VC-1 full 
+			featured decoder (Simple/Main/Advanced Profiles) component in Media 
+			Processing 
+			Sample&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+			</font></span></li>
+		</ul>
+		</li>
+		<li class="MsoNormal"><span lang="EN-US"><font size="3">&nbsp;</font></span><font size="3">Expanded 
+		H.264 support and Optimizations </font>
+		<ul type="square" style="margin-bottom: 0in">
+			<li class="MsoNormal"><span lang="EN-US"><font size="3">H.264 High 
+			Profiles decoder support (High 4:2:0, High 4:2:2 and High 10) in 
+			H.264 decode component </font></span></li>
+			<li class="MsoNormal"><span lang="EN-US"><font size="3">H.264 High 
+			Profile encoding support in 2 new added functions </font></span>
+			</li>
+			<li class="MsoNormal"><font size="3">H.264 encoding functions 
+			optimizations </font></li>
+		</ul>
+		</li>
+	</ul>
+	</li>
+	<li class="MsoNormal"><span lang="EN-US"><font size="3">Added New DV codecs:&nbsp; 
+	DV50\100 decoders primitives and DV25\50 encoders primitives </font></span>
+	</li>
+	<li class="MsoNormal"><font size="3">Documentation Improvements: </font>
+	<ul type="circle" style="margin-bottom: 0in">
+		<li class="MsoNormal"><font size="3">Sample build documentation 
+		improvements </font></li>
+		<li class="MsoNormal"><span lang="EN-US"><font size="3">Added documents 
+		for Unified Media Class (UMC) model in Media Processing Sample </font>
+		</span></li>
+		<li class="MsoNormal"><span lang="EN-US"><font size="3">Added documents 
+		for Unified Speech Class (USC) model in Speech Coding Sample </font>
+		</span></li>
+	</ul>
+	</li>
+	<li class="MsoNormal"><span lang="EN-US">
+	<font size="3">New ippRR domain that contains Realistic Rendering 
+	functionality.</font></span></li>
+	<li class="MsoNormal"><span lang="EN-US">
+	<font size="3">Audio Coding:</font></span><font size="3"> </font>
+	<ul type="circle" style="margin-bottom: 0in">
+		<li class="MsoNormal"><span lang="EN-US">
+		<font size="3">Floating point versions of PQMF filters for MP3 encoder 
+		and decoder. </font></span></li>
+		<li class="MsoNormal"><span lang="EN-US">
+		<font size="3">Functions for supporting of fixed point version of HEAAC 
+		decoder. </font></span></li>
+		<li class="MsoNormal"><span lang="EN-US">
+		<font size="3">Fixed point version of forward and inverse mode of MDCT 
+		designed especially for AAC and MP3 decoders.</font></span></li>
+		<li class="MsoNormal"><span lang="EN-US">
+		<font size="3">New version of VLC functions designed especially for 
+		platforms with low (or bad) data cache.</font></span></li>
+	</ul>
+	</li>
+	<li class="MsoNormal"><span lang="EN-US">
+	<font size="3">Signal Processing: Several new customer requested 
+	functionalities including IIRGen</font></span></li>
+	<li class="MsoNormal"><span lang="EN-US">
+	<font size="3">Image Processing: 16u data support added </font></span></li>
+	<li class="MsoNormal"><span lang="EN-US">
+	<font size="3">JPEG processing: New functions for JPEG Extended Baseline 
+	mode (12-bit per sample) and RLE coding support, used in DICOM medical 
+	images (Check JPEG Samples)</font></span></li>
+	<li class="MsoNormal"><font size="3">OpenCV performance optimizations </font>
+	</li>
+	<li class="MsoNormal"><span lang="EN-US">
+	<font size="3">Computer Vision: </font></span>
+	<ul type="circle" style="margin-bottom: 0in">
+		<li class="MsoNormal"><span lang="EN-US">
+		<font size="3">New Fixed filters 8u8s and Separable column filters 16s8s</font></span></li>
+		<li class="MsoNormal"><span lang="EN-US">
+		<font size="3">New True L2 distance transform and Fast Marching distance 
+		transform functions</font></span></li>
+		<li class="MsoNormal"><span lang="EN-US">
+		<font size="3">Image inpainting (restoration)</font></span></li>
+		<li class="MsoNormal"><span lang="EN-US">
+		<font size="3">Image segmentation</font></span></li>
+		<li class="MsoNormal"><span lang="EN-US">
+		<font size="3">Transform color gradient to gray-scale</font></span><font size="3">
+		</font>
+		<ul type="square" style="margin-bottom: 0in">
+			<li class="MsoNormal"><span lang="EN-US">
+			<font size="3">Image segmentation by image gradient</font></span></li>
+			<li class="MsoNormal"><span lang="EN-US">
+			<font size="3">Image segmentation by watershed</font></span></li>
+			<li class="MsoNormal"><span lang="EN-US">
+			<font size="3">Image segment handling (border draw and labeling)</font></span></li>
+			<li class="MsoNormal"><span lang="EN-US">
+			<font size="3">Background/foreground segmentation by Gaussians and 
+			by histograms</font></span></li>
+		</ul>
+		</li>
+		<li class="MsoNormal"><span lang="EN-US">
+		<font size="3">SIFT features support for Gaussian filters and Peak 
+		search</font></span></li>
+	</ul>
+	</li>
+	<li><font face="Arial"><b><span lang="EN-US"><font size="3">Backward 
+	compatibility note</font></span></b><span lang="EN-US"><font size="3">: 
+	The ippaligh.h file from \include directory has been removed, please visit 
+	&quot;<i>Support Resource</i>&quot; at
+	<a style="text-decoration: underline; text-underline: single" href="http://www.intel.com/software/products/ipp/">Intel IPP Web Page
+	</a>to find more details about how to use 
+	alternative APIs.&nbsp; The ippalign.h file translates legacy API function 
+	definitions (originally only used on the Intel PXA27x processors) to the 
+	current supported Intel IPP functions. </font></span></font></li>
+</ul>
+<h2><a name="System_Requirements"><font face="Arial">System Requirements</font></h2>
+</a>
+<h4><font face="Arial">Minimum Hardware Requirements to Develop Applications</font></h4>
+<ul>
+	<li><font face="Arial">IA-32 Intel Architecture processors, and 
+	software-compatible processors, including software-compatible AMD* 
+	processors</font></li>
+	<li><font face="Arial">500 MB of free hard disk space, plus an additional 
+	300 MB during installation for download and temporary files. </font></li>
+</ul>
+<h4><font face="Arial">Software Requirements to Develop IA-32 Applications
+</font></h4>
+<ul>
+	<li><font face="Arial">A supported operating system (Intel IPP has been tested 
+	with the following): </font></li>
+	<ul>
+		<li><font face="Arial">Microsoft* Windows Vista</font></li>
+		<li><font face="Arial">Microsoft* Windows XP </font></li>
+		<li><font face="Arial">Microsoft* Windows Server 2003</font> </li>
+	</ul>
+	<li><font face="Arial">A supported C compiler (Intel IPP has been tested with the following):
+	</font></li>
+	<ul>
+		<li><font face="Arial">Intel® C++ Compiler version 10.0 for IA-32 and 
+		Intel Itanium processors </font></li>
+		<li><font face="Arial">Intel® C++ Compiler version 9.1 for IA-32 and 
+		Intel Itanium processors </font></li>
+	</ul>
+	<ul>
+		<li><font face="Arial">Microsoft* Visual Studio* 2005</font></li>
+		<li><font face="Arial">Microsoft* Visual C++* .NET 2003</font> </li>
+		<li><font face="Arial">Microsoft* Visual Studio* 6.0</font> </li>
+	</ul>
+	<li>
+	<p style="MARGIN-TOP: 0px; MARGIN-BOTTOM: 0px"><font face="Arial">
+	<a href="http://www.microsoft.com/downloads/details.aspx?familyid=7614FE22-8A64-4DFB-AA0C-DB53035F40A0&displaylang=en">
+	Microsoft* Windows Software Development Kit</a> for Microsoft* Windows Vista</font></p>
+	</li>
+	<li>
+	<p style="MARGIN-TOP: 0px; MARGIN-BOTTOM: 0px"><font face="Arial">Recommended documentation viewer:</font></p>
+	</li>
+	<ul>
+		<li><font face="Arial">Adobe* Acrobat* Reader version 7.0 or later 
+		(provides better keyword search capabilities for viewing documentation 
+		in PDF format) </font></li>
+	</ul>
+</ul>
+<h2><a name="Installation"><font face="Arial">Installation</font></h2>
+</a>
+<p><font face="Arial">Please see the separate <a href="INSTALL.htm">
+Installation Guide</a> for information on installing Intel IPP. The default 
+installation directory is: </font></p>
+<ul>
+	<li><font face="Arial">C:\Program Files\Intel\IPP\5.2\IA32</font> </li>
+</ul>
+<h2><font face="Arial"><a name="Library_Use">Resources for Additional 
+Information</a></font></h2>
+<ul>
+	<li><font face="Arial">The Intel IPP cryptography library requires a 
+	separate registration and access to download, please follow the
+	<a href="http://www3.intel.com/cd/software/products/asmo-na/eng/238683.htm">
+	instructions</a> to make request.</font></li>
+	<li><font face="Arial">To get started using the library and to find 
+	information on building options, please refer to the Getting Started 
+	document included in this release.</font></li>
+	<li><font face="Arial">For the latest product support information and 
+	errata, please click the&nbsp; &lt;<i>Support Resources</i>&gt; tab at the
+	<a href="http://www.intel.com/software/products/ipp/">Intel IPP Website</a>.</font></li>
+	<li><font face="Arial">Several encoder-decoder samples have been created to 
+	help demonstrate the use of Intel<sup>®</sup> IPP and to help accelerate the 
+	development of your application, components, and codecs. More information 
+	can be found at the
+	<a href="http://www.intel.com/software/products/ipp/samples.htm">Intel® IPP 
+	Sample 
+	Website.</a></font> </li>
+</ul>
+<h2><a name="Technical_Support"><font face="Arial">Technical Support and 
+Feedback</font></h2>
+</a>
+<p class="Default"><font face="Arial">Your feedback is very important to us. To 
+receive technical support for the tools provided in this product,&nbsp; technical 
+information including FAQ's and product updates, you need to be registered at
+<a href="https://registrationcenter.intel.com">
+https://registrationcenter.intel.com</a> with your given serial number of this product&nbsp; 
+to create 
+an account at secure <a href="https://premier.intel.com">Intel® Premier Support&nbsp; 
+web site</a>. </font></p>
+<ul>
+	<li>
+	<p class="Default"><font face="Arial">If you are having trouble registering 
+	or are unable to access your Intel® Premier Support account, please contact 
+	us via <a href="https://registrationcenter.intel.com/support">this channel</a>.
+	</font></li>
+</ul>
+<p class="Default"><font face="Arial"><b>Note: </b>If your distributor provides 
+technical support for this product, please contact them for support rather than 
+Intel. </font></p>
+<p class="Default"><font face="Arial">For information about the Intel IPP’s, 
+FAQ's, tips and tricks, Users Forums and other support information, please visit 
+the&nbsp; &lt;<i>Support Resources</i>&gt; tab at the
+<a href="http://www.intel.com/software/products/ipp/">Intel IPP Website</a>.<br>
+</font><font face="Arial" size="4"><b><br>
+Submitting Issues</b></font></p>
+<p class="Default"><font face="Arial"><b>Steps to submit an issue: </b><br>
+1. Go to <u><a href="https://premier.intel.com/">https://premier.intel.com/</a></u>.
+<br>
+2. Log in to the site. Note that your username and password are case-sensitive.
+<br>
+3. Click on the &quot;Go&quot; button next to the &quot;Product&quot; drop-down list. <br>
+4. Click on the &quot;Submit Issue&quot; link in the left navigation bar. <br>
+5. Choose &quot;Development Environment (tools,SDV,EAP)&quot; from the &quot;Product Type&quot; 
+drop-down list. <br>
+6. If this is a software or license-related issue, choose &quot;<b> Intel® IPP 
+for Windows*</b>&quot; from the &quot;Product Name&quot; drop-down list.<br>
+<span style="COLOR: windowtext">7. Enter your question and complete the fields 
+in the windows that follow to successfully submit the issue. </span></font></p>
+<p><font face="Arial"><b>Guidelines for problem report or product suggestion:</b><br>
+1. Describe your difficulty or suggestion. <br>
+&nbsp;&nbsp;&nbsp; For problem reports please be as specific as possible, so that we may 
+reproduce the problem. Please include a small test case if possible.<br>
+2. Describe your system configuration information.<br>
+&nbsp;&nbsp;&nbsp; Be sure to include specific information that may be applicable to your 
+setup: operating system, name and version number of installed applications, and 
+anything else that may be relevant to helping us address your concern. </font>
+</p>
+
+<H2><A NAME="License_Definitions"><font face="Arial">License Definitions</font></H2>
+</A>
+
+<p>
+<font face="Arial">Please see the End User License Agreement file for the 
+license definitions and restrictions on the library.</font></p>
+
+<p>
+<font face="Arial">MPEG-1, MPEG-2, MPEG-4, H.263, H.264, MP3,&nbsp; </font>
+<font face="Arial" size="3"><span style="FONT-SIZE: 12pt; FONT-FAMILY: Arial">DV</span></font><font face="Arial"><span style="FONT-FAMILY: Arial">
+<span lang="EN-US">SD/25/50/100</span></span><span style="font-family: Arial">,
+</span><span lang="EN-US" style="font-family: Arial">VC-1</span>, G.722.1,&nbsp; 
+G.723.1A, G.726, G.728, G.729, GSM/AMR, GSM/FR, JPEG, JPEG 2000, Aurora, TwinVQ, 
+AC3 and AAC are international standards promoted by ISO, IEC, ITU, <span lang="EN-US" style="font-family: Arial">
+SMPTE, </span>ETSI and other organizations. Implementations 
+of these standards, or the standard enabled platforms may require licenses from 
+various entities, including Intel Corporation.</font></p>
+<p><font face="Arial">The information in this manual is subject to change 
+without notice and Intel Corporation assumes no responsibility or liability for 
+any errors or inaccuracies that may appear in this document or any software that 
+may be provided in association with this document. This document and the 
+software described in it are furnished under license and may only be used or 
+copied in accordance with the terms of the license. No license, express or 
+implied, by estoppels or otherwise, to any intellectual property rights is 
+granted by this document. The information in this document is provided in 
+connection with Intel products and should not be construed as a commitment by 
+Intel Corporation.
+</font> </p>
+<p><font face="Arial">EXCEPT AS PROVIDED IN INTEL'S TERMS AND CONDITIONS OF SALE 
+FOR SUCH PRODUCTS, INTEL ASSUMES NO LIABILITY WHATSOEVER, AND INTEL DISCLAIMS 
+ANY EXPRESS OR IMPLIED WARRANTY, RELATING TO SALE AND/OR USE OF INTEL PRODUCTS 
+INCLUDING LIABILITY OR WARRANTIES RELATING TO FITNESS FOR A PARTICULAR PURPOSE, 
+MERCHANTABILITY, OR INFRINGEMENT OF ANY PATENT, COPYRIGHT OR OTHER INTELLECTUAL 
+PROPERTY RIGHT. Intel products are not intended for use in medical, life saving, 
+life sustaining, critical control or safety systems, or in nuclear facility 
+applications. </font> </p>
+<p><font face="Arial">Designers must not rely on the absence or characteristics 
+of any features or instructions marked &quot;reserved&quot; or &quot;undefined.&quot; Intel reserves 
+these for future definition and shall have no responsibility whatsoever for 
+conflicts or incompatibilities arising from future changes to them. </font> </p>
+<p><font face="Arial">The software described in this document may contain 
+software defects which may cause the product to deviate from published 
+specifications. Current characterized software defects are available on request. </font> </p>
+
+<font size=-2>
+<p><font face="Arial">Intel, the Intel logo, Intel SpeedStep, Intel NetBurst, 
+Intel NetStructure, MMX, i386, i486, Intel386, Intel486, Intel740, IntelDX2, 
+IntelDX4, IntelSX2,Celeron, Intel Centrino, Intel Xeon, Intel XScale, Itanium, 
+Pentium, Pentium II Xeon, Pentium III Xeon, Pentium M, and VTune are trademarks 
+or registered trademarks of Intel Corporation or its subsidiaries in the United 
+States and other countries. </font> </p>
+<p><font face="Arial">* Other names and brands may be claimed as the property of 
+others. <br>
+&nbsp;<br>
+Copyright © 2002-2007 Intel Corporation.</font></p>
+</HTML>

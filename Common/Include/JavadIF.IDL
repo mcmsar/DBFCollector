@@ -1,0 +1,101 @@
+cpp_quote("// {28a9f519-8519-497f-884b-64980ba3cf92}")
+cpp_quote("DEFINE_GUID( CLSID_EMSJavadInterface, 0x28a9f519, 0x8519, 0x497f, 0x88, 0x4b, 0x64, 0x98, 0x0b, 0xa3, 0xcf, 0x92);")
+cpp_quote(" " )
+
+cpp_quote("// {28a9f51a-8519-497f-884b-64980ba3cf92}")
+cpp_quote("DEFINE_GUID( IID_IEMSJavadInterface, 0x28a9f51a, 0x8519, 0x497f, 0x88, 0x4b, 0x64, 0x98, 0x0b, 0xa3, 0xcf, 0x92);")
+cpp_quote(" " )
+
+import "unknwn.idl";
+import "emstypex.idl";
+import "gpsephem.idl";
+
+#define _EMS_RPC_VERSION 1
+#define __RPC_FAR 
+
+#pragma pack(1)
+
+typedef struct _tagEMSGLOEPHEMERIS
+{
+	BYTE      cSv;                 // satellite orbit slot number [1..24]
+	BYTE      cFrqNum;             // Satellite frequency channel number [-7..24]
+	short     siDne;                // Day number within 4-year period
+	int       iTk;               // Frame start time within current day [s]
+	int       iTb;               // Ephemeris reference time [s]
+	BYTE      cHealth;             // Satellite health
+ 
+	// Ephemeris data
+	BYTE      cAge;                // Age of operational information [days]
+	BYTE      cFlags;              // Flags (for details see Glonass ICD)
+	double    dR[3];                   // Satellite PE-90 coordinates [km]
+	float     fV[3];                 // Satellite PE-90 velocities [km/s]
+	float     fW[3];                 // Satellite PE-90 accelerations [km/s^2]
+
+	// Clock data
+	double    dTauSys;             // Time correction to Glonass time scale
+	float     fTau;              // Correction to satellite clock
+	float     fGamma;            // Rate of satellite clock offset [s/s]
+
+	// Glonass-M data
+	float     fDelTauN;         // Delta Tau N – delay between L1 and L2 [s]
+	BYTE      cNFt;               // Ft (User Range Accuracy)
+	BYTE      cNN4;               // Number of 4-year cycle [1..31]
+	WORD      wFlags2;             // Flags (for details see Glonass ICD)
+} EMSGLOEPHEMERIS, *LPEMSGLOEPHEMERIS;
+
+typedef struct _tagEMSGLOEPHEMERIS2
+{
+	ULONG ulSatID;
+	EMSGLOEPHEMERIS baseData;
+} EMSGLOEPHEMERIS2, *LPEMSGLOEPHEMERIS2;
+
+typedef struct _tagEMSGALEPHEMERIS
+{
+	EMSEPHEMERISDATA	gps;
+
+	// GALILEO-specific data
+	float     fBgdE1E5a;		// broacast group delay E1 - E5A [s]
+	float     fBgdE1E5b;		// broacast group delay E1 - E5B [s]
+	float     fAi[3];		// Effective ionisation level
+	BYTE      cSfi;			// Ionospheric disturbance flags [bitfield]
+	BYTE      cNavType;		// Type of navigation data
+} EMSGALEPHEMERIS, *LPEMSGALEPHEMERIS;
+
+#pragma pack()
+
+[
+	uuid(28a9f51a-8519-497f-884b-64980ba3cf92),
+	helpstring("interface JavadIF is used for interfacing with Javad GNSS"),
+	pointer_default(unique)
+]
+
+interface IEMSJavadInterface : IUnknown
+{
+	HRESULT		InitEphemerisData( );
+	HRESULT		InitGpsEphemeris( );
+	HRESULT		InitGalEphemeris( );
+	HRESULT		InitGloEphemeris( );
+	HRESULT		GetGpsEphemerisData( [out] ULONG *ulCount, [out] EMSEPHEMERISDATA **lpData );
+	HRESULT		GetGloEphemerisData( [out] ULONG *ulCount, [out] EMSGLOEPHEMERIS **lpData );
+	HRESULT		GetGalEphemerisData( [out] ULONG *ulCount, [out] EMSGALEPHEMERIS **lpData );
+	HRESULT		GetLeapSeconds( [out] WORD *wLeapSeconds );
+	HRESULT		GetRcvTimeAccuracy( [out] float *fAccuracy );
+
+	HRESULT		Open( [in] DWORD dwDevice );
+	HRESULT		Close( );
+	HRESULT		ReadTime( [out] LPEMSTIME lpEmsTime );
+	HRESULT		SetTime( [in] EMSTIME emsTime );
+	HRESULT		GetMode( [out] LPDWORD lpdwMode );
+	HRESULT		SetMode( [in] DWORD dwMode );
+	HRESULT		SyncSystemClock( );
+
+	HRESULT		GetPosition( [out] EMSLOCATION *lpLocation );
+	HRESULT		GetHardwareStatus( [out] DWORD *lpdwStatus );
+//	HRESULT		GetSatelliteInfo( [out] DWORD *lpdwSatID, [out] double *lpdSatStrength, [out] WORD wMax, [out] WORD *lpwCount );
+//	HRESULT		GetVersionInfoA( [out] WORD *lpwVersion, [out] char *lpszModel,  [out] WORD wMax, [out] WORD *lpwLength );
+//	HRESULT		GetVersionInfoW( [out] WORD *lpwVersion, [out] WCHAR *lpszModel, [out] WORD wMax, [out] WORD *lpwLength );
+};
+
+typedef [unique] IEMSJavadInterface *LPEMSJAVADINTERFACE;
+
+

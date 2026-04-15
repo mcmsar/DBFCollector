@@ -1,0 +1,68 @@
+cpp_quote("#ifndef _STATCOLL_IDL_H")
+cpp_quote("#define _STATCOLL_IDL_H")
+
+cpp_quote("// {56628AF6-97FC-11d5-8C04-009027912866}")
+cpp_quote("DEFINE_GUID( IID_IEMSCollectorStatus, 0x56628af6, 0x97fc, 0x11d5, 0x8c, 0x4, 0x0, 0x90, 0x27, 0x91, 0x28, 0x66);")
+cpp_quote("// {17E7E0F6-38A2-421f-8287-2D754842F75E}")
+cpp_quote("DEFINE_GUID(IID_IEMSCollectorStatus2, 0x17e7e0f6, 0x38a2, 0x421f, 0x82, 0x87, 0x2d, 0x75, 0x48, 0x42, 0xf7, 0x5e);")
+
+cpp_quote(" " )
+cpp_quote("#define EMS_MIN_LOCKED_MOD_INDEX (1.0f)")
+cpp_quote("#define EMS_STATE_COLLECTING (0x1)")
+cpp_quote(" " )
+
+import "unknwn.idl";
+import "emstypex.idl";
+import "emstatus.idl";
+
+#define _EMS_RPC_VERSION 1
+#define __RPC_FAR 
+
+[
+	object, uuid(56628AF6-97FC-11d5-8C04-009027912866),
+	helpstring("IEMSCollectorStatus Interface"),
+	pointer_default(unique)
+]
+
+interface IEMSCollectorStatus : IEMSStatus
+{
+#pragma pack(1)
+	typedef struct _tagEMSCOLLECTORINFO
+	{
+		unsigned long 	ulSatID;						// satellite ID
+    unsigned short  uCollectorStatus;       // SARCollector device status
+    EMSTIME        	carrierTime;           // Time of last update of carrier frequency
+    unsigned short  uCarrierLossCount;      // Count of the number of carrier losses since FirstAOSTime
+    unsigned short  uCarrierLossDuration;   // Time unlocked since FirstAOSTime (seconds)
+    float           fCarrierFrequency;      // Carrier frequency in Hz
+    float           fCarrierModIndexMax;    // Maximum Modulation index in radians
+    float           fCarrierModIndexMean;   // Mean value of Modulation index in radians
+    float           fCarrierModIndexRMS;    // RMS of Modulation index in radians
+    float           fAGCMean;               // Sample of input signal mean value(A/D units)
+    float           fAGCRMS;                // Sample of input signal RMS (A/D units)
+		ULONG				ulMarkerBitRate;
+	} EMSCOLLECTORINFO, *LPEMSCOLLECTORINFO;
+#pragma pack()
+
+	HRESULT ResetCollectorInfo( void );
+
+	HRESULT SetCollectorInfo( [in] EMSCOLLECTORINFO *lpInfo );
+	HRESULT GetCollectorInfo( [out] EMSCOLLECTORINFO *lpInfo );
+};
+
+typedef [unique] IEMSCollectorStatus *LPEMSCOLLECTORSTATUS;
+
+[
+	object, uuid(17E7E0F6-38A2-421f-8287-2D754842F75E),
+	helpstring("IEMSCollectorStatus2 Interface"),
+	pointer_default(unique)
+]
+
+interface IEMSCollectorStatus2 : IEMSCollectorStatus
+{
+	HRESULT GetCollectorInfoLastActive( [out] EMSCOLLECTORINFO *lpInfo );
+};
+
+typedef [unique] IEMSCollectorStatus2 *LPEMSCOLLECTORSTATUS2;
+
+cpp_quote("#endif //_STATCOLL_IDL_H")

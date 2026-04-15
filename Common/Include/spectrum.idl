@@ -1,0 +1,86 @@
+cpp_quote("/********************************************************************")
+cpp_quote("*	Module:			spectrum.h ")
+cpp_quote("*	Process ID:")
+cpp_quote("*	S/W Platforms:")
+cpp_quote("*	H/W Platforms:")
+cpp_quote("*	Compiler:")
+cpp_quote("*	Description: 	data structure used to describe the output of the ")
+cpp_quote("*						power spectrum of the base band signal. ")
+cpp_quote("*						Used only for display and measurement purposes.")
+cpp_quote("*")
+cpp_quote("*	Usage:")
+cpp_quote("*	Entry Point:")
+cpp_quote("*	Input Files:")
+cpp_quote("*	Output Files:")
+cpp_quote("*	Comments:")
+cpp_quote("*")
+cpp_quote("*********************************************************************")
+cpp_quote("*	              Copyright (c) 2001 by EMS Technologies, Inc.,")
+cpp_quote("*										All rights reserved")
+cpp_quote("*	This program is unpublished software and contains the trade secrets")
+cpp_quote("*	and confidential information of EMS Technologies, Inc.  It may not be ")
+cpp_quote("* reproduced in whole or in part, in any form or by any means whatsoever ")
+cpp_quote("* without the express written permission of EMS Technologies, Inc.")
+cpp_quote("*")
+cpp_quote("********************************************************************/")
+cpp_quote("")
+cpp_quote("/*******************************************************************")
+cpp_quote("")
+cpp_quote("  Revision Record")
+cpp_quote("")
+cpp_quote("	Rev	Date			Auth	Changes")
+cpp_quote("	===	====			====	=======")
+cpp_quote("")
+cpp_quote("	0.0	01/03/22		rvw	start")
+cpp_quote("")
+cpp_quote("********************************************************************/")
+cpp_quote("#ifndef INC_SPECTRUM")
+cpp_quote("#define INC_SPECTRUM")
+
+import "unknwn.idl";
+import "emstypex.idl";
+import "sigdata.idl";
+
+#define _EMS_RPC_VERSION 1
+#define __RPC_FAR 
+
+cpp_quote("#define EMSSPECTRUMFREQBINS (2048)")
+
+[
+	uuid(E3681A61-EAB0-11d5-8D22-009027912866),
+	helpstring("IEMSSPECTRUMdata"),
+	pointer_default(unique)
+]
+
+interface IEMSSPECTRUMdata
+{
+
+#define EMSSPECTRUMFREQBINS (2048)
+
+#pragma pack(1)
+
+typedef struct _tagEMSSPECTRUM
+{
+	EMSSIGDATAID id;							// time, ulSatID, ulLutID
+	ULONG			ulPassID;
+	float			fMaxPower;					// Max power 
+	float			fFreqOffset;       	   // Frequency offset in Hz
+	float			fFreqQFactor;       	   // Frequency quantization factor (nominally 62 Hz)
+	float       fAGCRMS;                  // RMS of A/D samples
+	float       fAGCMean;                 // Mean value of A/D samples
+	float       fCarrierFrequency;        // Carrier frequency (Hz)
+	float       fModIndexMax;                // Maximum modulation index (radians)
+	float       fModIndexMean;           // Mean value of modulation index (radians)
+	float       fReserved;
+	float     	fModIndexRMS;            // RMS of modulation index (radians)
+	ULONG			ulMarkerBitRate;          // Number of samples between marker bits
+	WORD			wModIndexBlock;          // Block number with maximum mod index
+	BYTE			cAmplitude[ EMSSPECTRUMFREQBINS]; // Amplitude in scaled counts above threshold (unitless)
+} EMSSPECTRUM, *LPEMSSPECTRUM;
+
+#pragma pack()
+}
+
+cpp_quote("#endif //INC_SPECTRUM")
+
+

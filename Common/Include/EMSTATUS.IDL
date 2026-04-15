@@ -1,0 +1,28 @@
+cpp_quote( " " )
+cpp_quote( "#include \"emserror.h\"" )
+cpp_quote( " " )
+
+
+cpp_quote("// {F83F4B74-EA53-11d5-8D21-009027912866}")
+cpp_quote("DEFINE_GUID(CLSID_EMSStatus, 0xf83f4b74, 0xea53, 0x11d5, 0x8d, 0x21, 0x0, 0x90, 0x27, 0x91, 0x28, 0x66);")
+
+cpp_quote("// {F83F4B75-EA53-11d5-8D21-009027912866}")
+cpp_quote("DEFINE_GUID( IID_IEMSStatus, 0xf83f4b75, 0xea53, 0x11d5, 0x8d, 0x21, 0x0, 0x90, 0x27, 0x91, 0x28, 0x66);")
+
+import "unknwn.idl";
+import "emstypex.idl";
+
+#define _EMS_RPC_VERSION 1
+#define __RPC_FAR 
+
+[
+	object, uuid(F83F4B75-EA53-11d5-8D21-009027912866),
+	helpstring("IEMSStatus Interface"),
+	pointer_default(unique)
+]
+
+interface IEMSStatus : IUnknown
+{
+};
+
+typedef [unique] IEMSStatus *LPEMSSTATUS;

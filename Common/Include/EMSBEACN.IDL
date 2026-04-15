@@ -1,0 +1,138 @@
+cpp_quote( " " )
+cpp_quote( "#include \"emserror.h\"" )
+cpp_quote( " " )
+
+cpp_quote("// {E22CF571-964F-11d5-8C04-009027912866}")
+cpp_quote("DEFINE_GUID( CLSID_EMSRefBeaconInfo, 0xe22cf571, 0x964f, 0x11d5, 0x8c, 0x4, 0x0, 0x90, 0x27, 0x91, 0x28, 0x66);")
+
+cpp_quote("// {E22CF572-964F-11d5-8C04-009027912866}")
+cpp_quote("DEFINE_GUID( IID_IEMSRefBeaconInfo, 0xe22cf572, 0x964f, 0x11d5, 0x8c, 0x4, 0x0, 0x90, 0x27, 0x91, 0x28, 0x66);")
+
+cpp_quote("// {0072892C-5517-44a5-A002-E3D9900432A8}")
+cpp_quote("DEFINE_GUID( IID_IEMSRefBeaconInfo2, 0x72892c, 0x5517, 0x44a5, 0xa0, 0x2, 0xe3, 0xd9, 0x90, 0x4, 0x32, 0xa8);")
+
+cpp_quote("// {4FBBD782-85C0-4d69-931E-6662537B69BC}")
+cpp_quote("DEFINE_GUID( IID_IEMSRefBeaconInfo3, 0x4fbbd782, 0x85c0, 0x4d69, 0x93, 0x1e, 0x66, 0x62, 0x53, 0x7b, 0x69, 0xbc);")
+
+cpp_quote( " " )
+
+cpp_quote("#define EMS_BEACON_BEACONTYPE           (0x1F00) // 4 bits for beacon type (see below)")
+
+cpp_quote(" ")
+cpp_quote("#define EMS_BEACON_LEO_REFFREQ           (0x0080)")
+cpp_quote("#define EMS_BEACON_USEREFFREQ           (0x0040)")
+cpp_quote("#define EMS_BEACON_GEO_REFFREQ           (EMS_BEACON_USEREFFREQ)")
+cpp_quote("#define EMS_BEACON_ACTIVE			    	(0x0020)")
+cpp_quote("#define EMS_BEACON_TCAL				    	(0x0010)")
+cpp_quote("#define EMS_BEACON_MCCSUPPRESS	    	   (0x0008)")
+cpp_quote("#define EMS_BEACON_ORBITUPDATEFLAG    	(0x0004)")
+cpp_quote("#define EMS_BEACON_CHECK_ACCURACY		(0x0002)")
+cpp_quote("#define EMS_BEACON_USE_EE_ADJUST			(0x0001)")
+cpp_quote(" ")
+cpp_quote("#define EMS_BEACON_BEACONTYPE_ORBIT     (0x0100)")
+cpp_quote("#define EMS_BEACON_BEACONTYPE_REF       (0x0200)")
+cpp_quote("#define EMS_BEACON_BEACONTYPE_TEST      (0x0400)")
+cpp_quote("#define EMS_BEACON_BEACONTYPE_121       (0x0800)")
+cpp_quote("#define EMS_BEACON_BEACONTYPE_243       (0x1000)")
+cpp_quote("#define EMS_BEACON_BEACONTYPE_406	   (0x2000)")
+cpp_quote("#define EMS_BEACON_MCCSUPPRESS_ADVISORY (0x4000)")
+
+cpp_quote(" ")
+cpp_quote("//Legacy symbols now point to new high order positioning of beacon type:")
+cpp_quote(" ")
+cpp_quote("#define EMS_BEACON_ORBITOGRAPHY       	EMS_BEACON_BEACONTYPE_ORBIT")
+cpp_quote("#define EMS_BEACON_REFERENCE          	EMS_BEACON_BEACONTYPE_REF")
+cpp_quote(" ")
+
+import "unknwn.idl";
+import "emstypex.idl";
+import "emsicfg.idl";
+
+#define _EMS_RPC_VERSION 1
+#define __RPC_FAR 
+
+[
+	object, uuid(E22CF572-964F-11d5-8C04-009027912866),
+	helpstring("IEMSRefBeaconInfo Interface"),
+	pointer_default(unique)
+]
+
+interface IEMSRefBeaconInfo : IEMSConfigSettings
+{
+	typedef struct _tagEMSREFBEACONDATA
+	{
+		EMSTIME	     	timeUpdate;         // Time of last update in seconds from 1970
+		unsigned short  uFlag;              // Action flag (transmit to MCC, use for Kalman filter processing, etc.)
+     unsigned short  uGroup;             // Number of group
+		unsigned char   cBeaconId[8];       // Beacon ID  
+		unsigned char   cBeaconMsg[18];     // Full 144 bit pattern
+		double           dLatitude;          // Geodetic Latitude (degN)
+		double           dLongitude;         // Geodetic Longitude (degE)
+		double           dAltitude;          // Altitude (m from mean sea level)
+//		double           dFreqOffset;        // Carrier Frequency Offset in Hz from 406.0 MHz
+		double           dFrequency;        // Carrier Frequency in Hz
+		double           dPower;             // Nominal Transmit Power (dBm)
+		double           dRepRate;           // Nominal Message Repetition Rate in sec
+		double           dBitRate;           // Nominal Bit Rate in bits/sec
+		double           dModIndex;          // Nominal Modulation Index in radians
+	} EMSREFBEACONDATA, *LPEMSREFBEACONDATA;
+
+	typedef struct _tagEMSREFBEACONDATAEX
+	{
+		INT64 i64BeaconID;
+		EMSREFBEACONDATA data;
+	} EMSREFBEACONDATAEX, *LPEMSREFBEACONDATAEX;
+
+	HRESULT GetData( [in] __int64 i64BeaconID, [out] EMSREFBEACONDATA *lpData );
+	HRESULT GetIndexedData( [in] int nIndex, [out] __int64 *lpi64BeaconID, [out] EMSREFBEACONDATA *lpData );
+	HRESULT GetCount( [out] ULONG *lpulCount );
+};
+
+typedef [unique] IEMSRefBeaconInfo *LPEMSREFBEACONINFO;
+
+[
+	object, uuid(0072892C-5517-44a5-A002-E3D9900432A8),
+	helpstring("IEMSRefBeaconInfo2 Interface"),
+	pointer_default(unique)
+]
+
+interface IEMSRefBeaconInfo2 : IEMSRefBeaconInfo
+{
+#pragma pack(1)
+
+	typedef struct _tagEMSREFBEACONACCURACY
+	{
+		double	dMinCTA;
+		double	dMaxCTA;
+		double	dMaxTCARange;
+		INT		nMinPts;
+		double	dWarnDistance;
+		double	dAlarmDistance;
+		double	dReserved1;
+		double	dReserved2;
+		INT		nReserved3;
+		INT		nReserved4;
+	} EMSREFBEACONACCURACY, *LPEMSREFBEACONACCURACY;
+
+#pragma pack()
+
+	HRESULT GetAccuracyInfo( [in] INT64 i64BeaconID, [out] LPEMSREFBEACONACCURACY lpInfo );
+	HRESULT GetAccuracyInfoByIndex( [in] INT nIndex, [out] INT64 *lpi64BeaconID, [out] LPEMSREFBEACONACCURACY lpInfo );
+};
+
+typedef [unique] IEMSRefBeaconInfo2 *LPEMSREFBEACONINFO2;
+
+
+[
+	object, uuid(4FBBD782-85C0-4d69-931E-6662537B69BC),
+	helpstring("IEMSRefBeaconInfo3 Interface"),
+	pointer_default(unique)
+]
+
+interface IEMSRefBeaconInfo3 : IEMSRefBeaconInfo2
+{
+	HRESULT GetIsQMS( [in] const INT64 ci64BeaconID, [out] BOOL* pbIsQMS );
+};
+
+typedef [unique] IEMSRefBeaconInfo3 *LPEMSREFBEACONINFO3;
+

@@ -1,0 +1,144 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<wsdl:definitions name="DALServiceService" targetNamespace="http://api.dal.occ600.emssatcom.com/" xmlns:tns="http://api.dal.occ600.emssatcom.com/" xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:SOAP="http://schemas.xmlsoap.org/wsdl/soap/" xmlns:SOAP11="http://schemas.xmlsoap.org/wsdl/soap/">
+  <wsdl:types>
+    <xs:schema version="1.0" xmlns:xs="http://www.w3.org/2001/XMLSchema" targetNamespace="http://api.dal.occ600.emssatcom.com/">
+<xs:complexType name="beaconAlert"><xs:sequence/></xs:complexType>
+<xs:complexType name="sit"><xs:complexContent><xs:extension base="emsRecord"><xs:sequence><xs:element minOccurs="0" name="filename" type="xs:string"/><xs:element minOccurs="0" name="info" type="xs:string"/><xs:element name="inputType" type="xs:unsignedShort"/><xs:element name="nodeTest" type="xs:unsignedShort"/><xs:element name="origSitNum" type="xs:long"/><xs:element name="receiptTime" type="xs:long"/><xs:element name="senderID" type="xs:long"/><xs:element minOccurs="0" name="sitContent" type="xs:string"/><xs:element name="sitNum" type="xs:long"/><xs:element name="sitType" type="xs:long"/><xs:element name="transmitTime" type="xs:long"/><xs:element name="validation" type="xs:unsignedShort"/></xs:sequence></xs:extension></xs:complexContent></xs:complexType>
+<xs:complexType name="emsRecord"><xs:sequence><xs:element name="identity" type="xs:long"/><xs:element name="lutID" type="xs:long"/><xs:element name="timestamp" type="xs:long"/></xs:sequence></xs:complexType>
+<xs:complexType name="orbitSIT"><xs:complexContent><xs:extension base="sit"><xs:sequence><xs:element maxOccurs="unbounded" minOccurs="0" name="orbits" nillable="true" type="orbit"/></xs:sequence></xs:extension></xs:complexContent></xs:complexType>
+<xs:complexType name="orbit"><xs:complexContent><xs:extension base="emsRecord"><xs:sequence><xs:element name="argPerigee" type="xs:double"/><xs:element name="BStar" type="xs:double"/><xs:element minOccurs="0" name="coVarMatrix" type="xs:base64Binary"/><xs:element name="eccentricity" type="xs:double"/><xs:element name="inclination" type="xs:double"/><xs:element name="meanAnomoly" type="xs:double"/><xs:element name="meanMotion" type="xs:double"/><xs:element name="passID" type="xs:long"/><xs:element name="radiusDifference" type="xs:double"/><xs:element name="rightAscNode" type="xs:double"/><xs:element name="satID" type="xs:long"/><xs:element name="timeEffective" type="xs:long"/><xs:element name="timeEpoch" type="xs:long"/><xs:element name="velocityDifference" type="xs:double"/><xs:element name="xnd2o" type="xs:double"/><xs:element name="xndd60" type="xs:double"/></xs:sequence></xs:extension></xs:complexContent></xs:complexType>
+<xs:complexType name="solutionSIT"><xs:complexContent><xs:extension base="sit"><xs:sequence><xs:element maxOccurs="unbounded" minOccurs="0" name="solutions" nillable="true" type="solution"/></xs:sequence></xs:extension></xs:complexContent></xs:complexType>
+<xs:complexType name="solution"><xs:complexContent><xs:extension base="emsRecord"><xs:sequence><xs:element name="alt" type="xs:double"/><xs:element minOccurs="0" name="bcnMsg" type="xs:base64Binary"/><xs:element name="beaconID" type="xs:long"/><xs:element name="bitError1" type="xs:long"/><xs:element name="bitError2" type="xs:long"/><xs:element name="bitErrorFS" type="xs:long"/><xs:element name="CTA" type="xs:double"/><xs:element name="confidence" type="xs:double"/><xs:element minOccurs="0" name="covariance" type="xs:base64Binary"/><xs:element name="endTime" type="xs:long"/><xs:element name="freqBiasErr" type="xs:double"/><xs:element name="freqDrift" type="xs:double"/><xs:element name="frequency" type="xs:double"/><xs:element name="heading" type="xs:double"/><xs:element name="lat" type="xs:double"/><xs:element name="long" type="xs:double"/><xs:element minOccurs="0" name="lutIDs" type="xs:base64Binary"/><xs:element name="majorErr" type="xs:double"/><xs:element name="minorErr" type="xs:double"/><xs:element name="noise" type="xs:double"/><xs:element name="numBurstsUsed" type="xs:long"/><xs:element name="numIterations" type="xs:long"/><xs:element name="numMsgsUsed" type="xs:long"/><xs:element name="numMslgs" type="xs:long"/><xs:element name="passID" type="xs:long"/><xs:element name="power" type="xs:double"/><xs:element name="probability" type="xs:double"/><xs:element name="radiusErrEllipse" type="xs:double"/><xs:element minOccurs="0" name="satIDs" type="xs:base64Binary"/><xs:element name="sideBands" type="xs:long"/><xs:element name="startTime" type="xs:long"/><xs:element name="sweep" type="xs:double"/><xs:element name="sweepError" type="xs:double"/><xs:element name="timeTCA" type="xs:long"/><xs:element name="trend" type="xs:double"/><xs:element name="type" type="xs:long"/><xs:element name="windowFactor" type="xs:long"/></xs:sequence></xs:extension></xs:complexContent></xs:complexType>
+<xs:complexType final="#all" name="beaconAlertArray"><xs:sequence><xs:element maxOccurs="unbounded" minOccurs="0" name="item" nillable="true" type="beaconAlert"/></xs:sequence></xs:complexType>
+<xs:complexType final="#all" name="sitArray"><xs:sequence><xs:element maxOccurs="unbounded" minOccurs="0" name="item" nillable="true" type="sit"/></xs:sequence></xs:complexType>
+<xs:complexType final="#all" name="orbitSITArray"><xs:sequence><xs:element maxOccurs="unbounded" minOccurs="0" name="item" nillable="true" type="orbitSIT"/></xs:sequence></xs:complexType>
+<xs:complexType final="#all" name="solutionSITArray"><xs:sequence><xs:element maxOccurs="unbounded" minOccurs="0" name="item" nillable="true" type="solutionSIT"/></xs:sequence></xs:complexType>
+</xs:schema>
+    <xs:schema attributeFormDefault="qualified" elementFormDefault="unqualified" targetNamespace="http://api.dal.occ600.emssatcom.com/" xmlns:xs="http://www.w3.org/2001/XMLSchema"><xs:import/><xs:import/><xs:import/><xs:import/><xs:import/><xs:element name="insertSolutionSits"><xs:complexType><xs:sequence><xs:element maxOccurs="unbounded" minOccurs="0" name="arg0" nillable="true" type="solutionSIT"/></xs:sequence></xs:complexType></xs:element><xs:element name="getBeaconAlerts"><xs:complexType/></xs:element><xs:element name="getSitsResponse"><xs:complexType><xs:sequence><xs:element maxOccurs="unbounded" minOccurs="0" name="return" nillable="true" type="sit"/></xs:sequence></xs:complexType></xs:element><xs:element name="insertSolutionSitsResponse"><xs:complexType/></xs:element><xs:element name="insertOrbitSitsResponse"><xs:complexType/></xs:element><xs:element name="getBeaconAlertsResponse"><xs:complexType><xs:sequence><xs:element maxOccurs="unbounded" minOccurs="0" name="return" nillable="true" type="beaconAlert"/></xs:sequence></xs:complexType></xs:element><xs:element name="insertOrbitSits"><xs:complexType><xs:sequence><xs:element maxOccurs="unbounded" minOccurs="0" name="arg0" nillable="true" type="orbitSIT"/></xs:sequence></xs:complexType></xs:element><xs:element name="getSits"><xs:complexType/></xs:element><xs:element name="insertSitsResponse"><xs:complexType/></xs:element><xs:element name="insertSits"><xs:complexType><xs:sequence><xs:element maxOccurs="unbounded" minOccurs="0" name="arg0" nillable="true" type="sit"/></xs:sequence></xs:complexType></xs:element></xs:schema>
+  </wsdl:types>
+  <wsdl:message name="insertSolutionSits">
+    <wsdl:part name="insertSolutionSits" element="tns:insertSolutionSits">
+    </wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="getBeaconAlerts">
+    <wsdl:part name="getBeaconAlerts" element="tns:getBeaconAlerts">
+    </wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="getSitsResponse">
+    <wsdl:part name="getSitsResponse" element="tns:getSitsResponse">
+    </wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="insertSolutionSitsResponse">
+    <wsdl:part name="insertSolutionSitsResponse" element="tns:insertSolutionSitsResponse">
+    </wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="insertOrbitSitsResponse">
+    <wsdl:part name="insertOrbitSitsResponse" element="tns:insertOrbitSitsResponse">
+    </wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="getBeaconAlertsResponse">
+    <wsdl:part name="getBeaconAlertsResponse" element="tns:getBeaconAlertsResponse">
+    </wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="insertOrbitSits">
+    <wsdl:part name="insertOrbitSits" element="tns:insertOrbitSits">
+    </wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="getSits">
+    <wsdl:part name="getSits" element="tns:getSits">
+    </wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="insertSitsResponse">
+    <wsdl:part name="insertSitsResponse" element="tns:insertSitsResponse">
+    </wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="insertSits">
+    <wsdl:part name="insertSits" element="tns:insertSits">
+    </wsdl:part>
+  </wsdl:message>
+  <wsdl:portType name="DALService">
+    <wsdl:operation name="insertSits">
+      <wsdl:input message="tns:insertSits">
+    </wsdl:input>
+      <wsdl:output message="tns:insertSitsResponse">
+    </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="getSits">
+      <wsdl:input message="tns:getSits">
+    </wsdl:input>
+      <wsdl:output message="tns:getSitsResponse">
+    </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="getBeaconAlerts">
+      <wsdl:input message="tns:getBeaconAlerts">
+    </wsdl:input>
+      <wsdl:output message="tns:getBeaconAlertsResponse">
+    </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="insertSolutionSits">
+      <wsdl:input message="tns:insertSolutionSits">
+    </wsdl:input>
+      <wsdl:output message="tns:insertSolutionSitsResponse">
+    </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="insertOrbitSits">
+      <wsdl:input message="tns:insertOrbitSits">
+    </wsdl:input>
+      <wsdl:output message="tns:insertOrbitSitsResponse">
+    </wsdl:output>
+    </wsdl:operation>
+  </wsdl:portType>
+  <wsdl:binding name="DALServiceBinding" type="tns:DALService">
+    <SOAP:binding style="document" transport="http://schemas.xmlsoap.org/soap/http"/>
+    <wsdl:operation name="insertSits">
+      <SOAP:operation/>
+      <wsdl:input>
+        <SOAP:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output>
+        <SOAP:body use="literal"/>
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="getSits">
+      <SOAP:operation/>
+      <wsdl:input>
+        <SOAP:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output>
+        <SOAP:body use="literal"/>
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="getBeaconAlerts">
+      <SOAP:operation/>
+      <wsdl:input>
+        <SOAP:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output>
+        <SOAP:body use="literal"/>
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="insertSolutionSits">
+      <SOAP:operation/>
+      <wsdl:input>
+        <SOAP:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output>
+        <SOAP:body use="literal"/>
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="insertOrbitSits">
+      <SOAP:operation/>
+      <wsdl:input>
+        <SOAP:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output>
+        <SOAP:body use="literal"/>
+      </wsdl:output>
+    </wsdl:operation>
+  </wsdl:binding>
+  <wsdl:service name="DALServiceService">
+    <wsdl:port name="DALServicePort" binding="tns:DALServiceBinding">
+      <SOAP:address location="http://192.168.1.100:9002/occ600server"/>
+    </wsdl:port>
+  </wsdl:service>
+</wsdl:definitions>

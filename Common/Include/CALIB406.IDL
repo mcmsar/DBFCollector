@@ -1,0 +1,219 @@
+cpp_quote("/********************************************************************")
+cpp_quote("*	Module:			calib406.h")
+cpp_quote("*	Process ID:")
+cpp_quote("*	S/W Platforms:")
+cpp_quote("*	H/W Platforms:")
+cpp_quote("*	Compiler:")
+cpp_quote("*	Description: 	Data structure for Calibrated 406 Data ")
+cpp_quote("*						( i.e. SARP and SARR records Post Calibration )")
+cpp_quote("*	Usage:")
+cpp_quote("*	Entry Point:")
+cpp_quote("*	Input Files:")
+cpp_quote("*	Output Files:")
+cpp_quote("*	Comments:")
+cpp_quote("*")
+cpp_quote("*********************************************************************")
+cpp_quote("*	              Copyright (c) 2003 by EMS Technologies, Inc.,")
+cpp_quote("*										All rights reserved")
+cpp_quote("*	This program is unpublished software and contains the trade secrets")
+cpp_quote("*	and confidential information of EMS Technologies, Inc.  It may not be ")
+cpp_quote("* reproduced in whole or in part, in any form or by any means whatsoever ")
+cpp_quote("* without the express written permission of EMS Technologies, Inc.")
+cpp_quote("*")
+cpp_quote("********************************************************************/")
+cpp_quote("")
+cpp_quote("/*******************************************************************")
+cpp_quote("")
+cpp_quote("  Revision Record")
+cpp_quote("")
+cpp_quote("	Rev	Date		Auth	Changes")
+cpp_quote("	===	====		====	=======")
+cpp_quote("")
+cpp_quote("	0.0	01/04/05	rvw		start")
+cpp_quote("	0.0	02/10/05	rcr		additional data types")
+cpp_quote("	0.0	03/11/05	ch		added version number")
+cpp_quote("	0.0	16/10/06	rcr		additional fields and new version")
+cpp_quote("")
+cpp_quote("********************************************************************/")
+cpp_quote("")
+cpp_quote("#ifndef INC_CALIB406")
+cpp_quote("#define INC_CALIB406")
+cpp_quote("")
+cpp_quote("#include \"sarpdata.h\"			// for definitions of status flags")
+
+import "unknwn.idl";
+import "emstypex.idl";
+import "sigdata.idl";
+
+//#include "emsconst.h"	// constants
+
+#define _EMS_RPC_VERSION 1
+#define __RPC_FAR 
+
+const unsigned long EMSCALIB406VERSION	= 1;
+
+[
+	uuid(CD360653-E910-11d5-8D1E-009027912866),
+	helpstring("IEMSCALIB406data"),
+	pointer_default(unique)
+]
+
+
+interface IEMSCALIB406data
+{
+	#pragma pack(1)
+
+	#define EMS406MSGLENGTH	(15)			// 120 bits i.e. bit 25..144
+
+	typedef enum _tagEMSCALIB406TYPE
+	{
+		EMSCALIBTYPE_406_SARP		= 0x21,
+		EMSCALIBTYPE_406_SARR		= 0x22,
+		EMSCALIBTYPE_406_SARP_SARR	= 0x23,
+		EMSCALIBTYPE_406_SGB_TEST	= 0x47,
+		EMSCALIBTYPE_406_SGB		= 0x48
+	} EMSCALIB406TYPE;	
+
+	typedef struct _tagEMSCALIB406DATA
+	{
+		EMSSIGDATAIDTYPE	hdr;			// time, ulSatID, ulLutID, wType
+		ULONG		ulPassID;
+		INT64		i64BeaconID;			// Beacon ID
+		EMSTIME		timeMsg;				// encoded msg time
+		INT64		i64TimeOffset;			// nanosecond time correction 
+		WORD		wStatus;				// Status : ( DRU, Format Flag, Rollover, Freq Parity, 
+											// time parity
+											// ( DRU = data reduction unit )
+		WORD		wDuplicateMsgCount;		// 
+		double 		dFrequency;				// Frequency in Hz
+		float		fFreqOffset;			// Frequency offset in Hz (satellite/ground station dependency)
+		float		fCarrierPower;			// dBm
+		WORD		wBitErrorField1;        // Number of bit errors in first protected field
+		WORD		wBitErrorField2;        // Number of bit errors in second protected field
+		WORD		wBitErrorFrameSynch;    // Number of bit errors in  frame synch
+
+		BYTE		cBeaconMsg[ 18 ]; 		// 18 byte Beacon Message
+		
+	} EMSCALIB406DATA, *LPEMSCALIB406DATA;
+
+//	typedef enum _tagEMSCALIB406TIMERES
+//	{
+//		EMSCALIB406TIMERES_UKN	= 0x00000000,	// time resolution is unknown
+//		EMSCALIB406TIMERES_LOW	= 0x00000001,	// time resolution based upon 24 bit synch pattern
+//		EMSCALIB406TIMERES_MID	= 0x00000002,	// time resolution based upon 106 bit PDF1 pattern
+//		EMSCALIB406TIMERES_HIGH	= 0x00000004,	// time resolution based upon 144 bit PDF1+PDF2 pattern
+//	} EMSCALIB406TIMERES;
+//
+//	typedef enum _tagEMSCALIB406FREQRES
+//	{
+//		EMSCALIB406FREQRES_UKN	= 0x00000000,	// frequency resolution is unknown
+//		EMSCALIB406FREQRES_LOW	= 0x00000100,	// frequency resolution is less than 10 Hz
+//		EMSCALIB406FREQRES_MID	= 0x00000200,	// frequency resolution is less than 1 Hz
+//		EMSCALIB406FREQRES_HIGH	= 0x00000400,	// frequency resolution is less than 0.1 Hz
+//	} EMSCALIB406FREQRES;
+//
+//	typedef enum _tagEMSCALIB406POWERRES
+//	{
+//		EMSCALIB406POWERRES_UKN	= 0x00000000,	// power resolution is unknown
+//		EMSCALIB406POWERRES_LOW	= 0x00010000,	// power resolution is less than 10 dB-Hz
+//		EMSCALIB406POWERRES_MID	= 0x00020000,	// power resolution is less than 1 dB-Hz
+//		EMSCALIB406POWERRES_HIGH= 0x00040000,	// power resolution is less than 0.1 dB-Hz
+//	} EMSCALIB406POWERRES;
+//
+//	typedef enum _tagEMSCALIB406BPSRES
+//	{
+//		EMSCALIB406BPSRES_UKN	= 0x00000000,	// bit rate resolution is unknown
+//		EMSCALIB406BPSRES_LOW	= 0x01000000,	// bit rate resolution is less than 1 bps
+//		EMSCALIB406BPSRES_MID	= 0x02000000,	// bit rate resolution is less than 0.1 bps
+//		EMSCALIB406BPSRES_HIGH	= 0x04000000,	// bit rate resolution is less than 0.01 bps
+//	} EMSCALIB406BPSRES;
+//
+
+	typedef enum _tagEMSCALIB406DATAFLAGS
+	{
+		// from SIT 722 flags field
+		EMS_C406DF_FLAG_01	= 0x00000001,	// SIT 722 Bit Flag
+		EMS_C406DF_FLAG_02	= 0x00000002,	// SIT 722 Bit Flag
+		EMS_C406DF_FLAG_03	= 0x00000004,	// SIT 722 Bit Flag
+		EMS_C406DF_FLAG_04	= 0x00000008,	// SIT 722 Bit Flag
+		EMS_C406DF_FLAG_05	= 0x00000010,	// SIT 722 Bit Flag
+		EMS_C406DF_FLAG_06	= 0x00000020,	// SIT 722 Bit Flag
+		EMS_C406DF_FLAG_07	= 0x00000040,	// SIT 722 Bit Flag
+		EMS_C406DF_FLAG_08	= 0x00000080,	// SIT 722 Bit Flag
+		EMS_C406DF_FLAG_09	= 0x00000100,	// SIT 722 Bit Flag
+		EMS_C406DF_FLAG_10	= 0x00000200,	// SIT 722 Bit Flag
+		EMS_C406DF_FLAG_11	= 0x00000400,	// SIT 722 Bit Flag
+		EMS_C406DF_FLAG_12	= 0x00000800,	// SIT 722 Bit Flag
+		EMS_C406DF_FLAG_13	= 0x00001000,	// SIT 722 Bit Flag
+		EMS_C406DF_FLAG_14	= 0x00002000,	// SIT 722 Bit Flag
+		EMS_C406DF_FLAG_15	= 0x00004000,	// SIT 722 Bit Flag
+		EMS_C406DF_FLAG_16	= 0x00008000,	// SIT 722 Bit Flag
+
+		EMS_C406DF_None	= 0x00000000	// time resolution is unknown
+	} EMSCALIB406DATAFLAGS;
+
+	typedef enum _tagEMSCALIB406RESOLUTIONFLAGS
+	{
+		EMS_C406RF_TIMERES_UKN	= 0x00000000,	// time resolution is unknown
+		EMS_C406RF_TIMERES_LOW	= 0x00000001,	// time resolution based upon 24 bit synch pattern
+		EMS_C406RF_TIMERES_MID	= 0x00000002,	// time resolution based upon 106 bit PDF1 pattern
+		EMS_C406RF_TIMERES_HIGH	= 0x00000004,	// time resolution based upon 144 bit PDF1+PDF2 pattern
+		EMS_C406RF_TIMERES_MASK	= 0x0000000F,	// time resolution mask
+
+		EMS_C406RF_FREQRES_UKN	= 0x00000000,	// frequency resolution is unknown
+		EMS_C406RF_FREQRES_LOW	= 0x00000100,	// frequency resolution is less than 10 Hz
+		EMS_C406RF_FREQRES_MID	= 0x00000200,	// frequency resolution is less than 1 Hz
+		EMS_C406RF_FREQRES_HIGH	= 0x00000400,	// frequency resolution is less than 0.1 Hz
+		EMS_C406RF_FREQRES_MASK	= 0x00000F00,	// frequency resolution mask
+
+		EMS_C406RF_POWERRES_UKN	= 0x00000000,	// power resolution is unknown
+		EMS_C406RF_POWERRES_LOW	= 0x00010000,	// power resolution is less than 10 dB-Hz
+		EMS_C406RF_POWERRES_MID	= 0x00020000,	// power resolution is less than 1 dB-Hz
+		EMS_C406RF_POWERRES_HIGH= 0x00040000,	// power resolution is less than 0.1 dB-Hz
+		EMS_C406RF_POWERRES_MASK= 0x000F0000,	// power resolution mask
+
+		EMS_C406RF_BPSRES_UKN	= 0x00000000,	// bit rate resolution is unknown
+		EMS_C406RF_BPSRES_LOW	= 0x01000000,	// bit rate resolution is less than 1 bps
+		EMS_C406RF_BPSRES_MID	= 0x02000000,	// bit rate resolution is less than 0.1 bps
+		EMS_C406RF_BPSRES_HIGH	= 0x04000000,	// bit rate resolution is less than 0.01 bps
+		EMS_C406RF_BPSRES_MASK	= 0x0F000000,	// bit rate resolution mask
+		EMS_C406RF_None		= 0
+	} EMSCALIB406RESOLUTIONFLAGS;
+
+	typedef struct _tagEMSCALIB406DATA2
+	{
+		EMSSIGDATAIDTYPE	hdr;					// time, ulSatID, ulLutID, wType
+		WORD				wAntennaID;				// Antenna Identifier
+		ULONG				ulPassID;				// Satellite Pass Number
+		INT64				i64BeaconID;			// Beacon ID
+		EMSTIME				timeMsg;				// encoded msg time
+		INT64				i64TimeOffset;			// nanosecond time correction 
+		WORD				wStatus;				// Status : ( DRU, Format Flag, Rollover, Freq Parity, 
+													// time parity )
+		WORD				wDuplicateMsgCount;		// Number of duplicate messages
+		double 				dFrequency;				// Frequency in Hz
+		double				dFreqOffset;			// Frequency offset in Hz (satellite/ground station dependency)
+		double				dCarrierPower;			// dB-Hz for SARR or dBm for SARP data
+		WORD				wBitErrorField1;        // Number of bit errors in first protected field
+		WORD				wBitErrorField2;        // Number of bit errors in second protected field
+		WORD				wBitErrorFrameSynch;    // Number of bit errors in  frame synch
+		BYTE				cBeaconMsg[ 18 ]; 		// 18 byte Beacon Message (includes 24 bit frame synch)
+		
+		double				dBitRate;				// bits per second
+		DWORD				dwDataFlags;				// see def'n above
+		DWORD				dwResolutionFlags;			// Flags indicating measurement resolution										
+
+		DWORD				dwReserve0;				// reserved for EMS internal use
+		double				dReserve1;				// in use for antenna azimuth
+		double				dReserve2;				// in use for antenna elevation
+		double				dReserve3;				// in use for CALIBRATION frequency offset
+
+		
+	} EMSCALIB406DATA2, *LPEMSCALIB406DATA2;
+
+
+
+#pragma pack()
+}
+
+cpp_quote("#endif //INC_CALIB406")

@@ -1,0 +1,108 @@
+cpp_quote( " " )
+cpp_quote( "#include \"emserror.h\"" )
+cpp_quote( " " )
+
+cpp_quote("//  ")
+cpp_quote("//  ")
+cpp_quote( "#define EMS_AUDIO_REQUEST (0x1) " )
+cpp_quote( "#define EMS_AUDIO_REPLY (0x2) " )
+cpp_quote("//  ")
+cpp_quote( "#define EMS_AUDIO_WAVE_FMT (0x1) " )
+
+import "unknwn.idl";
+import "emstypex.idl";
+import "sigdata.idl";
+
+
+#define _EMS_RPC_VERSION 1
+#define __RPC_FAR 
+
+cpp_quote( "#define MAX_AUDIO_BLOCK_SIZE 4096" )
+#define MAX_AUDIO_BLOCK_SIZE 4096
+
+cpp_quote( "#define EMS_AUDIO_REQUEST_FLAG_FILE (0x0001)" )
+cpp_quote( "#define EMS_AUDIO_REQUEST_FLAG_DB	(0x0002)" )
+cpp_quote( "#define EMS_AUDIO_REQUEST_FLAG_STREAM	(0x0004)" )
+#define EMS_AUDIO_REQUEST_FLAG_FILE (0x0001)
+#define EMS_AUDIO_REQUEST_FLAG_DB   (0x0002)
+#define EMS_AUDIO_REQUEST_FLAG_STREAM  (0x0004)
+
+
+[
+	uuid(554FBD04-534D-452d-AA08-44128EE44BBD),
+	helpstring("IEMSAUDIOdata Interface"),
+	pointer_default(unique)
+]
+
+interface IEMSAUDIOdata
+{
+
+#pragma pack(1)
+
+	typedef struct _tagEMSAUDIOSPEC
+	{
+		EMSTIME 		timeStart;
+		WORD			wSatID;
+		WORD			wLutID;
+		WORD			wFileFmt;
+		double 		dDuration;
+		double 		dCentreFreq;
+		double		dBandwidth;
+		WORD			wNumFreqCoeff;
+		double 		dFreqCoeff[16];
+		WORD			wNumChannels;
+		BYTE			szFilespec[ 256 ];
+	} EMSAUDIOSPEC, *LPEMSAUDIOSPEC;
+
+	typedef struct _tagEMSAUDIOREQUEST
+	{
+		WORD				wFlags;				// reason
+		INT				nDestID;
+		INT				nRequestID;
+		BYTE				szUserID[ 64 + 1 ];
+		DWORD				dwUserRights;
+		EMSAUDIOSPEC 	spec;
+		HRESULT			hrResult;
+		DWORD 			dwFilesize;
+	} EMSAUDIOREQUEST, *LPEMSAUDIOREQUEST;
+
+	typedef struct _tagEMSAUDIORECORDHEADER
+	{
+		INT64	ID;
+		EMSSIGDATAIDTYPE dataID;				// time, ulSatID, ulLutID, wType
+		float	fCenterFreq;
+		float	fBandWidth;
+	} EMSAUDIORECORDHEADER, *LPEMSAUDIORECORDHEADER;
+
+	typedef struct _tagEMSAUDIORECORDHEADER_RIFF
+	{
+		EMSAUDIORECORDHEADER audioHdr;
+		WORD				 dwBitsPerSample;
+		DWORD                dwSamplesPerSec;
+		int                  iChans;
+	} EMSAUDIORECORDHEADER_RIFF, *LPEMSAUDIORECORDHEADER_RIFF;
+
+	typedef struct _tagEMSAUDIODATARECORD_RIFF
+	{
+		EMSAUDIORECORDHEADER_RIFF	riffHdr;
+		UINT 						uiSequence;
+		UINT						uiDataSize;
+		BYTE						data[MAX_AUDIO_BLOCK_SIZE];
+	} EMSAUDIODATARECORD_RIFF, *LPEMSAUDIODATARECORD_RIFF;
+
+	typedef struct _tagEMSAUDIOSELECTCRITERIA
+	{
+		INT64		i64ID;
+		ULONG		ulSatID;
+		ULONG		ulLutID;
+		EMSTIME		timeStart;
+		EMSTIME		timeEnd;
+		double 		dCentreFreq;
+		double		dBandwidth;
+	} EMSAUDIOSELECTCRITERIA, *LPEMSAUDIOSELECTCRITERIA;
+
+
+#pragma pack()
+
+};
+

@@ -1,0 +1,92 @@
+/*********************************************************************
+*	              Copyright (c) 2005 by EMS Technologies, Inc.,
+*										All rights reserved
+*	This program is unpublished software and contains the trade secrets
+*	and confidential information of EMS Technologies, Inc.  It may not be 
+* reproduced in whole or in part, in any form or by any means whatsoever 
+* without the express written permission of EMS Technologies, Inc.
+*
+********************************************************************/
+
+/*******************************************************************
+
+  Revision Record
+
+	$Log:
+	$
+********************************************************************/
+
+
+
+cpp_quote( "// {E955F217-7055-4d47-B9C2-38F20A405030} " )
+cpp_quote( "DEFINE_GUID(CLSID_EMSExtCalibration, 0xe955f217, 0x7055, 0x4d47, 0xb9, 0xc2, 0x38, 0xf2, 0xa, 0x40, 0x50, 0x30); " )
+cpp_quote( "  " )
+
+
+cpp_quote( "// {FEFF1F40-B65A-44b5-A1EE-675923BDE7EA} ")
+cpp_quote( "DEFINE_GUID(IID_IEMSExtCalibration, 0x65da5a09, 0x19bf, 0x48dc, 0x81, 0x9b, 0x0, 0xbd, 0x71, 0xc6, 0x91, 0xe6); " )
+cpp_quote( "  " )
+
+
+
+cpp_quote( "// {E092C3B3-86F7-4f45-8951-40770A9B9B7D} ")
+cpp_quote( "DEFINE_GUID(CLSID_EMSCalib406Convertor, 0xe092c3b3, 0x86f7, 0x4f45, 0x89, 0x51, 0x40, 0x77, 0xa, 0x9b, 0x9b, 0x7d); " )
+cpp_quote( "  " )
+
+
+cpp_quote( "// {65DA5A09-19BF-48dc-819B-00BD71C691E6} ")
+cpp_quote( "DEFINE_GUID(IID_IEMSCalib406Conversion, 0x65da5a09, 0x19bf, 0x48dc, 0x81, 0x9b, 0x0, 0xbd, 0x71, 0xc6, 0x91, 0xe6); " )
+cpp_quote( "  " )
+
+
+import "unknwn.idl";
+import "calib406.idl";
+import "calib406ext.idl";
+
+//#define _EMS_RPC_VERSION 1
+
+
+[
+	object, uuid(FEFF1F40-B65A-44b5-A1EE-675923BDE7EA),
+	helpstring("IEMSExtCalibration Interface"),
+	pointer_default(unique)
+]
+
+interface IEMSExtCalibration : IUnknown
+{
+	HRESULT	Init( [in,string] const wchar_t* cwszConfig );
+
+	HRESULT Calibrate( [in,out] LPEMSCALIB406DATAEXT pCalibData );
+
+	HRESULT CalibrateMultiple(  [in,out] ULONG* pulElements,
+								[in,out,size_is(*pulElements)] LPEMSCALIB406DATAEXT aCalibData );
+								 
+	HRESULT GetFreqCalibration( [in]  const ULONG culSatelliteID, 
+								[in]  const EMSTIME cTimeSignal,
+								[in,out] double *pdFreq1,
+								[in,out] double *pdFreq2 );
+	HRESULT GetTimeCalibration( [in]  const ULONG culSatelliteID, 
+								[in]  const EMSTIME cTimeSignal,
+								[in,out] double *pdTime1,
+								[in,out] double *pdTime2 );
+
+};
+
+
+[
+	object, uuid(65DA5A09-19BF-48dc-819B-00BD71C691E6),
+	helpstring("IEMSCalib406Conversion Interface"),
+	pointer_default(unique)
+]
+
+
+interface IEMSCalib406Conversion : IUnknown
+{
+	HRESULT Convert( [in] const LPEMSCALIB406DATA	 cpCalibData, 
+	                 [in,out]   LPEMSCALIB406DATAEXT pCalibDataExt );
+
+	HRESULT ConvertMultiple( [in] ULONG* pulElements,
+							 [in,size_is(*pulElements)] LPEMSCALIB406DATA aCalibData,
+							 [in] ULONG* pulExtElements,
+							 [out,size_is(*pulExtElements)] LPEMSCALIB406DATAEXT aCalibExtData );
+};

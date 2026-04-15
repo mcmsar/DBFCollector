@@ -1,0 +1,59 @@
+cpp_quote( " " )
+cpp_quote( "#include \"emserror.h\"" )
+cpp_quote( " " )
+
+cpp_quote("// {68CD0786-9FF4-4700-A32E-A6620D847D3A} " )
+cpp_quote("DEFINE_GUID( CLSID_EMSFract, 0x68cd0786, 0x9ff4, 0x4700, 0xa3, 0x2e, 0xa6, 0x62, 0xd, 0x84, 0x7d, 0x3a); " )
+cpp_quote(" " )
+
+cpp_quote("// {177EA9A8-CEB8-4dbb-B1C9-23197F4E0625} ")
+cpp_quote("DEFINE_GUID( IID_IEMSFract, 0x177ea9a8, 0xceb8, 0x4dbb, 0xb1, 0xc9, 0x23, 0x19, 0x7f, 0x4e, 0x6, 0x25); ")
+cpp_quote(" " )
+
+import  "unknwn.idl";
+import  "emstypex.idl";
+
+#define _EMS_RPC_VERSION 1
+#define __RPC_FAR 
+
+[
+    object, uuid(177EA9A8-CEB8-4dbb-B1C9-23197F4E0625),
+    helpstring("IEMSRefraction Interface"),
+    pointer_default(unique)
+]
+
+interface IEMSFract : IUnknown
+{
+
+    typedef struct _tagEMSREFRACTION
+    {
+        __int64      time;
+        double       dFreq;
+        EMSCOORDD    satCoord;
+        double       dRange;
+        double       dRangeAdj;
+        double       dRangeRate;
+        double       dRangeRateAdj;
+        EMSAZEL      azEl;
+    } EMSREFRACTION, *LPEMSREFRACTION;
+
+    HRESULT LoadIonosphericConstants(
+              [in]                       EMSTIME               ionoTime );
+
+    HRESULT CalcRRateWithRefractionAdjustments(
+              [in]                       LPEMSLOCATION   const lpLocation,
+              [in]                       EMSCOORDSYSTEM        satCoordSystem,
+              [in,out,size_is(ulCount)]  LPEMSREFRACTION       lpRefraction,
+              [in]                       ULONG                 ulCount );
+
+    HRESULT Calculate(
+              [in]                       LPEMSLOCATION   const lpLocation,
+              [in]                       double                dFrequency,
+              [in,size_is(ulCount)]      LPEMSTIMECOORDD const lpSatPV,
+              [out,size_is(ulCount)]     LPEMSRANGERATED       lpRangeRate,
+              [in]                       ULONG                 ulCount,
+              [in]                       BOOLEAN               bAddIonos );
+
+};
+
+typedef [unique] IEMSFract *LPEMSFract;

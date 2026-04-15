@@ -1,0 +1,25 @@
+cpp_quote("// {11041DE8-2118-4b0d-BA3D-DFB2BDFACEAC}")
+cpp_quote("DEFINE_GUID( IID_IEMSFPStatus, 0x11041de8, 0x2118, 0x4b0d, 0xba, 0x3d, 0xdf, 0xb2, 0xbd, 0xfa, 0xce, 0xac);")
+cpp_quote(" ")
+
+
+import "unknwn.idl";
+import "emstypex.idl";
+import "emstatus.idl";
+
+#define _EMS_RPC_VERSION 1
+#define __RPC_FAR 
+
+[
+	object, uuid(11041DE8-2118-4b0d-BA3D-DFB2BDFACEAC),
+	helpstring("IEMSFPStatus Interface"),
+	pointer_default(unique)
+]
+
+interface IEMSFPStatus : IEMSStatus
+{
+	HRESULT SetAntennaID( [in] const ULONG ulAntennaID );
+};
+
+typedef [unique] IEMSFPStatus *LPEMSFPStatus;
+

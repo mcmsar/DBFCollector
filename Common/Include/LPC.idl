@@ -1,0 +1,41 @@
+cpp_quote("// {D98983C2-8E44-4185-82C7-C7B6ED688B17}")
+cpp_quote("DEFINE_GUID(IID_IEMSLPC, 0xd98983c2, 0x8e44, 0x4185, 0x82, 0xc7, 0xc7, 0xb6, 0xed, 0x68, 0x8b, 0x17);")
+
+cpp_quote("// {3CFE2B64-9CDB-4fd2-BE2D-C452509322B1}")
+cpp_quote("DEFINE_GUID(CLSID_EMSLPC, 0x3cfe2b64, 0x9cdb, 0x4fd2, 0xbe, 0x2d, 0xc4, 0x52, 0x50, 0x93, 0x22, 0xb1);")
+
+import "igateway.idl";
+
+[
+	uuid(D98983C2-8E44-4185-82C7-C7B6ED688B17),
+	helpstring("IEMSLPC"),
+	pointer_default(unique)
+]
+interface IEMSLPC : IUnknown
+{
+	HRESULT InitManualProcessing(	[in,string] wchar_t* wszWhereClause,
+									[out] unsigned long* pulSessionID,
+									[in,out] unsigned long* pulRecords,
+									[out,size_is(,*pulRecords)] EMSCALIB406DATA** paBeaconData );
+
+	HRESULT InitManual(	[in,string] const wchar_t* cwszWhereClause,
+						[in] const EMSMANUALPROCESSINGMODE ceProcessingMode,
+						[out] unsigned long* pulSessionID,
+						[in,out] unsigned long* pulRecords,
+						[out,size_is(,*pulRecords)] EMSVARIANTRECORD** paData );
+
+	HRESULT RemoveDataFromSet(	[in] const unsigned long culSessionID,
+								[in] const unsigned long culCount,
+								[in,size_is(culCount)] const unsigned long* caulIndex );
+
+	HRESULT Process406(	[in] const unsigned long culSessionID,
+						[in, string] const wchar_t* cwszControlFilename,
+						[in,out] unsigned long* pulResults,
+						[out,size_is(,*pulResults)] EMSLOCATE** paLocations );
+
+	HRESULT CancelSession(	[in] const unsigned long culSessionID );
+
+	HRESULT GetControlFilenames( [out] unsigned long* pulCount,
+								 [out, string, size_is(, *pulCount)] wchar_t***  ppaControlFilenames );
+
+};

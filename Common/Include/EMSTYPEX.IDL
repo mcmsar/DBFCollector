@@ -1,0 +1,127 @@
+//DEFINE_GUID(<<name>>, 
+//0x936cd5b2, 0x45f3, 0x11d5, 0x8b, 0x96, 0x0, 0x90, 0x27, 0x91, 0x28, 0x66);
+ 
+[
+	uuid(936CD5B2-45F3-11d5-8B96-009027912866),
+	pointer_default(unique)
+]
+
+interface IEMSTypex
+{
+typedef __int64 INT64, *LPINT64;
+
+typedef double EMSDEGREES;
+
+typedef double EMSRADIANS;
+
+typedef unsigned long HEVENT;
+
+typedef struct _tagEMSTIME
+{
+	struct 
+	{
+		DWORD	dwMinor;
+		DWORD	dwMajor;
+	} 		fileTime;
+} EMSTIME, *LPEMSTIME;
+	
+typedef struct _tagEMSVECTOR
+{
+   float   fX;
+   float   fY;
+   float   fZ;
+} EMSVECTOR, *LPEMSVECTOR;
+
+typedef struct _tagEMSVECTORD
+{
+   double   dX;
+   double   dY;
+   double   dZ;
+} EMSVECTORD, *LPEMSVECTORD;
+
+typedef struct _tagEMSCOORD
+{
+	EMSVECTOR	radius;
+	EMSVECTOR	velocity;
+} EMSCOORD, *LPEMSCOORD;
+
+typedef struct _tagEMSCOORDD
+{
+	EMSVECTORD	radius;
+	EMSVECTORD	velocity;
+} EMSCOORDD, *LPEMSCOORDD;
+
+typedef enum _tagEMSCOORDSYSTEM
+{
+	COORDSYS_StdEarthFixed = 3,			// Normal usage
+	COORDSYS_Inertial = 1,
+	COORDSYS_EarthFixed = 2					// non-standard usage
+} EMSCOORDSYSTEM;
+
+typedef struct _tagEMSLOCATION
+{
+	EMSDEGREES degLatitude;
+	EMSDEGREES degLongitude;
+	float fAltitude;
+} EMSLOCATION, *LPEMSLOCATION;
+
+typedef struct _tagEMSLOCATIOND
+{
+	EMSDEGREES degLatitude;
+	EMSDEGREES degLongitude;
+	double dAltitude;
+} EMSLOCATIOND, *LPEMSLOCATIOND;
+
+typedef struct _tagEMSAZEL
+{
+	EMSDEGREES	degElevation;
+	EMSDEGREES	degAzimuth;
+} EMSAZEL, *LPEMSAZEL;
+
+typedef struct _tagEMSAZELVECTOR
+{
+	EMSAZEL azel;
+	float	fRange;
+} EMSAZELVECTOR, *LPEMSAZELVECTOR;
+
+typedef struct _tagEMSAZELVECTORD
+{
+	EMSAZEL azel;
+	double	dRange;
+} EMSAZELVECTORD, *LPEMSAZELVECTORD;
+
+typedef struct _tagEMSRANGERATE
+{
+	EMSTIME	vTime;
+	float fRange;				// km
+	float fRangeRate;			// km/sec
+} EMSRANGERATE, *LPEMSRANGERATE;
+
+typedef struct _tagEMSRANGERATED
+{
+	EMSTIME	vTime;
+	double dRange;				// km
+	double dRangeRate;			// km/sec
+} EMSRANGERATED, *LPEMSRANGERATED;
+
+typedef struct _tagEMSTIMECOORD
+{
+	EMSCOORDSYSTEM coordSystem;
+	EMSTIME		vTime;
+	EMSCOORD		coord;
+} EMSTIMECOORD, *LPEMSTIMECOORD;
+
+typedef struct _tagEMSTIMECOORDD
+{
+	EMSCOORDSYSTEM coordSystem;
+	EMSTIME		vTime;
+	EMSCOORDD		coord;
+} EMSTIMECOORDD, *LPEMSTIMECOORDD;
+
+typedef struct _tagEMSTCACTA 
+{
+	EMSTIME	tca;	// nanoseconds
+	double   cta;	// degrees
+} EMSTCACTA, *LPEMSTCACTA;
+
+};

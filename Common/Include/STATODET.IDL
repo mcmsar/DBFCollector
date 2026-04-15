@@ -1,0 +1,84 @@
+cpp_quote("// {ABFAD672-F182-11d5-8D38-009027912866}")
+cpp_quote("DEFINE_GUID( IID_IEMSOrbitDetermineStatus, 0xabfad672, 0xf182, 0x11d5, 0x8d, 0x38, 0x0, 0x90, 0x27, 0x91, 0x28, 0x66);")
+cpp_quote(" " )
+
+import "unknwn.idl";
+import "emstypex.idl";
+import "emstatus.idl";
+
+#define _EMS_RPC_VERSION 1
+#define __RPC_FAR 
+
+[
+	object, uuid(ABFAD672-F182-11d5-8D38-009027912866),
+	helpstring("IEMSOrbitDetermineStatus Interface"),
+	pointer_default(unique)
+]
+
+interface IEMSOrbitDetermineStatus : IEMSStatus
+{
+	typedef [v1_enum] enum _tagEMSORBITDETERMINESTATE
+	{
+		EMS_ODS_Idle = 0,
+		EMS_ODS_Initialized = 1,
+		EMS_ODS_Processing = 2,
+		EMS_ODS_EndOfPass = 3,
+		EMS_ODS_WaitingToProcess = 4
+	} EMSORBITDETERMINESTATE;
+
+#pragma pack(1)
+	typedef struct _tagEMSORBITDETERMINEINFO
+	{
+		WORD 							wStatus; // OrbitDetermine status
+		EMSORBITDETERMINESTATE	state;
+		ULONG							ulSatID;
+		ULONG							ulBufferedRecords; 	// RefBeacon
+//	Not yet defined to be used in the database
+		ULONG							ulTrackRecords;
+	} EMSORBITDETERMINEINFO, *LPEMSORBITDETERMINEINFO;
+
+	typedef [v1_enum] enum _tagEMSORBITUPDATESTATUS
+	{
+		EMS_ORBUPD_Unknown = 0,
+		EMS_ORBUPD_Updated = 1,
+		EMS_ORBUPD_TooFewData = 2,
+		EMS_ORBUPD_Error = 3
+	} EMSORBITUPDATESTATUS;
+
+	typedef struct _tagEMSORBITDETERMINEINFOEX
+	{
+//		EMSORBITDETERMINEINFO	info;
+//		EMSTIME	timeOrbitEpoch;
+//		EMSVECTOR vOrbitPosition;
+//		EMSVECTOR vOrbitVelocity;
+//		WORD wOrbitUpdateStatus;
+//		double dOrbitPositionOffset;
+//		double dOrbitVelocityOffset;
+//		LONG	lDataPoints;
+//		double dStdDev;
+//		double dAverage;
+		// new
+		WORD	wStatus; // OrbitDetermine status
+		WORD	wNumDownlink;
+		WORD	wNumDownlinkUsed;
+		WORD	wNum406;
+		WORD	wNum406Used;
+		float fMeanResidualInput;
+		float fMeanResidualOutput;
+		float fStdDevResidualInput;
+		float fStdDevResidualOutput;
+		float	fPositionDifference;
+		float	fVelocityDifference;
+	} EMSORBITDETERMINEINFOEX, *LPEMSORBITDETERMINEINFOEX;
+#pragma pack()
+
+	HRESULT ResetOrbitDetermineInfo( void );
+
+	HRESULT SetOrbitDetermineInfo( [in] EMSORBITDETERMINEINFOEX *lpInfo );
+	HRESULT GetOrbitDetermineInfo( [out] EMSORBITDETERMINEINFOEX *lpInfo );
+};
+
+typedef [unique] IEMSOrbitDetermineStatus *LPEMSORBITDETERMINESTATUS;
+
+
+

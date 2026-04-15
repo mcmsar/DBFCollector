@@ -1,0 +1,146 @@
+cpp_quote( " " )
+cpp_quote( "#include \"emserror.h\"" )
+cpp_quote( " " )
+
+cpp_quote("// {92B437C4-D022-43d0-AEEF-FD153D019E6D}")
+cpp_quote("DEFINE_GUID( IID_IEMSAudioRiffDataStream, 0x92b437c4, 0xd022, 0x43d0, 0xae, 0xef, 0xfd, 0x15, 0x3d, 0x1, 0x9e, 0x6d);")
+
+cpp_quote("// {90903D19-13F4-41a7-8BB8-ABC541A3E9D7}")
+cpp_quote("DEFINE_GUID( CLSID_EMSAudioInterface, 0x90903d19, 0x13f4, 0x41a7, 0x8b, 0xb8, 0xab, 0xc5, 0x41, 0xa3, 0xe9, 0xd7);")
+
+cpp_quote("// {0E2ED242-DE88-4e08-9A5A-52359A17FE14}")
+cpp_quote("DEFINE_GUID( IID_IEMSAudioRiffInterface, 0xe2ed242, 0xde88, 0x4e08, 0x9a, 0x5a, 0x52, 0x35, 0x9a, 0x17, 0xfe, 0x14);")
+
+cpp_quote("// {F25795DC-0A43-46cf-9376-B2168A30F095}")
+cpp_quote("DEFINE_GUID( IID_IEMSAudioStream, 0xf25795dc, 0xa43, 0x46cf, 0x93, 0x76, 0xb2, 0x16, 0x8a, 0x30, 0xf0, 0x95);")
+
+cpp_quote("// {E2EDFFE6-E40C-4aa7-81EC-5F5900DCBD86}")
+cpp_quote("DEFINE_GUID( IID_IEMSAudioStream2, 0xe2edffe6, 0xe40c, 0x4aa7, 0x81, 0xec, 0x5f, 0x59, 0x0, 0xdc, 0xbd, 0x86);")
+
+cpp_quote("#define CLSID_EMSAudioRiffInterface CLSID_EMSAudioInterface")
+
+import "unknwn.idl";
+import "emsaudio.idl";
+import "igateway.idl";
+
+#define _EMS_RPC_VERSION 1
+#define __RPC_FAR 
+
+[
+	object, uuid(0E2ED242-DE88-4e08-9A5A-52359A17FE14),
+	helpstring("IEMSAudioRiffInterface Interface"),
+	pointer_default(unique)
+]
+
+interface IEMSAudioRiffInterface : IUnknown
+{
+	HRESULT getAudioRiffData( [in] EMSAUDIOSELECTCRITERIA* pAudioCriteria,
+							  [in,string] const wchar_t* szFileName );
+
+	HRESULT getAudioRiffDataDAL( [in] unsigned long ulSourceID,
+								 [in] unsigned long ulDestID,
+								 [in] EMSGATEWAYTOKEN* psecToken,
+								 [in] const unsigned long culMaxRecords,
+								 [in] EMSAUDIOSELECTCRITERIA* pAudioCriteria,
+							     [in,string] const wchar_t* szFileName );
+
+	HRESULT cancel( [in] DWORD dwFlags );
+
+	HRESULT MakeRequestAssinchronus( [in] unsigned long ulSourceID,
+								 [in] unsigned long ulDestID,
+								 [in] const unsigned long culMaxRecords,
+								 [in] EMSAUDIOSELECTCRITERIA* pAudioCriteria );
+
+	HRESULT GetDataAssinchronus( [in,out] short* pData,
+								 [in,out] unsigned int* pLen,
+								 [in,out] unsigned int* pSamplPerSec );
+
+}
+
+typedef [unique] IEMSAudioRiffInterface *LPEMSAUDIORIFFINTERFACE;
+
+[
+	object, uuid(F25795DC-0A43-46cf-9376-B2168A30F095),
+	helpstring("IEMSAudioStream Interface"),
+	pointer_default(unique)
+]
+
+interface IEMSAudioStream : IUnknown
+{
+	HRESULT Connect( [in] const unsigned long ulSourceID,
+					 [in] const unsigned long culLutID,
+					 [in] const unsigned long culBufferSize );
+
+	HRESULT Disconnect();
+		
+	HRESULT SetParameters( [in] const float fCenterFreq, 
+						   [in] const float fBandwidth);
+
+	HRESULT GetData( [in,out] short* pData,
+					 [in,out] unsigned int* pLen );
+
+}
+
+typedef [unique] IEMSAudioStream *LPEMSAUDIOSTREAM;
+
+[
+	object, uuid(E2EDFFE6-E40C-4aa7-81EC-5F5900DCBD86),
+	helpstring("IEMSAudioStream2 Interface"),
+	pointer_default(unique)
+]
+
+interface IEMSAudioStream2 : IUnknown
+{
+	HRESULT MakeFreeRequest( [in] const unsigned long ulSourceID,
+						     [in] EMSAUDIOREQUEST audreq );
+
+	HRESULT GetFreeRequestData( [in,out] short* pData,
+								[in,out] unsigned int* pLen,
+								[in,out] unsigned int* pSamplPerSec);
+
+	HRESULT CancelFreeRequest();
+}
+
+typedef [unique] IEMSAudioStream2 *LPEMSAUDIOSTREAM2;
+
+[
+	object, uuid(92B437C4-D022-43d0-AEEF-FD153D019E6D),
+	helpstring("IEMSAudioRiffDataStream Interface"),
+	pointer_default(unique)
+]
+
+interface IEMSAudioRiffDataStream : IUnknown
+{
+	typedef enum _tagEMSAUDIORIFFSTREAMTYPE
+	{
+		EMSARST_Unknown = 0,
+		EMSARST_Realtime = 1,
+		EMSARST_Database = 2,
+		EMSARST_Request = 3,
+		EMSARST_File = 4
+	} EMSAUDIORIFFSTREAMTYPE, *LPEMSAUDIORIFFSTREAMTYPE;
+
+	typedef struct _tagEMSAUDIORIFFINFO
+	{
+		BOOLEAN	bSweepDetected;
+		double dSweepRate;
+		double dSweepConfidence;
+	} EMSAUDIORIFFINFO, *LPEMSAUDIORIFFINFO;
+
+	HRESULT GetAudioStreamType( [out] LPEMSAUDIORIFFSTREAMTYPE lpType );
+
+	HRESULT GetAudioRiff( [out] LPEMSAUDIODATARECORD_RIFF lpData );
+
+	HRESULT GetAudioRiffEx( [out] LPEMSAUDIODATARECORD_RIFF lpData, 
+			[out] LPEMSAUDIORIFFINFO lpInfo );
+
+	HRESULT CancelAudioStream( [in] DWORD dwFlags );
+	HRESULT ClearAudioStream( [in] DWORD dwFlags );
+
+	HRESULT SetAudioStreamTimeout( [in] double dTimeout );
+
+	HRESULT GetQueueSize( [out] ULONG* pulSize );
+}
+
+typedef [unique] IEMSAudioRiffDataStream *LPEMSAUDIORIFFDATASTREAM;
+

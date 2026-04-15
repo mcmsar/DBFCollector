@@ -1,0 +1,43 @@
+cpp_quote( "// Edmonton SERPE-IESM Orbitography Test Beacon" )
+cpp_quote( "// {E9AB7FEB-9FF3-4622-8EA3-84461FB2C0B7}" )
+cpp_quote( "DEFINE_GUID(CLSID_EMSEdmSIBeacon, 0xe9ab7feb, 0x9ff3, 0x4622, 0x8e, 0xa3, 0x84, 0x46, 0x1f, 0xb2, 0xc0, 0xb7); ")
+
+cpp_quote( "// {63A83A16-5218-4cdc-8512-E0392FEED340}" )
+cpp_quote( "DEFINE_GUID(IID_IEMSBeaconDevice, 0x63a83a16, 0x5218, 0x4cdc, 0x85, 0x12, 0xe0, 0x39, 0x2f, 0xee, 0xd3, 0x40);" )
+
+import "unknwn.idl";
+import "emstypex.idl";
+import "objidl.idl";
+
+
+typedef enum _tagEMSBeaconState
+{
+	EMSBEACONSTATE_Min		= -1,
+	EMSBEACONSTATE_UNKNOWN	= -1,
+	EMSBEACONSTATE_OFF		= 0,
+	EMSBEACONSTATE_ON		= 1,
+	EMSBEACONSTATE_Max		= 1,
+} EMSBEACONSTATE;
+
+
+cpp_quote( "// 30 digit beacon message as string (+ 1 for null terminator)" )
+typedef char EMSBEACONMSGSTRING[31];
+
+[
+	object, uuid(63A83A16-5218-4cdc-8512-E0392FEED340),
+	helpstring("IEMSBeaconDevice Interface"),
+	pointer_default(unique)
+]
+
+interface IEMSBeaconDevice : IUnknown
+{
+	HRESULT Init();
+	HRESULT Reset();
+	HRESULT TurnOn();
+	HRESULT TurnOff();
+	HRESULT	GetState(	[out] EMSBEACONSTATE*	pBeaconState,
+						[in,out] EMSBEACONMSGSTRING* pBeaconMsg );
+};
+
+typedef [unique] IEMSBeaconDevice *LPEMSBEACONDEVICE;
+

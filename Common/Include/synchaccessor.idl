@@ -1,0 +1,42 @@
+/*********************************************************************
+*	              Copyright (c) 2008 by EMS Technologies, Inc.,
+*										All rights reserved
+*	This program is unpublished software and contains the trade secrets
+*	and confidential information of EMS Technologies, Inc.  It may not be 
+* reproduced in whole or in part, in any form or by any means whatsoever 
+* without the express written permission of EMS Technologies, Inc.
+*
+********************************************************************/
+
+/*******************************************************************
+
+  Revision Record
+
+	$Log:
+	$
+********************************************************************/
+
+cpp_quote("// {CDC111FD-FC0A-4263-8FD6-130EFE173991}")
+cpp_quote("DEFINE_GUID(IID_IEMSSynchAccessor, 0xcdc111fd, 0xfc0a, 0x4263, 0x8f, 0xd6, 0x13, 0xe, 0xfe, 0x17, 0x39, 0x91);")
+
+
+import "unknwn.idl";
+import "emstypex.idl";
+
+[
+	uuid(CDC111FD-FC0A-4263-8FD6-130EFE173991),
+	helpstring("IEMSSynchAccessor"),
+	pointer_default(unique)
+]
+interface IEMSSynchAccessor : IUnknown
+{
+	HRESULT Update( [in,string] const wchar_t* cwszRecords );
+
+	HRESULT Insert( [in,string] const wchar_t* cwszRecords );
+
+	HRESULT GetAll( [out,string] wchar_t** pwszRecords );
+
+	HRESULT GetRecords( [in] EMSTIME const startTime, [out,string] wchar_t** pwszRecords );
+
+	HRESULT GetByKey( [in,string] const wchar_t* cwszKey, [out,string] wchar_t** pwszRecord );
+}

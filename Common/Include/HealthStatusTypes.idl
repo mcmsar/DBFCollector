@@ -1,0 +1,51 @@
+cpp_quote("/********************************************************************")
+cpp_quote("*	Module:			HealthStatusTypes.h ") 
+cpp_quote("*********************************************************************")
+cpp_quote("*	              Copyright (c) 2009 by EMS Technologies, Inc.,")
+cpp_quote("*										All rights reserved")
+cpp_quote("*	This program is unpublished software and contains the trade secrets")
+cpp_quote("*	and confidential information of EMS Technologies, Inc.  It may not be ")
+cpp_quote("* reproduced in whole or in part, in any form or by any means whatsoever ")
+cpp_quote("* without the express written permission of EMS Technologies, Inc.")
+cpp_quote("*")
+cpp_quote("********************************************************************/")
+cpp_quote("#ifndef INC_HEALTHSTATUSTYPES_IDL")
+cpp_quote("#define INC_HEALTHSTATUSTYPES_IDL")
+
+#define _EMS_RPC_VERSION 1
+#define __RPC_FAR 
+
+import "unknwn.idl";
+import "emstypex.idl";
+
+typedef struct tagEMSHealthStatus
+{
+	EMSTIME	timestamp;
+	ULONG		ulLutID;
+	ULONG		ulReportPeriod;
+	WORD		wWarningCount;
+	WORD		wAlarmCount;
+	WORD		wDetectRecordCount;
+	WORD		wReserved1;
+	WORD		wReserved2;
+	ULONG		ulReserved1;
+	ULONG		ulReserved2;
+	double	dReserved1;
+	double	dReserved2;
+	EMSTIME	timeReserved1;
+	EMSTIME	timeReserved2;
+} EMSHEALTHSTATUS;
+
+typedef struct tagEMSHealthDetections
+{
+	EMSTIME	timestamp;
+	ULONG		ulLutID;
+	ULONG		ulFPID;
+	ULONG		ulSatID;
+	WORD 		wDetectionCount;
+	EMSTIME		timeLastDetection;
+	WORD		wReserved1;
+	ULONG		ulReserved1;
+} EMSHEALTHDETECTIONS;
+
+cpp_quote("#endif //INC_HEALTHSTATUSTYPES_IDL")

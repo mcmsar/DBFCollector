@@ -1,0 +1,8 @@
+
+#ifndef __OCCDALWSPROXY_CLSID_H__
+#define __OCCDALWSPROXY_CLSID_H__
+
+// {E9DB9768-03B1-4aeb-935E-B9395C4DA13A}
+DEFINE_GUID(CLSID_EMSOCCDALWSProxy, 0xe9db9768, 0x3b1, 0x4aeb, 0x93, 0x5e, 0xb9, 0x39, 0x5c, 0x4d, 0xa1, 0x3a);
+
+#endif

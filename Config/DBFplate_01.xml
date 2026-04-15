@@ -1,0 +1,239 @@
+<DBFplates>
+	<Plate id = "1">		
+		<PlateFaceAzimuth> 0 </PlateFaceAzimuth>
+		<PlateFaceElevation> 60.0 </PlateFaceElevation>
+		<PlateFaceRotation> 0.0 </PlateFaceRotation>
+		<FixedPointNumber> 0 </FixedPointNumber>
+		<FixedPoints>
+			<FixedPoint id = "0">
+				<FixedPointAz> 110.0 </FixedPointAz>
+				<FixedPointEl> 45.0 </FixedPointEl>
+				<FixedPointPol>RHCP</FixedPointPol>
+				<FixedPointDistance>500.00</FixedPointDistance>
+				<FixedPointEnabled>true</FixedPointEnabled>
+			</FixedPoint>
+		</FixedPoints>
+
+		<CellNumber> 31 </CellNumber>
+		<Cells>
+ 			<Cell id = "1">
+					<ChannelID> 7 </ChannelID>
+					<Xcoord> -18.750 </Xcoord>
+					<Ycoord> -32.475 </Ycoord>
+					<RHCPbias>  253.80 </RHCPbias>
+					<LHCPbias>    66.61 </LHCPbias>
+ 			</Cell>
+ 			<Cell id = "2">
+					<ChannelID> 6 </ChannelID>
+					<Xcoord>  -6.250 </Xcoord>
+					<Ycoord> -32.475 </Ycoord>
+					<RHCPbias>  198.41 </RHCPbias>
+					<LHCPbias>   117.63 </LHCPbias>
+ 			</Cell>
+ 			<Cell id = "3">
+					<ChannelID> 5 </ChannelID>
+					<Xcoord>  18.750 </Xcoord>
+					<Ycoord> -32.475 </Ycoord>
+					<RHCPbias>  125.76 </RHCPbias>
+					<LHCPbias>   196.08 </LHCPbias>
+ 			</Cell>
+ 			<Cell id = "4">
+					<ChannelID> 4 </ChannelID>
+					<Xcoord> -12.500 </Xcoord>
+					<Ycoord> -21.650 </Ycoord>
+					<RHCPbias>  297.67 </RHCPbias>
+					<LHCPbias>    50.78 </LHCPbias>
+ 			</Cell>
+ 			<Cell id = "5">
+					<ChannelID> 3 </ChannelID>
+					<Xcoord>   0.000 </Xcoord>
+					<Ycoord> -21.650 </Ycoord>
+					<RHCPbias>  291.83 </RHCPbias>
+					<LHCPbias>    47.73 </LHCPbias>
+ 			</Cell>
+ 			<Cell id = "6">
+					<ChannelID> 2 </ChannelID>
+					<Xcoord>  12.500 </Xcoord>
+					<Ycoord> -21.650 </Ycoord>
+					<RHCPbias>  229.90 </RHCPbias>
+					<LHCPbias>   115.35 </LHCPbias>
+ 			</Cell>
+ 			<Cell id = "7">
+					<ChannelID> 1 </ChannelID>
+					<Xcoord>  25.000 </Xcoord>
+					<Ycoord> -21.650 </Ycoord>
+					<RHCPbias>  333.43 </RHCPbias>
+					<LHCPbias>  356.82</LHCPbias>
+ 			</Cell>
+ 			<Cell id = "8">
+					<ChannelID> 15 </ChannelID>
+					<Xcoord> -31.250 </Xcoord>
+					<Ycoord> -10.825 </Ycoord>
+					<RHCPbias>  157.40 </RHCPbias>
+					<LHCPbias>   156.05 </LHCPbias>
+ 			</Cell>
+ 			<Cell id = "9">
+					<ChannelID> 14 </ChannelID>
+					<Xcoord> -18.750 </Xcoord>
+					<Ycoord> -10.825 </Ycoord>
+					<RHCPbias>  238.37 </RHCPbias>
+					<LHCPbias>   158.15 </LHCPbias>
+ 			</Cell>
+ 			<Cell id = "10">
+					<ChannelID> 13 </ChannelID>
+					<Xcoord>  -6.250 </Xcoord>
+					<Ycoord> -10.825 </Ycoord>
+					<RHCPbias>  274.80 </RHCPbias>
+					<LHCPbias>   111.72 </LHCPbias>
+ 			</Cell>
+ 			<Cell id = "11">
+					<ChannelID> 12 </ChannelID>
+					<Xcoord>   6.250 </Xcoord>
+					<Ycoord> -10.825 </Ycoord>
+					<RHCPbias>  316.58 </RHCPbias>
+					<LHCPbias>    67.71 </LHCPbias>
+ 			</Cell>
+ 			<Cell id = "12">
+					<ChannelID> 11 </ChannelID>
+					<Xcoord>  18.750 </Xcoord>
+					<Ycoord> -10.825 </Ycoord>
+					<RHCPbias>  160.54 </RHCPbias>
+					<LHCPbias>   211.56 </LHCPbias>
+ 			</Cell>
+ 			<Cell id = "13">
+					<ChannelID> 10 </ChannelID>
+					<Xcoord> -37.500 </Xcoord>
+					<Ycoord>   0.000 </Ycoord>
+					<RHCPbias>  227.97 </RHCPbias>
+					<LHCPbias>   117.39 </LHCPbias>
+ 			</Cell>
+ 			<Cell id = "14">
+					<ChannelID> 9 </ChannelID>
+					<Xcoord> -25.000 </Xcoord>
+					<Ycoord>   0.000 </Ycoord>
+					<RHCPbias>  267.66 </RHCPbias>
+					<LHCPbias>    97.00</LHCPbias>
+ 			</Cell>
+ 			<Cell id = "15">
+					<ChannelID> 8 </ChannelID>
+					<Xcoord> -12.500 </Xcoord>
+					<Ycoord>   0.000 </Ycoord>
+					<RHCPbias>  266.93 </RHCPbias>
+					<LHCPbias>   107.39 </LHCPbias>
+ 			</Cell>
+ 			<Cell id = "16">
+					<ChannelID> 23 </ChannelID>
+					<Xcoord>   0.000 </Xcoord>
+					<Ycoord>   0.000 </Ycoord>
+					<RHCPbias>    0.00 </RHCPbias>
+					<LHCPbias>     0.00</LHCPbias>
+ 			</Cell>
+ 			<Cell id = "17">
+					<ChannelID> 22 </ChannelID>
+					<Xcoord>  12.500 </Xcoord>
+					<Ycoord>   0.000 </Ycoord>
+					<RHCPbias>  275.79 </RHCPbias>
+					<LHCPbias>   102.88 </LHCPbias>
+ 			</Cell>
+ 			<Cell id = "18">
+					<ChannelID> 21 </ChannelID>
+					<Xcoord>  25.000 </Xcoord>
+					<Ycoord>   0.000 </Ycoord>
+					<RHCPbias>  170.22 </RHCPbias>
+					<LHCPbias>   183.32 </LHCPbias>
+ 			</Cell>
+ 			<Cell id = "19">
+					<ChannelID> 20 </ChannelID>
+					<Xcoord>  37.500 </Xcoord>
+					<Ycoord>   0.000 </Ycoord>
+					<RHCPbias>  216.94 </RHCPbias>
+					<LHCPbias>   116.32</LHCPbias>
+ 			</Cell>
+ 			<Cell id = "20">
+					<ChannelID> 19 </ChannelID>
+					<Xcoord> -18.750 </Xcoord>
+					<Ycoord>  10.825 </Ycoord>
+					<RHCPbias>  263.88 </RHCPbias>
+					<LHCPbias>   108.97</LHCPbias>
+ 			</Cell>
+ 			<Cell id = "21">
+					<ChannelID> 18 </ChannelID>
+					<Xcoord>  -6.250 </Xcoord>
+					<Ycoord>  10.825 </Ycoord>
+					<RHCPbias>  257.85 </RHCPbias>
+					<LHCPbias>   131.29</LHCPbias>
+ 			</Cell>
+ 			<Cell id = "22">
+					<ChannelID> 17 </ChannelID>
+					<Xcoord>   6.250 </Xcoord>
+					<Ycoord>  10.825 </Ycoord>
+					<RHCPbias>  225.53 </RHCPbias>
+					<LHCPbias>   115.81</LHCPbias>
+ 			</Cell>
+ 			<Cell id = "23">
+					<ChannelID> 16 </ChannelID>
+					<Xcoord>  18.750 </Xcoord>
+					<Ycoord>  10.825 </Ycoord>
+					<RHCPbias>  335.89 </RHCPbias>
+					<LHCPbias>    19.73 </LHCPbias>
+ 			</Cell>
+ 			<Cell id = "24">
+					<ChannelID> 31 </ChannelID>
+					<Xcoord>  31.250 </Xcoord>
+					<Ycoord>  10.825 </Ycoord>
+					<RHCPbias>  217.32 </RHCPbias>
+					<LHCPbias>   118.66 </LHCPbias>
+ 			</Cell>
+ 			<Cell id = "25">
+					<ChannelID> 30 </ChannelID>
+					<Xcoord> -25.000 </Xcoord>
+					<Ycoord>  21.650 </Ycoord>
+					<RHCPbias>  301.04 </RHCPbias>
+					<LHCPbias>    16.76 </LHCPbias>
+ 			</Cell>
+ 			<Cell id = "26">
+					<ChannelID> 29 </ChannelID>
+					<Xcoord> -12.500 </Xcoord>
+					<Ycoord>  21.650 </Ycoord>
+					<RHCPbias>   44.10 </RHCPbias>
+					<LHCPbias>   286.14 </LHCPbias>
+ 			</Cell>
+ 			<Cell id = "27">
+					<ChannelID> 28 </ChannelID>
+					<Xcoord>   0.000 </Xcoord>
+					<Ycoord>  21.650 </Ycoord>
+					<RHCPbias>   10.08 </RHCPbias>
+					<LHCPbias>     2.12 </LHCPbias>
+ 			</Cell>
+ 			<Cell id = "28">
+					<ChannelID> 27 </ChannelID>
+					<Xcoord>  12.500 </Xcoord>
+					<Ycoord>  21.650 </Ycoord>
+					<RHCPbias>  317.27 </RHCPbias>
+					<LHCPbias>   27.35</LHCPbias>
+ 			</Cell>
+ 			<Cell id = "29">
+					<ChannelID> 26 </ChannelID>
+					<Xcoord> -18.750 </Xcoord>
+					<Ycoord>  32.475 </Ycoord>
+					<RHCPbias>  220.53 </RHCPbias>
+					<LHCPbias>    97.41 </LHCPbias>
+ 			</Cell>
+ 			<Cell id = "30">
+					<ChannelID> 25 </ChannelID>
+					<Xcoord>   6.250 </Xcoord>
+					<Ycoord>  32.475 </Ycoord>
+					<RHCPbias>  142.09 </RHCPbias>
+					<LHCPbias>   163.70 </LHCPbias>
+ 			</Cell>
+ 			<Cell id = "31">
+					<ChannelID> 24 </ChannelID>
+					<Xcoord>  18.750 </Xcoord>
+					<Ycoord>  32.475 </Ycoord>
+					<RHCPbias>  228.88 </RHCPbias>
+					<LHCPbias>    82.40 </LHCPbias>
+ 			</Cell>
+		</Cells>
+
+	</Plate>
+</DBFplates>

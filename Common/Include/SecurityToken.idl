@@ -1,0 +1,14 @@
+
+import "unknwn.idl";
+
+#define SECURITY_TOKEN_SIZE 64
+
+#pragma pack(1)
+
+typedef struct tagEMSGATEWAYTOKEN
+{
+	BYTE cToken[ SECURITY_TOKEN_SIZE ];
+} EMSGATEWAYTOKEN, *LPEMSGATEWAYTOKEN;
+
+
+#pragma pack()

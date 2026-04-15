@@ -1,0 +1,208 @@
+cpp_quote("// {3E3B73A3-CAC6-43e5-A255-B1BEA6A63C76}")
+cpp_quote("DEFINE_GUID( CLSID_EMSCC, 0x3e3b73a3, 0xcac6, 0x43e5, 0xa2, 0x55, 0xb1, 0xbe, 0xa6, 0xa6, 0x3c, 0x76);")
+
+cpp_quote("// {96EF00A3-F66C-49cc-BA3C-A0D70C58F45F}")
+cpp_quote("DEFINE_GUID( IID_IEMSCommand, 0x96ef00a3, 0xf66c, 0x49cc, 0xba, 0x3c, 0xa0, 0xd7, 0xc, 0x58, 0xf4, 0x5f);")
+
+import "unknwn.idl";
+import "EMSTYPEX.IDL";
+import "emscommontypes.idl";
+import "ialertgen.idl";
+import "emstrack.idl";
+import "sittypes.idl";
+import "sarrcalib.idl";
+import "emsauthorization.idl";
+
+const ULONG MAX_LOCATION_KEYS = 256;
+
+typedef enum tagCmdType
+{
+	CMD_UNKNOWN = 0,
+	CMD_OPCMD = 1,
+	CMD_RETRANSMIT = 2,
+	CMD_ORBV = 3,
+	CMD_TLE = 4,
+	CMD_PASS_SCHED = 5,
+	CMD_SARP_CALIB = 6,
+	CMD_SARR_CALIB = 7,
+	CMD_STARTUP = 8,
+   CMD_GEN_ALERT = 9,
+	CMD_LAST
+} EMSCMDTYPE;
+
+typedef struct tagEMSLocationKey
+{
+    EMSTIME timestamp;
+    ULONG ulLutID;
+    __int64 i64BeaconID;
+    unsigned short usType;
+} EMSLOCATIONKEY;
+
+typedef struct tagCmdGenAlert
+{
+   ULONG ulNumDestinations;
+   ULONG aulDestinationIDs[MAX_DESTINATIONS];
+   ULONG ulNumLocationsKeys;
+   EMSLOCATIONKEY locationKey[MAX_LOCATION_KEYS];
+   DWORD dwFlags;
+   [string] char szUserID[EMS_MAX_USER_NAME];
+} EMSCMDGENALERT;
+
+typedef struct tagCmdRetransmit
+{
+	ULONG ulSendToID;
+	ULONG ulSeqStart;
+	ULONG ulSeqEnd;
+} EMSCMDRETRANSMIT;
+
+typedef struct tagCmdOrbitVector
+{
+	ULONG ulSitID;
+	EMSSITCONTROLCODE eCtrlCode;
+	EMSSIT215DATA orbVector;
+} EMSCMDORBITVECTOR;
+
+typedef struct tagCmdTLE
+{
+	EMSSITCONTROLCODE eCtrlCode;
+	EMSSIT255ADATA tleData;
+} EMSCMDTLE;
+
+typedef struct tagCmdPassSched
+{
+	EMSSCHEDUSAGE eUsage;
+	EMSSATELLITETRACK satTrack;
+} EMSCMDPASSSCHED;
+
+typedef struct tagCmdSARPCalib
+{
+	ULONG ulSit;
+	EMSSITCONTROLCODE eCtrlCode;
+	ULONG ulMsgRequestNumber;
+	ULONG ulSatID;
+	ULONG ulPassID;
+	EMSTIME timeRollover;
+	double dUSOFrequency;
+} EMSCMDSARPCALIB;
+
+typedef struct tagCmdSARRCalib
+{
+	ULONG ulSit;
+	EMSSITCONTROLCODE eCtrlCode;
+	ULONG ulMsgRequestNumber;
+	EMSSARRCALIBDATA sarrCalib;
+} EMSCMDSARRCALIB;
+
+typedef struct tagCmdStartup
+{
+	ULONG ulFromID;
+} EMSCMDSTARTUP;
+
+typedef struct tagCCInput
+{
+	EMSTRIGGER eTrigger;
+	EMSCMDTYPE eCmdType;
+   ULONG ulSourceID;
+	ULONG ulCmdMsgSequence;
+	[switch_type(EMSCMDTYPE), switch_is((EMSCMDTYPE)eCmdType)]
+	union
+	{
+		[ case( CMD_OPCMD ) ]
+			EMSOPERATORCMD cmdOp;
+		[ case( CMD_RETRANSMIT ) ]
+			EMSCMDRETRANSMIT cmdRetransmit;
+		[ case( CMD_ORBV ) ]
+			EMSCMDORBITVECTOR cmdOrbV;
+		[ case( CMD_TLE ) ]
+			EMSCMDTLE cmdTLE;
+		[ case( CMD_PASS_SCHED ) ]
+			EMSCMDPASSSCHED cmdPassSched;
+		[ case( CMD_SARP_CALIB ) ]
+			EMSCMDSARPCALIB cmdSarpCalib;
+		[ case( CMD_SARR_CALIB ) ]
+			EMSCMDSARRCALIB cmdSarrCalib;
+		[ case( CMD_STARTUP ) ]
+			EMSCMDSTARTUP cmdStartup;
+      [ case( CMD_GEN_ALERT ) ]
+         EMSCMDGENALERT cmdGenAlert;
+		[default]
+				;
+	} exData;
+
+} EMSCCSPEC;
+
+[
+	uuid(96EF00A3-F66C-49cc-BA3C-A0D70C58F45F),
+	helpstring("IEMSCommand"),
+	pointer_default(unique)
+]
+
+interface IEMSCommand : IUnknown
+{
+   HRESULT SendCommand( [in] EMSTRIGGER eTrigger,
+                        [in] ULONG ulCommandMsgSequence,
+                        [in] ULONG ulSourceID,
+                        [in]EMSOPERATORCMD *pCommand );
+
+   HRESULT RequestRetransmitMsgs( [in] EMSTRIGGER eTrigger,
+                                  [in] ULONG ulCommandMsgSequence,
+                                  [in] ULONG ulSendToID,
+                                  [in] ULONG ulSeqStart,
+                                  [in] ULONG ulSeqEnd );
+
+   HRESULT SendOrbitVector( [in] EMSTRIGGER eTrigger,
+                            [in] ULONG ulCommandMsgSequence,
+                            [in] ULONG ulSourceID,
+                            [in] ULONG ulSitID,
+                            [in] EMSSITCONTROLCODE eCtrlCode,
+                            [in] ULONG ulOrbits,
+                            [in,size_is(ulOrbits)]	EMSSIT215DATA** apOrbVectors );
+
+   HRESULT SendTLE( [in] EMSTRIGGER eTrigger,
+                    [in] ULONG ulCommandMsgSequence,
+                    [in] ULONG ulSourceID,
+                    [in] EMSSITCONTROLCODE eCtrlCode,
+                    [in] ULONG ulOrbits,
+                    [in,size_is(ulOrbits)] EMSSIT255ADATA** apTLEs );
+
+   HRESULT SendPassSchedule( [in] EMSTRIGGER eTrigger,
+                             [in] ULONG ulCommandMsgSequence,
+                             [in] ULONG ulSourceID,
+                             [in] EMSSCHEDUSAGE eUsage, 
+                             [in] LONG lSatelliteCount, 
+                             [in] ULONG ulPasses, 
+                             [in,size_is(ulPasses)] EMSSATELLITETRACK** apPasses );
+
+   HRESULT SendSARPCalib( [in] EMSTRIGGER eTrigger,
+                          [in] ULONG ulCommandMsgSequence,
+                          [in] ULONG ulSourceID,
+                          [in] ULONG ulSit,
+                          [in] EMSSITCONTROLCODE eCtrlCode,
+                          [in] ULONG ulMsgRequestNumber,
+                          [in] ULONG ulSatID,
+                          [in] ULONG ulPassID,
+                          [in] EMSTIME timeRollover,
+                          [in] double dUSOFrequency );
+
+   HRESULT SendSARRCalib( [in] EMSTRIGGER eTrigger,
+                          [in] ULONG ulCommandMsgSequence,
+                          [in] ULONG ulSourceID,
+                          [in] ULONG ulSit,
+                          [in] EMSSITCONTROLCODE eCtrlCode,
+                          [in] ULONG ulMsgRequestNumber,
+                          [in] ULONG ulSatellites,
+                          [in,size_is(ulSatellites)] EMSSARRCALIBDATA **apSarrData );
+
+   HRESULT SendStartUp( [in] EMSTRIGGER eTrigger,
+                        [in] ULONG ulCommandMsgSequence,
+                        [in] ULONG ulFromID );
+
+   HRESULT GenerateAlerts( [in] ULONG ulSourceID,
+                           [in] ULONG ulNumDestinations,
+                           [in,size_is(ulNumDestinations)] ULONG *ulDestinationIDs,
+                           [in] ULONG ulLocations,
+                           [in,size_is(ulLocations)] EMSLOCATIONKEY *ulLocationKeys,
+                           [in,unique,string] char szUserID[EMS_MAX_USER_NAME] );
+}
+
+typedef IEMSCommand *LPEMSCOMMAND;

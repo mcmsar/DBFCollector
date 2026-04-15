@@ -1,0 +1,122 @@
+cpp_quote("/********************************************************************")
+cpp_quote("*	Module:			calib406ext.h")
+cpp_quote("*	Process ID:")
+cpp_quote("*	S/W Platforms:")
+cpp_quote("*	H/W Platforms:")
+cpp_quote("*	Compiler:")
+cpp_quote("*	Description: 	Data structure for Calibrated 406 Data ")
+cpp_quote("*						( i.e. SARP and SARR records Post Calibration )")
+cpp_quote("*	Usage:")
+cpp_quote("*	Entry Point:")
+cpp_quote("*	Input Files:")
+cpp_quote("*	Output Files:")
+cpp_quote("*	Comments:")
+cpp_quote("*")
+cpp_quote("*********************************************************************")
+cpp_quote("*	              Copyright (c) 2003 by EMS Technologies, Inc.,")
+cpp_quote("*										All rights reserved")
+cpp_quote("*	This program is unpublished software and contains the trade secrets")
+cpp_quote("*	and confidential information of EMS Technologies, Inc.  It may not be ")
+cpp_quote("* reproduced in whole or in part, in any form or by any means whatsoever ")
+cpp_quote("* without the express written permission of EMS Technologies, Inc.")
+cpp_quote("*")
+cpp_quote("********************************************************************/")
+cpp_quote("")
+cpp_quote("/*******************************************************************")
+cpp_quote("")
+cpp_quote("  Revision Record")
+cpp_quote("")
+cpp_quote("	Rev	Date		Auth	Changes")
+cpp_quote("	===	====		====	=======")
+cpp_quote("")
+cpp_quote("	0.0	01/04/05	rvw		start")
+cpp_quote("	0.0	02/10/05	rcr		additional data types")
+cpp_quote("	0.0	03/11/05	ch		added version number")
+cpp_quote("")
+cpp_quote("********************************************************************/")
+cpp_quote("")
+cpp_quote("#ifndef INC_CALIB406EXT")
+cpp_quote("#define INC_CALIB406EXT")
+cpp_quote("")
+//cpp_quote("#include \"sarpdata.h\"			// for definitions of status flags")
+
+import "unknwn.idl";
+import "emstypex.idl";
+import "sigdata.idl";
+import "calib406.idl";
+
+//#include "emsconst.h"	// constants
+
+#define _EMS_RPC_VERSION 1
+#define __RPC_FAR 
+
+const unsigned long EMSCALIB406EXTVERSION	= 1;
+
+[
+	uuid(BF55F71F-4573-4ebf-BDD6-1332B8BF0109),
+	helpstring("IEMSCALIB406dataEXT"),
+	pointer_default(unique)
+]
+
+
+interface IEMSCALIB406dataEXT
+{
+	#pragma pack(1)
+
+typedef enum _tagEMSCALIB406EXTPROCESSFLAGS
+{
+	EMS_C406PF_REF_BEACON_MASK = 0x000F,
+	EMS_C406PF_REF_BEACON_FLAG	= 0x0001,
+	EMS_C406PF_REF_TIME_FLAG	= 0x0002,
+	EMS_C406PF_REF_FREQ_FLAG	= 0x0004,
+
+	EMS_C406PF_PROCESS_MASK = 0x00F0,
+	EMS_C406PF_PROCESS_TIME_FLAG = 0x0010,
+	EMS_C406PF_PROCESS_FREQ_FLAG = 0x0020,
+	EMS_C406PF_PROCESS_FDOA_FLAG = 0x0040,
+	EMS_C406PF_PROCESS_TDOA_FLAG = 0x0080,
+
+	EMS_C406PF_ACCEPT_MASK = 0x0F00,
+	EMS_C406PF_ACCEPT_TIME_FLAG = 0x0100,
+	EMS_C406PF_ACCEPT_FREQ_FLAG = 0x0200,
+
+	EMS_C406PF_SAT_MASK = 0xF000,
+	EMS_C406PF_SAT_REMOVE_DLINKFREQ_FLAG = 0x1000,
+	EMS_C406PF_SAT_REMOVE_DLINKTIME_FLAG = 0x2000,
+	EMS_C406PF_SAT_INVERTED_SPECTRUM_FLAG = 0x4000,
+
+	EMS_C406PF_LUT_MASK = 0xF0000,
+	EMS_C406PF_LUT_INVERTED_SPECTRUM_FLAG = 0x10000,
+
+	EMS_C406PF_RESET_FLAGS = 0,
+	EMS_C406PF_None = 0
+} EMSCALIB406EXTPROCESSFLAGS;
+
+typedef struct _tagEMSCALIB406EXTRAS
+{
+	DWORD		       	dwProcessFlags;			// flags as defined in EMSCALIB406EXTFLAGS
+	EMSTIMECOORDD	SatTPVC;				 // Satellite position and velocity vectors, earth-fixed coordinates, Msg. Time
+	EMSVECTORD		BeaconVector;			 // Estimated beacon vector
+	EMSTIME			timeTransmit;			 // Estimated transmit time
+	double 			dTxFrequency;			 // Estimated transmit frequency in Hz
+	double			dTimeResidual;			 // Residual of measurement time (seconds)
+	double			dFreqResidual;			 // Residual of frequency (Hz)
+//        BYTE                    bRejectFreqFlag;                 // not to be used for Freq calcs
+//        BYTE                    bRejectTimeFlag;                 // not to be used for Time calcs
+//	BYTE			bProcessFreqFlag;		 // Process Flag (on/off): frequency 
+//	BYTE			bProcessTimeFlag;		 // Process Flag (on/off): time
+//	BYTE			bSpectrumInverted;		 // Spectrum Inverted (yes/no)
+//	BYTE			bDownlinkCorrectionReqd; // Downlink Conversion Required (yes/no)
+	WORD			wBurstNumber;			 // Burst index (counter of unique transmission bursts) 
+} EMSCALIB406EXTRAS;
+
+typedef struct _tagEMSCALIB406DATAEXT
+{									  
+	EMSCALIB406DATA2		calib406;
+	EMSCALIB406EXTRAS		extras;
+} EMSCALIB406DATAEXT, *LPEMSCALIB406DATAEXT;
+
+#pragma pack()
+}
+
+cpp_quote("#endif //INC_CALIB406EXT")

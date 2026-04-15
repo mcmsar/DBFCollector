@@ -1,0 +1,89 @@
+// SolutionDisplay.idl : IDL source for SolutionDisplay.dll
+//
+
+// This file will be processed by the MIDL tool to
+// produce the type library (SolutionDisplay.tlb) and marshalling code.
+
+import "oaidl.idl";
+import "ocidl.idl";
+#include "olectl.h"
+
+[
+	object,
+	uuid(82BC777B-BEFF-47f0-92A3-ABC02A76E3D2),
+	dual,
+	helpstring("IEMSIOPluginControl Interface"),
+	pointer_default(unique)
+]
+//! The interface that EMS plug-ins must implement.
+interface IEMSOIPluginControl : IDispatch
+{
+	//! This method is invoked via the OI's View->Refresh menu option, the F5 key or the Refresh toolbar button.
+	//!The method should cause the view to refresh its data/contents based on its current configuration.  The action is dependent upon the view and must make sense within the given context.  For example, a table view will execute the current query again.
+	[id(1), helpstring("method Refresh")] HRESULT Refresh();
+
+	//! This method is invoked via the OI's View->Stop menu option, the Esc key or the Stop toolbar button.
+	//! This method should cause the view to cancel its current operation.  The action is dependent upon the view and must make sense within the given context.  For example, a table view that is populating itself with data will stop any further population.
+	[id(2), helpstring("method Stop")] HRESULT Stop();
+
+	//! This method is invoked via the OI's View->Properties menu option or the Properties toolbar button.
+	//! This method should cause the view to display its properties window.  The window is used to configure the particular instance of the view.  For example, a table view's properties window allows the user to modify query parameters.
+	[id(3), helpstring("method EditProperties")] HRESULT EditProperties();
+
+	//! This method is invoked via the File->Export menu option or the Export toolbar button.
+	//! This method should cause the view to output its data in some serialized form that could be saved to disk.  For example, a table view will generate a comma-separated text file containing all the records it is currently displaying.
+	[id(4), helpstring("method Export")] HRESULT Export();
+
+	//! This method is invoked via the File->Print menu option or the Print toolbar option.
+	//! This method should cause the view to format its current data for printing and display the Windows Print dialog box to allow the use to start printing.  For example, the table view will print its current data in a grid format, similar to the way it is displayed on the screen.
+	[id(5), helpstring("method Print")] HRESULT Print([in] long hDC);
+
+	//! This method is not user-invoked.  Instead, it is used internally by the OI to save the current properties of a view when the OI's workspace is saved.  The view returns a string that is the serialized form of its properties.  The string's format is determined by the plug-in developer (XML format is suggested, but not necessary).
+	//! For a table view, this method could be used to save the user's selection criteria.
+    [id(6), helpstring("method Deserialize")] HRESULT Deserialize( [in] const BSTR cbstrData );
+
+	//! This method is not user-invoked.  Instead, it is used internally by the OI to reconstitute a view.  A string containing data used to initialize the view is provided by the OI.  The string is the same one output by the view via its Serialize method.
+	[id(7), helpstring("method Serialize")] HRESULT Serialize( [out] BSTR* pbstrData );
+
+	//! This method is invoked via the OI's View->Zoom In menu option or the Zoom In toolbar button.
+	//! This method should either cause the view to Zoom in some factor and/or cause the cursor to change to a Zoom In tool allowing the user to zoom in on the view using the mouse.  If zooming doesn't apply in the view's context, a message box could be displayed indicating so or no action at all could occur.
+	[id(8), helpstring("method ZoomIn")] HRESULT ZoomIn();
+
+	//! This method is invoked via the OI's View->Zoom Out menu option or the Zoom Out toolbar button.
+	//! This method should either cause the view to Zoom out some factor and/or cause the cursor to change to a Zoom Out tool allowing the user to zoom out of the view using the mouse.  If zooming doesn't apply in the view's context, a message box could be displayed indicating so or no action at all could occur.
+	[id(9), helpstring("method ZoomOut")] HRESULT ZoomOut();
+
+	//! This method is invoked via the OI's Pan toolbar button.
+	//! This method should cause the cursor to change to a panning tool allowing the user to slide the view's visible area around using the mouse.  If panning doesn't apply in the view's context, a message box could be displayed indicating so or no action at all could occur.
+	[id(10), helpstring("method Pan")] HRESULT Pan();
+
+	//! This method is invoked via the OI's Select toolbar button.
+	//! This method should cause the cursor to change to a selection tool allowing the user to click on items within the view to retrieve detailed information using the mouse.  If selecting doesn't apply in the view's context, a message box could be displayed indicating so or no action at all could occur.
+	[id(11), helpstring("method Select")] HRESULT Select();
+
+	//! This method does not need to be implemented at this time.
+	[id(12), helpstring("method Custom")] HRESULT Custom( [in] const int ciAction );
+
+	//! This is a read/write property.  It is used internally by the OI to inform the view of the 
+	//! connection to use when retrieving data.  The connection is a string in the form <CALLER'S LUT IDENTIFIER>_<CALLEE'S LUT IDENTIFIER> (e.g., 9902_3671).
+	[propget, id(13), helpstring("property Connection")] HRESULT Connection([out, retval] BSTR *pVal);
+
+	//! This is a read/write property.  It is used internally by the OI to inform the view of the 
+	//! connection to use when retrieving data.  The connection is a string in the form <CALLER'S LUT IDENTIFIER>_<CALLEE'S LUT IDENTIFIER> (e.g., 9902_3671).
+	[propput, id(13), helpstring("property Connection")] HRESULT Connection([in] BSTR newVal);
+
+	//! This is a read/write property.  It is used internally by the OI to inform the view of its name.
+    [propget, id(14), helpstring("property Name")] HRESULT Name([out, retval] BSTR *pVal);
+
+	//! This is a read/write property.  It is used internally by the OI to inform the view of its name.
+	[propput, id(14), helpstring("property Name")] HRESULT Name([in] BSTR newVal);
+	
+	//! This is a read/write property.  It is used internally by the OI to inform the view of a LUT ID filter to apply to all retrieved data.  This property is used when viewing data on a LUT Server.  A LUT Server may have collected data from many LUTs.  In order to be able to view data from the LUT Server for a single LUT this property must be used.
+	[propget, id(15), helpstring("property FilterLutID")] HRESULT FilterLutID([out, retval] long *pVal);
+
+	//! This is a read/write property.  It is used internally by the OI to inform the view of a LUT ID filter to apply to all retrieved data.  This property is used when viewing data on a LUT Server.  A LUT Server may have collected data from many LUTs.  In order to be able to view data from the LUT Server for a single LUT this property must be used.
+	[propput, id(15), helpstring("property FilterLutID")] HRESULT FilterLutID([in] long newVal);
+
+};
+
+

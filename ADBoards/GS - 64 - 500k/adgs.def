@@ -1,0 +1,8 @@
+LIBRARY      EMSADGS
+DESCRIPTION  "EMS GS A/D Board COM Object"
+
+EXPORTS
+	DllCanUnloadNow     	PRIVATE
+	DllGetClassObject   	PRIVATE
+	DllRegisterServer   	PRIVATE
+	DllUnregisterServer	PRIVATE

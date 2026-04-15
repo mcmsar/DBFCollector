@@ -1,0 +1,26 @@
+cpp_quote( " " )
+cpp_quote( "#include \"emserror.h\"" )
+cpp_quote( " " )
+
+cpp_quote( "// {77A3A72F-1778-4250-B47A-FEDDE37DF27A}" )
+cpp_quote( "DEFINE_GUID(IID_IEMSHumidityGauge, 0x77a3a72f, 0x1778, 0x4250, 0xb4, 0x7a, 0xfe, 0xdd, 0xe3, 0x7d, 0xf2, 0x7a);" )
+
+import "unknwn.idl";
+import "emstypex.idl";
+import "objidl.idl";
+import "EMSDEVICES.idl";
+
+const DWORD GAUGETYPE_HUMIDITY = 0x00000004;
+
+[
+	object, uuid(77A3A72F-1778-4250-B47A-FEDDE37DF27A),
+	helpstring("IEMSHumidityGauge Interface"),
+	pointer_default(unique)
+]
+
+interface IEMSHumidityGauge : IEMSSubDevice
+{
+	HRESULT GetRelativeHumidity( [out]double *lpdHumidity );
+};
+
+typedef [unique] IEMSHumidityGauge *LPEMSHUMIDITYGAUGE;

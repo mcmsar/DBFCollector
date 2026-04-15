@@ -1,0 +1,41 @@
+cpp_quote(" // {CA217516-544B-4290-8130-5EAD7E40379B}")
+cpp_quote("DEFINE_GUID(IID_IEMSConfigure, 0xca217516, 0x544b, 0x4290, 0x81, 0x30, 0x5e, 0xad, 0x7e, 0x40, 0x37, 0x9b);")
+
+import "unknwn.idl";
+
+[
+	uuid(CA217516-544B-4290-8130-5EAD7E40379B),
+	helpstring("IEMSConfigure"),
+	pointer_default(unique)
+]
+interface IEMSConfigure : IUnknown
+{
+
+	
+	#define MAX_PROPERTY_NAME_LEN	255
+	cpp_quote("#define MAX_PROPERTY_NAME_LEN	255")
+
+	#define MAX_PROPERTY_VALUE_LEN	2047
+	cpp_quote("#define MAX_PROPERTY_VALUE_LEN	2047")
+
+	//! Set the value of a named property.  In the value argument, separate sub-fields using a ":" and
+	//! multiple values using ",".
+	//! Example call:
+	//! Set( L"frequencybands", "24500:52000,75000:125000" )
+	HRESULT	 Set( [in,string] const wchar_t* cwszName, [in,string] const wchar_t* cwszValue );
+
+	//! Get the value of a named property.  In the value argument, sub-fields are separated by ":" and
+	//! multiple values using ","
+	HRESULT Get(	[in,string] const wchar_t* cwszName, 
+					[in] const ULONG culMaxLen,
+					[out] ULONG* pulActualLen,
+					[out,size_is(culMaxLen),length_is(*pulActualLen)] wchar_t* wszValue );
+
+	//! Input a configuration string.  The string may contain all or some of the callee's configurable
+	//! parameters.  The format of the string is dictated by the callee.
+	HRESULT SetConfig( [in,string] const wchar_t* cwszConfiguration );
+
+	//! Retrieve a configuration string.  The string may contain all or some of the callee's configurable
+	//! parameters.  The format of the string is dictated by the callee.
+	HRESULT GetConfig( [out,string] wchar_t** pwszConfiguration );
+};

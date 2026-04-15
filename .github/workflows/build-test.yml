@@ -82,7 +82,7 @@ jobs:
           Write-Host "Launching: $exe"
           $proc = Start-Process -FilePath $exe -PassThru -NoNewWindow -ErrorAction Stop
 
-          # Wait up to 8 seconds — DLL failures exit within milliseconds
+          # Wait up to 8 seconds - DLL failures exit within milliseconds
           $exited = $proc.WaitForExit(8000)
 
           if ($exited) {
@@ -98,12 +98,11 @@ jobs:
               Write-Host "Run scripts\Check-DllDependencies.ps1 locally to identify the missing DLL."
               exit 1
             } else {
-              Write-Host "Process exited (code $hex) — not a DLL failure.  " +
-                         "Likely missing hardware/network config, which is expected in CI."
+              Write-Host "Process exited (code $hex) - not a DLL failure. Likely missing hardware/network config, which is expected in CI."
             }
           } else {
             $proc.Kill()
-            Write-Host "Executable ran 8 s without DLL failures — smoke test passed."
+            Write-Host "Executable ran 8 s without DLL failures - smoke test passed."
           }
 
       - name: Upload executable and DLLs as artifact

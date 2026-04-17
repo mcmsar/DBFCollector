@@ -143,7 +143,8 @@ typedef struct _tagEMSDBFTOAFOARECORD
 	float fEigenvector[DBF_NUM_ELEMENTS*DBF_MAX_SATELLITES]; // Measured eigenvectors
 	float fPlateAz[DBF_MAX_SATELLITES];  // Plate azimuth
 	float fPlateEl[DBF_MAX_SATELLITES];  // Plate elevation
-	EMSCOMPLEX cPower[2048*DBF_MAX_SATELLITES]; // Beacon Power Spectrum 
+	EMSCOMPLEX cPower[2048*DBF_MAX_SATELLITES]; // Beacon Power Spectrum
+	float fRefTxFrequency;				// Reference Transmit Frequency (MHz)
 }	EMSDBFTOAFOARECORD;
 
 typedef struct _tagEMSDBFTOAFOARECORD __RPC_FAR *LPEMSDBFTOAFOARECORD;
@@ -166,10 +167,11 @@ typedef struct _tagEMSDBFPASSRECORD2
 	char  cBeaconID[15];	 // Reference Beacon 15 Hex
 	char  cBeaconMess[36];   // Reference Beacon 36 Hex
 	EMSLOCATION RefLocation; // Reference Beacon Location (lat/long/alt)
+	float fRefTxFrequency;  // Reference Beacon Transmit Frequency
 	float fFOA;				// Baseband Freqency of Arrival (0 to 100,000 Hz)
 	float fTOA;				// Time of Arrival (fraction of a second)
 	float fPhase[DBF_MAX_CHANNELS];	// Phase correction (deg) (up to 31 channels)
-	EMSTLEDATA2 aTLE;		// TLE orbit vectors, etc.
+	EMSTIMECOORD timeCoord;			// Time coordinate orbit vectors, etc.
 }	EMSDBFPASSRECORD2;
 typedef struct _tagEMSDBFPASSRECORD2 __RPC_FAR *LPEMSDBFPASSRECORD2;
 

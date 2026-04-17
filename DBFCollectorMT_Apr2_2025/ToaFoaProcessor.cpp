@@ -284,7 +284,7 @@ CToaFoaProcessor::IdentifyTOAFOA(
 	}
 
 	// Read from queue
-	EMSCOMPLEX* prevDBFBeamVectors = qrefDBFBeamVectors.ReadFirst().dbfBeamVector;
+	EMSCOMPLEX* prevDBFBeamVectors  = qrefDBFBeamVectors.ReadFirst().dbfBeamVector;
 	int*        prevSchedulerSatIDs = qrefDBFBeamVectors.ReadFirst().schedulerSatIds;
 	int*        prevPredSatIDs      = qrefDBFBeamVectors.ReadFirst().predSatIDs;
 	int*        prevBeamIds         = qrefDBFBeamVectors.ReadFirst().predBeamIDs;

@@ -95,6 +95,8 @@ CEMSDBFCollectorService::_ServiceProcessLoop( void )
 	EMS_RESULT hr = EMS_OK;
 	CEMSCollectionObject* poCS = NULL;
 
+	FILE* m_exitFile;
+
 	try
 	{
 		BOOL bStopped = FALSE;
@@ -126,8 +128,18 @@ CEMSDBFCollectorService::_ServiceProcessLoop( void )
 				switch ( dwResult )
 				{
 					case WAIT_OBJECT_0:		// asked to stop
+					case WAIT_ABANDONED_0:	// Fixes crashing in VS debugger
+					case WAIT_ABANDONED_0 + 1:
+					case WAIT_FAILED:
+						m_exitFile  = fopen( "C:\\exitFile.txt", "wt");
+						fprintf(m_exitFile, "made it to CEMSDBFCollectorService!\n");
+						fprintf(m_exitFile, "hr: %d", hr);
+						fflush(m_exitFile);
+						fclose(m_exitFile);
+
 						bStopped = TRUE;
 						poCS->Stop();
+						Sleep(10000);
 						break;
 
 					case WAIT_OBJECT_0 + 1:	// signalled!
@@ -149,10 +161,20 @@ CEMSDBFCollectorService::_ServiceProcessLoop( void )
 	{
 //		LogException( e );
 		hr = e.GetErrCode();
+		m_exitFile  = fopen( "C:\\exitFile.txt", "wt");
+		fprintf(m_exitFile, "made it to CEMSDBFCollectorService catch CEMSException!\n");
+		fprintf(m_exitFile, "hr: %d", hr);
+		fflush(m_exitFile);
+		fclose(m_exitFile);
 	}
 	catch( ... )
 	{
 		hr = EMS_UNKNOWN_ERROR;
+		m_exitFile  = fopen( "C:\\exitFile.txt", "wt");
+		fprintf(m_exitFile, "made it to CEMSDBFCollectorService catch any!\n");
+		fprintf(m_exitFile, "hr: %d", hr);
+		fflush(m_exitFile);
+		fclose(m_exitFile);
 	}
 
 	if( poCS )
@@ -386,7 +408,7 @@ int main(int argc, char* argv[])
 			bCOMInit = true;
 
 		// Load runtime config from DBFCollectorConfig.xml.
-		// Searches next to the exe, then ../Config/, then ../../Config/.
+		// Searches ../../../Config/ (3 levels up), then next to the exe.
 		// Falls back to built-in defaults if no file is found.
 		{
 			char szExePath[MAX_PATH] = {0};
@@ -397,10 +419,8 @@ int main(int argc, char* argv[])
 				sExeDir = sExeDir.substr(0, pos);
 
 			CDBFCollectorConfig& cfg = CDBFCollectorConfig::GetInstance();
-			if (!cfg.LoadFromFile(sExeDir + "\\DBFCollectorConfig.xml"))
-				if (!cfg.LoadFromFile(sExeDir + "\\..\\Config\\DBFCollectorConfig.xml"))
-					if (!cfg.LoadFromFile(sExeDir + "\\..\\..\\Config\\DBFCollectorConfig.xml"))
-						cfg.LoadFromFile("C:\\HGT\\config\\DBFCollectorConfig.xml");
+			if (!cfg.LoadFromFile(sExeDir + "\\..\\..\\..\\Config\\DBFCollectorConfig.xml"))
+				cfg.LoadFromFile(sExeDir + "\\DBFCollectorConfig.xml");
 
 			// Create all output directories (Output\Logs, Output\DBFPassData, etc.)
 			// whether the XML was found or built-in defaults are in effect.

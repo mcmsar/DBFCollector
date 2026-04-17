@@ -207,7 +207,7 @@
       <AdditionalLibraryDirectories>..\3rdParty\Intel\IPP\2022.3\lib;..\Common\Library;..\3rdParty\Intel\MKL;..\3rdParty\Apache\xerces\c\libx64\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
     <PostBuildEvent>
-      <Command>xcopy /Y /D "$(ProjectDir)..\Redist\x64\$(Configuration)\*" "$(OutDir)"</Command>
+      <Command>if exist "$(ProjectDir)..\Redist\x64\$(Configuration)\*" xcopy /Y /D "$(ProjectDir)..\Redist\x64\$(Configuration)\*" "$(OutDir)"</Command>
       <Message>Copying runtime DLLs from Redist\x64\$(Configuration)</Message>
     </PostBuildEvent>
   </ItemDefinitionGroup>
@@ -250,7 +250,7 @@
       <AdditionalLibraryDirectories>..\3rdParty\Intel\IPP\5.2\ia32\stublib;..\Common\Library;..\3rdParty\Apache\xerces\c;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
     <PostBuildEvent>
-      <Command>xcopy /Y /D "$(ProjectDir)..\Redist\Win32\$(Configuration)\*" "$(OutDir)"</Command>
+      <Command>if exist "$(ProjectDir)..\Redist\Win32\$(Configuration)\*" xcopy /Y /D "$(ProjectDir)..\Redist\Win32\$(Configuration)\*" "$(OutDir)"</Command>
       <Message>Copying runtime DLLs from Redist\Win32\$(Configuration)</Message>
     </PostBuildEvent>
   </ItemDefinitionGroup>

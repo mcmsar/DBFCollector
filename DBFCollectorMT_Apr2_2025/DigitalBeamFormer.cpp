@@ -1077,13 +1077,16 @@ CDigitalBeamFormer::DBFprocessorCP(EMSTIME tm )
 
 		timeEnd =  CEMSSystemClock::GetTime();
 		i = 0;
-		printf("%04d/%02d/%02d %02d:%02d:%02d.%06d, Freq %d, Power %6.2f, Sat %d (%d), Az %6.2f (%6.1f), El %5.2f (%5.2f), Time %f, Id: %i \n",
+		float fTOAdiff = m_aTOAFOA.fBeaTOA[i]-m_aTOAFOA.fTOA[i];
+		float fFOAdiff = m_aTOAFOA.fBeaFOA[i]-m_aTOAFOA.fFOA[i];
+
+		printf("%04d/%02d/%02d %02d:%02d:%02d.%06d, dTOA %6.3f, dFOA %6.1f, Sat %d (%d), Az %6.2f (%6.1f), El %5.2f (%5.2f), Time %f\n",
 			tmFields.nYear, tmFields.nMonth, tmFields.nDay, tmFields.nHour,
-			tmFields.nMinute, tmFields.nSecond, (UINT)(tmFields.lNanosecond/1000),	
-			m_ulFreqIndex, m_fMaxPower, m_aPassSchedule.rec[i].ulSatID, m_ulSatellites,
+			tmFields.nMinute, tmFields.nSecond, (UINT)(tmFields.lNanosecond/1000),
+			fTOAdiff, fFOAdiff, m_aPassSchedule.rec[i].ulSatID, m_ulSatellites,
 				m_aPassSchedule.rec[i].fAzimuth,m_aPassSchedule.rec[i].fPlateAzimuth,
 				m_aPassSchedule.rec[i].fElevation,m_aPassSchedule.rec[i].fPlateElevation,
-				timeStart.SecondsDifferent( timeEnd), GetCurrentThreadId());
+				timeStart.SecondsDifferent( timeEnd) );
 
 	}
 
@@ -1410,8 +1413,6 @@ CDigitalBeamFormer::_OutputWaveEx( EMSTIME tm, ULONG culNumSats, bool bBandwidth
 		oWaveOut.GetExtendedInfoRef().GetPropertiesRef().SetHardwareVersion( dHardWareVersion );
 		oWaveOut.GetExtendedInfoRef().GetPropertiesRef().SetSoftwareVersion( dSoftWareVersion );
 
-		oWaveOut.GetExtendedInfoRef().GetSatDetailsRef().SetSatTLE( m_aPassSchedule.rec[iSat].aTLE );
-
 		// Add reference beacon indicator
 		if ( m_aPassSchedule.rec[iSat].fBeaconElevation > 0.0 )
 		{
@@ -1551,8 +1552,6 @@ CDigitalBeamFormer::_OutputWaveFile( unsigned char* aData, EMSTIME tm, int iSat,
 
 		oWaveOut.GetExtendedInfoRef().GetPropertiesRef().SetHardwareVersion( dHardWareVersion );
 		oWaveOut.GetExtendedInfoRef().GetPropertiesRef().SetSoftwareVersion( dSoftWareVersion );
-
-		oWaveOut.GetExtendedInfoRef().GetSatDetailsRef().SetSatTLE( m_aPassSchedule.rec[iSat].aTLE );
 
 		// Add reference beacon indicator
 		if ( m_aPassSchedule.rec[iSat].fBeaconElevation > 0.0 )
@@ -2083,10 +2082,26 @@ CDigitalBeamFormer::ComputeDBFBeamVectors( INT nNumBeams, const EMSCOMPLEX *m_ac
 				  }
 			  }			  
 		  
-			   hr = ComputeNullingVectors(acLargestEigenVectors, nNumBeams, m_acDBFBeamVectors); 	
-			   delete [] acLargestEigenVectors;		   
+			   hr = ComputeNullingVectors(acLargestEigenVectors, nNumBeams, m_acDBFBeamVectors);
+			   delete [] acLargestEigenVectors;
 
-				memcpy(&m_aTOAFOA.fEigenvector[0], &m_acDBFBeamVectors[0], nNumBeams*DBF_NUM_ELEMENTS * sizeof(float) );
+			   // Compute phases of eigenvectors and store
+			   float fBeamReal;
+			   float fBeamImag;
+			   double dPhase;
+
+			   for ( int ibeam = 0; ibeam < nNumBeams; ibeam++ )
+			   {
+				   for ( int ielement = 0; ielement < DBF_NUM_ELEMENTS; ielement++ )
+				   {
+					   fBeamReal	 = m_acDBFBeamVectors[ibeam*DBF_NUM_ELEMENTS + ielement].re;
+					   fBeamImag	 = m_acDBFBeamVectors[ibeam*DBF_NUM_ELEMENTS + ielement].im;
+
+					   dPhase = atan2( (double)fBeamReal , (double)fBeamImag ) * (360.0/c_dTwoPI);
+
+					   m_aTOAFOA.fEigenvector[ibeam*DBF_NUM_ELEMENTS + ielement ] = (float) dPhase;
+				   }
+			   }
 
 		   }
 	 }
@@ -2391,14 +2406,19 @@ CDigitalBeamFormer::PerformEigenVectorNormalization(const MKL_Complex8 *acEigenV
 EMS_RESULT
 CDigitalBeamFormer::ComputeCovariance( ULONG ulNumSamples )
 {
+	// Note: Remove 1st 50 kHz given elements are centred at 150 kHz.
+	// ulStart is the 50 kHz offset given the sample rate 500000.
+	ULONG ulStart = DBF_LOG19_SIZE / 5;
+	ULONG ulLength = DBF_LOG19_SIZE - ulStart;
+
 	// Compute sample covariance over the 100 kHz L-Band downlink
 	for( ULONG i = 0; i < DBF_NUM_ELEMENTS; i++ )
 	{
-		emscbConj2( &m_acMatrix[i*DBF_LOG19_SIZE], &m_acTemp1[0], ulNumSamples ); // 100 kHz
+		emscbConj2( &m_acMatrix[i*DBF_LOG19_SIZE+ulStart], &m_acTemp1[0], ulLength ); // 100 kHz
 
 		for( ULONG j = i; j < DBF_NUM_ELEMENTS; j++)
 		{
-			m_acCovariance[i*DBF_NUM_ELEMENTS+j] = emscDotProd(&m_acTemp1[0], &m_acMatrix[j*DBF_LOG19_SIZE], ulNumSamples);
+			m_acCovariance[i*DBF_NUM_ELEMENTS+j] = emscDotProd(&m_acTemp1[0], &m_acMatrix[j*DBF_LOG19_SIZE+ulStart], ulLength);
 			m_acCovariance[j*DBF_NUM_ELEMENTS+i].re =  m_acCovariance[i*NUM_CHANNELS+j].re;
 			m_acCovariance[j*DBF_NUM_ELEMENTS+i].im = -m_acCovariance[i*NUM_CHANNELS+j].im;
 		}
@@ -2638,18 +2658,20 @@ CDigitalBeamFormer::ComputeChannelData( bool bTimeFreqFlag, bool bBandwidthFlag 
 			memcpy(&m_acMatrix[icell*DBF_LOG19_SIZE], m_acTemp2, DBF_LOG19_SIZE * sizeof(EMSCOMPLEX));
 		}
 
-		// Compute the total mean and standard deviation
-
-		m_dMeanADC   = 0.0;
-		m_dStdDevADC = 0.0;
-		for ( int i = 0; i < DBF_NUM_ELEMENTS; i++ )
-		{
-			m_dMeanADC +=  m_aMaintenance.dMean[i];
-			m_dStdDevADC += m_aMaintenance.dStdDev[i];
-		}
-		m_dMeanADC   /= DBF_NUM_ELEMENTS;
-		m_dStdDevADC /= DBF_NUM_ELEMENTS;
 	}
+
+	// Compute the total mean and standard deviation
+
+	m_dMeanADC   = 0.0;
+	m_dStdDevADC = 0.0;
+	for ( int i = 0; i < DBF_NUM_ELEMENTS; i++ )
+	{
+		m_dMeanADC +=  m_aMaintenance.dMean[i];
+		m_dStdDevADC += m_aMaintenance.dStdDev[i];
+	}
+	m_dMeanADC   /= DBF_NUM_ELEMENTS;
+	m_dStdDevADC /= DBF_NUM_ELEMENTS;
+
 	return EMS_OK;
 }
 

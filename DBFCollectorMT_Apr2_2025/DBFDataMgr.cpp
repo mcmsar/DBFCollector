@@ -158,6 +158,21 @@ CEMSDBFDataMgr::Initialize( int nPlateNumber )
 
 	//hr = ReadDBFPlateXML( wszFileName );
 
+	// Ensure config is loaded from DBFCollectorConfig.xml before reading PassDataDir.
+	// This makes Initialize() self-sufficient even when called without a prior
+	// LoadFromFile() in main(). Re-loading when already loaded is harmless.
+	{
+		char szExePath[MAX_PATH] = {0};
+		GetModuleFileNameA(NULL, szExePath, MAX_PATH);
+		std::string sExeDir(szExePath);
+		std::string::size_type pos = sExeDir.find_last_of("\\/");
+		if (pos != std::string::npos)
+			sExeDir = sExeDir.substr(0, pos);
+		CDBFCollectorConfig& cfg = CDBFCollectorConfig::GetInstance();
+		if (!cfg.LoadFromFile(sExeDir + "\\..\\..\\..\\Config\\DBFCollectorConfig.xml"))
+			cfg.LoadFromFile(sExeDir + "\\DBFCollectorConfig.xml");
+	}
+
 	// Establish Pass Schedule data files and parameters
 
 //	lstrcpy( m_cFilePath, TEXT("C:\\Program Files\\EMS Technologies\\DBF Data Collector\\DATA\\") );

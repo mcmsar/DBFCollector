@@ -4,9 +4,13 @@
     Edit this file to change directory paths without recompiling.
     If this file is missing or a tag is absent, the built-in default is used.
 
-    Convention used here:
-      Input files/dirs  -> C:\Users\joshua.rehm\DBFCollectorMT_03_26_26\Config\
-      Output files/dirs -> C:\Users\joshua.rehm\DBFCollectorMT_03_26_26\<subdir>\
+    {ROOT} is automatically expanded at load time to the project root directory
+    (the directory one level above the Config\ folder that contains this file).
+    This makes the project relocatable without editing source or config files.
+
+    Convention:
+      Input files/dirs  -> {ROOT}\Config\
+      Output files/dirs -> {ROOT}\Output\<subdir>\
 -->
 <DBFCollectorConfig>
     <Paths>
@@ -16,90 +20,90 @@
         <!-- ============================================================ -->
 
         <!-- INPUT: Directory containing DBFPlate_NN.xml plate config files -->
-        <ConfigDir>C:\Users\joshua.rehm\DBFCollectorMT_03_26_26\Config\</ConfigDir>
+        <ConfigDir>{ROOT}\Config\</ConfigDir>
 
         <!-- OUTPUT: Root directory for pass schedule and output data -->
-        <PassDataDir>C:\Users\joshua.rehm\DBFCollectorMT_03_26_26\DBFPassData\</PassDataDir>
+        <PassDataDir>{ROOT}\DBFPassData\</PassDataDir>
 
         <!-- OUTPUT: WAV file output when data transmitter send fails -->
-        <WavOutputDir>C:\Users\joshua.rehm\DBFCollectorMT_03_26_26\DBFPassData\WAV\</WavOutputDir>
+        <WavOutputDir>{ROOT}\DBFPassData\WAV\</WavOutputDir>
 
         <!-- OUTPUT: Eigenvalue bias data output -->
-        <BiasEigenDir>C:\Users\joshua.rehm\DBFCollectorMT_03_26_26\DBFPassData\BiasEigen\</BiasEigenDir>
+        <BiasEigenDir>{ROOT}\DBFPassData\BiasEigen\</BiasEigenDir>
 
         <!-- OUTPUT: Signal bias data output -->
-        <BiasSignalDir>C:\Users\joshua.rehm\DBFCollectorMT_03_26_26\DBFPassData\BiasSignal\</BiasSignalDir>
+        <BiasSignalDir>{ROOT}\DBFPassData\BiasSignal\</BiasSignalDir>
 
         <!-- OUTPUT: Hourly pass schedule binary files (EMSDBFPass-HH.bin) -->
-        <BinOutputDir>C:\Users\joshua.rehm\DBFCollectorMT_03_26_26\DBFPassData\BIN\</BinOutputDir>
+        <BinOutputDir>{ROOT}\DBFPassData\BIN\</BinOutputDir>
 
         <!-- OUTPUT: Satellite ID and TOA/FOA binary output -->
-        <SatIDDir>C:\Users\joshua.rehm\DBFCollectorMT_03_26_26\DBFPassData\SatID\</SatIDDir>
+        <SatIDDir>{ROOT}\DBFPassData\SatID\</SatIDDir>
 
         <!-- INPUT: Primary raw ADC binary input files (Galileo 2-sec data) -->
-        <RawDataDir>C:\Users\joshua.rehm\DBFCollectorMT_03_26_26\RawDataBin\Galileo_2sec\</RawDataDir>
+        <RawDataDir>{ROOT}\Output\RawDataBin\Galileo_2sec\</RawDataDir>
 
         <!-- INPUT: Alternate raw data directory (used by Initialize overload) -->
-        <RawAltDir>C:\Users\joshua.rehm\DBFCollectorMT_03_26_26\Raw\</RawAltDir>
+        <RawAltDir>{ROOT}\Output\Raw\</RawAltDir>
 
         <!-- OUTPUT: Raw ADC capture output directory -->
-        <ADCRawDir>C:\Users\joshua.rehm\DBFCollectorMT_03_26_26\ADCraw\</ADCRawDir>
+        <ADCRawDir>{ROOT}\Output\ADCraw\</ADCRawDir>
 
         <!-- ============================================================ -->
         <!--  Calibration                                                  -->
         <!-- ============================================================ -->
 
         <!-- OUTPUT: Calibration binary file path prefix (appended with _N.bin) -->
-        <CalibFilePrefix>C:\Users\joshua.rehm\DBFCollectorMT_03_26_26\Calibration\EMSDBF_Calib_</CalibFilePrefix>
+        <CalibFilePrefix>{ROOT}\Output\Calibration\EMSDBF_Calib_</CalibFilePrefix>
 
         <!-- OUTPUT: Directory for per-object calibration trace CSV files -->
-        <CalibTraceDir>C:\Users\joshua.rehm\DBFCollectorMT_03_26_26\Calibration\</CalibTraceDir>
+        <CalibTraceDir>{ROOT}\Output\Calibration\</CalibTraceDir>
 
         <!-- ============================================================ -->
         <!--  Covariance / eigenvalue                                      -->
         <!-- ============================================================ -->
 
         <!-- OUTPUT: Covariance matrix binary output directory -->
-        <CovarianceDir>C:\Users\joshua.rehm\DBFCollectorMT_03_26_26\DBFCovarianceFiles\</CovarianceDir>
+        <CovarianceDir>{ROOT}\Output\DBFCovarianceFiles\</CovarianceDir>
 
         <!-- OUTPUT: Eigenvalue matrix debug output CSV -->
-        <EigenOutputFile>C:\Users\joshua.rehm\DBFCollectorMT_03_26_26\DBFCovarianceFiles\Output.csv</EigenOutputFile>
+        <EigenOutputFile>{ROOT}\Output\DBFCovarianceFiles\Output.csv</EigenOutputFile>
 
         <!-- ============================================================ -->
         <!--  Constellation                                                -->
         <!-- ============================================================ -->
 
         <!-- INPUT: DBFConstellation XML configuration file -->
-        <ConstellationFile>C:\Users\joshua.rehm\DBFCollectorMT_03_26_26\Config\DBFConstellation.xml</ConstellationFile>
+        <ConstellationFile>{ROOT}\Config\DBFConstellation.xml</ConstellationFile>
 
         <!-- ============================================================ -->
         <!--  Logging                                                      -->
         <!-- ============================================================ -->
 
         <!-- OUTPUT: Legacy log file path (CTimeElapsed, unused unless LOG_FILE=1) -->
-        <LogFile>C:\Users\joshua.rehm\DBFCollectorMT_03_26_26\Logs\logfile</LogFile>
+        <LogFile>{ROOT}\Output\Logs\logfile</LogFile>
 
         <!-- OUTPUT: Directory for phasecorrn.csv and other debug logs -->
-        <LogDir>C:\Users\joshua.rehm\DBFCollectorMT_03_26_26\Logs\</LogDir>
+        <LogDir>{ROOT}\Output\Logs\</LogDir>
 
         <!-- OUTPUT: stdout redirect target used by RedirectToFile() -->
-        <LogRedirectFile>C:\Users\joshua.rehm\DBFCollectorMT_03_26_26\Logs\logfile</LogRedirectFile>
+        <LogRedirectFile>{ROOT}\Output\Logs\logfile</LogRedirectFile>
 
         <!-- OUTPUT: EMS DBF logger file prefix (appended with _N.txt) -->
-        <EMSDBFLogPrefix>C:\Users\joshua.rehm\DBFCollectorMT_03_26_26\Logs\EMSDBFlogger</EMSDBFLogPrefix>
+        <EMSDBFLogPrefix>{ROOT}\Output\Logs\EMSDBFlogger</EMSDBFLogPrefix>
 
         <!-- OUTPUT: Timing log file (used when LOG_FILE=1 in TimeElapsed.h) -->
-        <TimingLogFile>C:\Users\joshua.rehm\DBFCollectorMT_03_26_26\Logs\dbf_timing_log.txt</TimingLogFile>
+        <TimingLogFile>{ROOT}\Output\Logs\dbf_timing_log.txt</TimingLogFile>
 
         <!-- ============================================================ -->
         <!--  Miscellaneous                                                -->
         <!-- ============================================================ -->
 
         <!-- OUTPUT: Sun azimuth/elevation CSV data file -->
-        <SunAzElFile>C:\Users\joshua.rehm\DBFCollectorMT_03_26_26\Logs\SunAzEl.csv</SunAzElFile>
+        <SunAzElFile>{ROOT}\Output\Logs\SunAzEl.csv</SunAzElFile>
 
         <!-- OUTPUT: Null-satellite test pass CSV output -->
-        <NullTestFile>C:\Users\joshua.rehm\DBFCollectorMT_03_26_26\Logs\NullTest.csv</NullTestFile>
+        <NullTestFile>{ROOT}\Output\Logs\NullTest.csv</NullTestFile>
 
         <!-- Drive letter monitored for free disk space (update if data is on a different drive) -->
         <DataDrive>C:\</DataDrive>

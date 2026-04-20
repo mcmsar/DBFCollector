@@ -65,6 +65,11 @@
 int CDigitalBeamFormer::ms_iNextObjectID = 1;
 std::wstring		CDigitalBeamFormer::m_wsSPIP;
 
+void CDigitalBeamFormer::SetSPIP( std::string SPIP )
+{
+    m_wsSPIP = std::wstring( SPIP.begin(), SPIP.end() );
+}
+
 
 
 const double	TIMETO_SEND_COVARIANCE_FILE = (1.0/60.0);	//1 mins
@@ -648,13 +653,13 @@ CDigitalBeamFormer::_InitDT()
 	{
 		hr = CoCreateInstance( CLSID_DataXmitter, NULL, CLSCTX_ALL,
 							   IID_IEMSDataTransmitter, (void**) &m_pDataTransmit );
-		//std::wstring cwszConnectInfo = std::wstring(L"<Connection><ip_address>")  + m_wsSPIP + ::wstring(L"</ip_address><port_id>9070</port_id></Connection>");
+		std::wstring cwszConnectInfo = std::wstring(L"<Connection><ip_address>") + m_wsSPIP + std::wstring(L"</ip_address><port_id>9070</port_id></Connection>");
 
 		if( EMS_OK != hr || m_pDataTransmit == NULL)
 		{
 			//printf("\n Failed to load Data Transmitter");
 		}
-		else if( EMS_OK != m_pDataTransmit->Connect( m_wsSPIP.c_str() ) )
+		else if( EMS_OK != m_pDataTransmit->Connect( cwszConnectInfo.c_str() ) )
 		{
 			m_pDataTransmit->Release();
 			m_pDataTransmit = NULL;

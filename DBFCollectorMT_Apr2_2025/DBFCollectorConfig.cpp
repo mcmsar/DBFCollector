@@ -17,50 +17,75 @@ CDBFCollectorConfig::CDBFCollectorConfig()
 }
 
 // ---------------------------------------------------------------------------
-// Defaults match previously hardcoded values throughout the project.
-// All generated/written paths now live under Output\ so that source and
-// output trees stay cleanly separated.
+// Compute the project root directory from the running exe's location.
+// Exe is expected at <root>\DBFCollectorMT_Apr2_2025\<Config>\DBFCollector.exe
+// (where <Config> is e.g. Debug or Release), so root = exe_dir 3 levels up.
+// Returns the root with a trailing backslash.
+// ---------------------------------------------------------------------------
+static std::string ComputeProjectRoot()
+{
+    char szExe[MAX_PATH] = {0};
+    GetModuleFileNameA(NULL, szExe, MAX_PATH);
+
+    std::string s(szExe);
+    // Strip exe filename
+    std::string::size_type p = s.find_last_of("\\/");
+    if (p != std::string::npos)
+        s = s.substr(0, p);
+
+    // Resolve <exe_dir>\..\..\..\  →  absolute project root
+    char szRoot[MAX_PATH] = {0};
+    GetFullPathNameA((s + "\\..\\..\\..").c_str(), MAX_PATH, szRoot, NULL);
+
+    std::string root(szRoot);
+    if (!root.empty() && root.back() != '\\')
+        root += '\\';
+    return root;
+}
+
+// ---------------------------------------------------------------------------
+// Defaults are now computed relative to the exe location, so the project can
+// be moved without editing source or config files.
+// All generated/written paths live under Output\ so that source and output
+// trees stay cleanly separated.
 // ---------------------------------------------------------------------------
 void CDBFCollectorConfig::SetDefaults()
 {
-#define DBF_ROOT   "C:\\Users\\joshua.rehm\\DBFCollectorMT_03_26_26\\"
-#define DBF_OUTPUT DBF_ROOT "Output\\"
+    const std::string root   = ComputeProjectRoot();
+    const std::string output = root + "Output\\";
 
-    // Input / configuration (unchanged location)
-    m_sConfigDir         = DBF_ROOT "Config\\";
-    m_sConstellationFile = DBF_ROOT "Config\\DBFConstellation.xml";
+    // Input / configuration
+    m_sConfigDir         = root + "Config\\";
+    m_sConstellationFile = root + "Config\\DBFConstellation.xml";
     m_sDataDrive         = "C:\\";
 
     // Pass/data output directories  →  Output\
-    m_sPassDataDir   = DBF_OUTPUT "DBFPassData\\";
-    m_sWavOutputDir  = DBF_OUTPUT "DBFPassData\\WAV\\";
-    m_sBiasEigenDir  = DBF_OUTPUT "DBFPassData\\BiasEigen\\";
-    m_sBiasSignalDir = DBF_OUTPUT "DBFPassData\\BiasSignal\\";
-    m_sBinOutputDir  = DBF_OUTPUT "DBFPassData\\BIN\\";
-    m_sSatIDDir      = DBF_OUTPUT "DBFPassData\\SatID\\";
-    m_sRawDataDir    = DBF_OUTPUT "RawDataBin\\Galileo_2sec\\";
-    m_sRawAltDir     = DBF_OUTPUT "Raw\\";
-    m_sADCRawDir     = DBF_OUTPUT "ADCraw\\";
+    m_sPassDataDir   = output + "DBFPassData\\";
+    m_sWavOutputDir  = output + "DBFPassData\\WAV\\";
+    m_sBiasEigenDir  = output + "DBFPassData\\BiasEigen\\";
+    m_sBiasSignalDir = output + "DBFPassData\\BiasSignal\\";
+    m_sBinOutputDir  = output + "DBFPassData\\BIN\\";
+    m_sSatIDDir      = output + "DBFPassData\\SatID\\";
+    m_sRawDataDir    = output + "RawDataBin\\Galileo_2sec\\";
+    m_sRawAltDir     = output + "Raw\\";
+    m_sADCRawDir     = output + "ADCraw\\";
 
     // Calibration output  →  Output\Calibration\
-    m_sCalibFilePrefix = DBF_OUTPUT "Calibration\\EMSDBF_Calib_";
-    m_sCalibTraceDir   = DBF_OUTPUT "Calibration\\";
+    m_sCalibFilePrefix = output + "Calibration\\EMSDBF_Calib_";
+    m_sCalibTraceDir   = output + "Calibration\\";
 
     // Covariance/eigen output  →  Output\DBFCovarianceFiles\
-    m_sCovarianceDir   = DBF_OUTPUT "DBFCovarianceFiles\\";
-    m_sEigenOutputFile = DBF_OUTPUT "DBFCovarianceFiles\\Output.csv";
+    m_sCovarianceDir   = output + "DBFCovarianceFiles\\";
+    m_sEigenOutputFile = output + "DBFCovarianceFiles\\Output.csv";
 
     // Log output  →  Output\Logs\
-    m_sLogFile         = DBF_OUTPUT "Logs\\logfile";
-    m_sLogDir          = DBF_OUTPUT "Logs\\";
-    m_sLogRedirectFile = DBF_OUTPUT "Logs\\logfile";
-    m_sEMSDBFLogPrefix = DBF_OUTPUT "Logs\\EMSDBFlogger";
-    m_sTimingLogFile   = DBF_OUTPUT "Logs\\dbf_timing_log.txt";
-    m_sSunAzElFile     = DBF_OUTPUT "Logs\\SunAzEl.csv";
-    m_sNullTestFile    = DBF_OUTPUT "Logs\\NullTest.csv";
-
-#undef DBF_OUTPUT
-#undef DBF_ROOT
+    m_sLogFile         = output + "Logs\\logfile";
+    m_sLogDir          = output + "Logs\\";
+    m_sLogRedirectFile = output + "Logs\\logfile";
+    m_sEMSDBFLogPrefix = output + "Logs\\EMSDBFlogger";
+    m_sTimingLogFile   = output + "Logs\\dbf_timing_log.txt";
+    m_sSunAzElFile     = output + "Logs\\SunAzEl.csv";
+    m_sNullTestFile    = output + "Logs\\NullTest.csv";
 }
 
 // ---------------------------------------------------------------------------
@@ -186,6 +211,52 @@ bool CDBFCollectorConfig::LoadFromFile(const std::string& filePath)
     size_t bytesRead = fread(&xml[0], 1, static_cast<size_t>(fileSize), fp);
     fclose(fp);
     xml.resize(bytesRead);
+
+    // Derive {ROOT} from the config file path: root is the directory one level
+    // above the directory containing this config file (i.e. parent of Config\).
+    // Example: filePath = "D:\proj\Config\DBFCollectorConfig.xml"
+    //          configDir = "D:\proj\Config"   root = "D:\proj\"
+    std::string sRoot;
+    {
+        std::string fp2(filePath);
+        // strip trailing separators from filePath before searching
+        while (!fp2.empty() && (fp2.back() == '\\' || fp2.back() == '/'))
+            fp2.pop_back();
+        std::string::size_type sep1 = fp2.find_last_of("\\/");   // remove filename
+        if (sep1 != std::string::npos)
+        {
+            std::string configDir = fp2.substr(0, sep1);
+            std::string::size_type sep2 = configDir.find_last_of("\\/");  // parent of Config\
+            if (sep2 != std::string::npos)
+            {
+                char szAbs[MAX_PATH] = {0};
+                GetFullPathNameA(configDir.substr(0, sep2).c_str(), MAX_PATH, szAbs, NULL);
+                sRoot = szAbs;
+                if (!sRoot.empty() && sRoot.back() != '\\')
+                    sRoot += '\\';
+            }
+        }
+    }
+
+    // Expand {ROOT} token in the raw XML text so paths in the file are portable.
+    if (!sRoot.empty())
+    {
+        const std::string token = "{ROOT}\\";
+        std::string::size_type pos = 0;
+        while ((pos = xml.find(token, pos)) != std::string::npos)
+        {
+            xml.replace(pos, token.size(), sRoot);
+            pos += sRoot.size();
+        }
+        // Also handle {ROOT} without trailing backslash (e.g. before a forward slash)
+        const std::string token2 = "{ROOT}";
+        pos = 0;
+        while ((pos = xml.find(token2, pos)) != std::string::npos)
+        {
+            xml.replace(pos, token2.size(), sRoot);
+            pos += sRoot.size();
+        }
+    }
 
     // Apply each value only when the tag is present in the file
 #define LOAD_PATH(tag, member) \

@@ -1,7 +1,7 @@
 #include "EMSDBFConfigReader.h"
 #include <iostream>
 //snl
-#include "emsdbf.h"
+#include "emsDBF.h"
 
 CEMSDBFConfigReader::CEMSDBFConfigReader(void)
 {
@@ -34,9 +34,9 @@ void CEMSDBFConfigReader::ReadDBFComputerXMLConfig(const char *inFile)
 	try
 	{
 		::std::auto_ptr< ::dbfconstellation::computers > dbComputerCfg (::dbfconstellation::computers_(inFile));
-		std::string szConnectInfo = std::string("<Connection><ip_address>")  + dbComputerCfg->SP() + std::string("</ip_address><port_id>9070</port_id></Connection>");
-
-		//CDigitalBeamFormer::SetSPIP( szConnectInfo );
+		
+		CDigitalBeamFormer::SetSPIP( dbComputerCfg->SP() );
+		
 		for(::dbfconstellation::computers::computer_const_iterator iter (dbComputerCfg->computer().begin());
 				iter != dbComputerCfg->computer().end(); ++iter)
 		{

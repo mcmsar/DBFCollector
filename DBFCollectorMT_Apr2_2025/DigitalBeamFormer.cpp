@@ -65,11 +65,6 @@
 int CDigitalBeamFormer::ms_iNextObjectID = 1;
 std::wstring		CDigitalBeamFormer::m_wsSPIP;
 
-void CDigitalBeamFormer::SetSPIP( std::string SPIP )
-{
-    m_wsSPIP = std::wstring( SPIP.begin(), SPIP.end() );
-}
-
 
 
 const double	TIMETO_SEND_COVARIANCE_FILE = (1.0/60.0);	//1 mins
@@ -645,6 +640,12 @@ CDigitalBeamFormer::RemoveTimePulse( float *afRawTimeSeries )
 }
 //---------------------------------------------------------------------------
 
+void
+CDigitalBeamFormer::SetSPIP(string SPIP)
+{
+	m_wsSPIP = std::wstring(SPIP.begin(), SPIP.end());
+}
+
 HRESULT 
 CDigitalBeamFormer::_InitDT()
 {
@@ -653,13 +654,17 @@ CDigitalBeamFormer::_InitDT()
 	{
 		hr = CoCreateInstance( CLSID_DataXmitter, NULL, CLSCTX_ALL,
 							   IID_IEMSDataTransmitter, (void**) &m_pDataTransmit );
-		std::wstring cwszConnectInfo = std::wstring(L"<Connection><ip_address>") + m_wsSPIP + std::wstring(L"</ip_address><port_id>9070</port_id></Connection>");
+		std::wstring cwszConnectInfo = std::wstring(L"<Connection><ip_address>")  + m_wsSPIP + ::wstring(L"</ip_address><port_id>9070</port_id></Connection>");
+
+		//std::string testSPIP = "1.1.1.108";
+		//std::wstring testSPIPw = std::wstring(L"<Connection><ip_address>") + std::wstring(testSPIP.begin(), testSPIP.end()) + ::wstring(L"</ip_address><port_id>9070</port_id></Connection>");
 
 		if( EMS_OK != hr || m_pDataTransmit == NULL)
 		{
 			//printf("\n Failed to load Data Transmitter");
 		}
-		else if( EMS_OK != m_pDataTransmit->Connect( cwszConnectInfo.c_str() ) )
+		//else if( EMS_OK != m_pDataTransmit->Connect( m_wsSPIP.c_str() ) )
+		else if (EMS_OK != m_pDataTransmit->Connect(cwszConnectInfo.c_str()))
 		{
 			m_pDataTransmit->Release();
 			m_pDataTransmit = NULL;
@@ -1171,18 +1176,18 @@ CDigitalBeamFormer::DBFprocessorEP( EMSTIME tm )
 			timeEnd =  CEMSSystemClock::GetTime();
 			if (tmFields.nSecond % 10 == 0 )
 			{
-				printf(" * ");
+				//printf(" * ");
 			}
 			else
 			{
-				printf("   ");
+				//printf("   ");
 			}
-			printf("%02d:%02d:%02d.%3d : Rec %d,Sat %d,Az %6.2f(%6.2f),El %5.2f(%5.2f),Prob %5.3f,Time %6.3f,Id:%i\n",
+			/*printf("%02d:%02d:%02d.%3d : Rec %d,Sat %d,Az %6.2f(%6.2f),El %5.2f(%5.2f),Prob %5.3f,Time %6.3f,Id:%i\n",
 				tmFields.nHour, tmFields.nMinute, tmFields.nSecond,tmFields.lNanosecond/1000,
 				i, m_aPassSchedule.rec[i].ulSatID,
 				m_aPassSchedule.rec[i].fAzimuth,m_aPassSchedule.rec[i].fPlateAzimuth,
 				m_aPassSchedule.rec[i].fElevation,m_aPassSchedule.rec[i].fPlateElevation, m_fProbability[i],
-				timeStart.SecondsDifferent( timeEnd), GetCurrentThreadId());
+				timeStart.SecondsDifferent( timeEnd), GetCurrentThreadId());*/
 
 //			_OutputWaveFile( (unsigned char*)  &m_nBeam[i][0], tm, i, bBandwidthFlag );
 		}
@@ -1385,6 +1390,8 @@ CDigitalBeamFormer::_OutputWaveEx( EMSTIME tm, ULONG culNumSats, bool bBandwidth
 		wAntID = wPlateID*100 +  (WORD) iSat;
 		oWaveOut.GetExtendedInfoRef().GetLutDetailsRef().SetAntennaID( wAntID );
 
+		//EMSTIME tempTime = CEMSSystemClock::GetTime();
+		//oWaveOut.GetExtendedInfoRef().GetPropertiesRef().SetTimeStart(tempTime);
 		oWaveOut.GetExtendedInfoRef().GetPropertiesRef().SetTimeStart( tm );
 
 		oWaveOut.GetExtendedInfoRef().GetSignalDetailsRef().SetMeanADC( m_dMeanADC );
@@ -1467,143 +1474,143 @@ CDigitalBeamFormer::_OutputWaveEx( EMSTIME tm, ULONG culNumSats, bool bBandwidth
 }
 //---------------------------------------------------------------------------
 
-void
-CDigitalBeamFormer::_OutputWaveFile( unsigned char* aData, EMSTIME tm, int iSat, bool bBandwidthFlag )
-{
-	EMS_RESULT hr = EMS_OK;
-	CEMSWaveEx oWaveOut;
-
-
-	char szFileName[256];
-	FILE *pWaveFile = 0;
-	DWORD dwBytes = 0;
-	BYTE* abyData = 0;
-			
-	WORD dHardWareVersion = 32; // 32 channel ADC
-	WORD dSoftWareVersion = 2;  // 2 second buffer
-
-
-
-	int *beamID = m_qrefDBFBeamVectors.ReadFirst( ).predBeamIDs;
-	int *predSatIDs = m_qrefDBFBeamVectors.ReadFirst( ).predSatIDs;
-	float *probability = m_qrefDBFBeamVectors.ReadFirst().probability;
-
-	ULONG ulLutID = m_aPassSchedule.rec[iSat].ulLutID;
-	ULONG ulSatID = m_aPassSchedule.rec[iSat].ulSatID;
-	WORD  wPlateID = m_aPassSchedule.rec[iSat].wPlateID;
-	WORD  wAntID   = wPlateID*1000 +  (WORD) beamID[iSat];
-
-	double dSatAzimuth = (double) m_aPassSchedule.rec[iSat].fAzimuth;
-	double dSatElevation = (double) m_aPassSchedule.rec[iSat].fElevation;
-	double dPlateAzimuth = (double) m_aPassSchedule.rec[iSat].fPlateAzimuth;
-	double dPlateElevation = (double) m_aPassSchedule.rec[iSat].fPlateElevation;
-
-
-	oWaveOut.GetFormatChunkRef().SetAudioFormat( 1 );	// PCM
-	oWaveOut.GetFormatChunkRef().SetNumChannels( 1 );	// Mono
-	//oWaveOut.GetFormatChunkRef().SetSampleRate( DBF_SAMPLE_RATE );
-	
-	ULONG ulSampleRate = (ULONG) (0.8 * (float)(m_ulStopPPS - m_ulStartPPS));
-	if (ulSampleRate < 350000 ) ulSampleRate = 400000;
-	ULONG ulBytes = DBF_SAMPLE_SIZE * sizeof(short);
-
-	if (bBandwidthFlag )
-	{
-		oWaveOut.GetFormatChunkRef().SetSampleRate( ulSampleRate/2 );
-		oWaveOut.Write( (unsigned char*)aData, (ulBytes/2) * sizeof(unsigned char) );
-	}
-	else
-	{
-		oWaveOut.GetFormatChunkRef().SetSampleRate( ulSampleRate );
-		oWaveOut.Write( (unsigned char*)aData, ulBytes * sizeof(unsigned char) );
-	}
-	oWaveOut.GetFormatChunkRef().SetBitsPerSample( 16 );
-
-
-	oWaveOut.GetExtendedInfoRef().GetLutDetailsRef().SetLutID( ulLutID );
-	oWaveOut.GetExtendedInfoRef().GetSatDetailsRef().SetSatID( ulSatID );
-	oWaveOut.GetExtendedInfoRef().GetLutDetailsRef().SetAntennaID( (WORD) ulLutID );
-	oWaveOut.GetExtendedInfoRef().GetPropertiesRef().SetTimeStart( tm );
-	oWaveOut.GetExtendedInfoRef().GetLutDetailsRef().SetAntennaID( wAntID );
-
-	// Set additional properties indicating whether the signal requires
-	// phase demod or down-conversion.
-	oWaveOut.GetExtendedInfoRef().GetSignalDetailsRef().SetMeanADC( m_dMeanADC );
-	oWaveOut.GetExtendedInfoRef().GetSignalDetailsRef().SetStdDevADC( m_dStdDevADC );
-	if( probability )
-		oWaveOut.GetExtendedInfoRef().GetSignalDetailsRef().SetMeanCarrierFreq( probability[ iSat ] );
-
-	// RR added azimuth and elevation of satellite
-	oWaveOut.GetExtendedInfoRef().GetSignalDetailsRef().SetMaxModIndex( dSatAzimuth );
-	oWaveOut.GetExtendedInfoRef().GetSignalDetailsRef().SetMeanModIndex( dSatElevation );
-	oWaveOut.GetExtendedInfoRef().GetSignalDetailsRef().SetStdDevCarrierFreq( dPlateAzimuth );
-	oWaveOut.GetExtendedInfoRef().GetSignalDetailsRef().SetStdDevModIndex( dPlateElevation );
-		
-	// Add HW/SW version information
-	oWaveOut.GetExtendedInfoRef().GetPropertiesRef().SetHardwareVersion( dHardWareVersion );
-	oWaveOut.GetExtendedInfoRef().GetPropertiesRef().SetSoftwareVersion( dSoftWareVersion );
-
-	// Wave has not yet been downconverted:
-	oWaveOut.GetExtendedInfoRef().GetSignalDetailsRef().SetDCState( EMS_DC_NO );
-	
-	// Set flag indicating whether the marker bit was found for this measurement.
-	oWaveOut.GetExtendedInfoRef().GetSignalDetailsRef().SetFlags( CEMSWaveExtSignalDetails::EMSWAVEEXSIGNAL_BAD_MARKER_BIT );
-
-	if ( ulSatID < 200 )
-		oWaveOut.GetExtendedInfoRef().GetSignalDetailsRef().SetPhaseModState( EMS_PHASE_MOD_YES);
-	else
-		oWaveOut.GetExtendedInfoRef().GetSignalDetailsRef().SetPhaseModState( EMS_PHASE_MOD_NO); 
-
-
-		oWaveOut.GetExtendedInfoRef().GetPropertiesRef().SetHardwareVersion( dHardWareVersion );
-		oWaveOut.GetExtendedInfoRef().GetPropertiesRef().SetSoftwareVersion( dSoftWareVersion );
-
-		// Add reference beacon indicator
-		if ( m_aPassSchedule.rec[iSat].fBeaconElevation > 0.0 )
-		{
-			DWORD dFlag = (DWORD) m_aPassSchedule.rec[iSat].fFOA;
-			oWaveOut.GetExtendedInfoRef().GetSatDetailsRef().SetSatFlags( dFlag );
-		}
-
-
-		dwBytes = oWaveOut.Serialize( abyData );
-
-		if( dwBytes > 0  )
-		{
-			int iSent = 0;
-
-			hr = _InitDT();
-			if( m_pDataTransmit )
-			{
-				hr = m_pDataTransmit->Send( dwBytes, abyData, &iSent);
-			}
-			if(FAILED(hr) )
-			{
-		
-				// WAV file output to disk
-				FILE*	lpWaveFile = NULL;
-				char	szFileName[256];
-				ULONG	ulFileNumber = ((ULONG)m_nCounter) % 100;
-				sprintf(szFileName,"%sDBFRAW_%07d_%03d_%04d.wav", CDBFCollectorConfig::GetInstance().GetWavOutputDir().c_str(), ulFileNumber, ulSatID, ulLutID);
-
-				lpWaveFile = fopen(szFileName,"w+b");
-				if( lpWaveFile != NULL )
-				{
-					fwrite(abyData, dwBytes, 1, lpWaveFile);
-					flushall();
-					fclose(lpWaveFile);
-					lpWaveFile = NULL;
-				}
-			}
-		}
-
-
-		delete[] abyData;
-		abyData = 0;
-	
-
-	return;
-}
+//void
+//CDigitalBeamFormer::_OutputWaveFile( unsigned char* aData, EMSTIME tm, int iSat, bool bBandwidthFlag )
+//{
+//	EMS_RESULT hr = EMS_OK;
+//	CEMSWaveEx oWaveOut;
+//
+//
+//	char szFileName[256];
+//	FILE *pWaveFile = 0;
+//	DWORD dwBytes = 0;
+//	BYTE* abyData = 0;
+//			
+//	WORD dHardWareVersion = 32; // 32 channel ADC
+//	WORD dSoftWareVersion = 2;  // 2 second buffer
+//
+//
+//
+//	int *beamID = m_qrefDBFBeamVectors.ReadFirst( ).predBeamIDs;
+//	int *predSatIDs = m_qrefDBFBeamVectors.ReadFirst( ).predSatIDs;
+//	float *probability = m_qrefDBFBeamVectors.ReadFirst().probability;
+//
+//	ULONG ulLutID = m_aPassSchedule.rec[iSat].ulLutID;
+//	ULONG ulSatID = m_aPassSchedule.rec[iSat].ulSatID;
+//	WORD  wPlateID = m_aPassSchedule.rec[iSat].wPlateID;
+//	WORD  wAntID   = wPlateID*1000 +  (WORD) beamID[iSat];
+//
+//	double dSatAzimuth = (double) m_aPassSchedule.rec[iSat].fAzimuth;
+//	double dSatElevation = (double) m_aPassSchedule.rec[iSat].fElevation;
+//	double dPlateAzimuth = (double) m_aPassSchedule.rec[iSat].fPlateAzimuth;
+//	double dPlateElevation = (double) m_aPassSchedule.rec[iSat].fPlateElevation;
+//
+//
+//	oWaveOut.GetFormatChunkRef().SetAudioFormat( 1 );	// PCM
+//	oWaveOut.GetFormatChunkRef().SetNumChannels( 1 );	// Mono
+//	//oWaveOut.GetFormatChunkRef().SetSampleRate( DBF_SAMPLE_RATE );
+//	
+//	ULONG ulSampleRate = (ULONG) (0.8 * (float)(m_ulStopPPS - m_ulStartPPS));
+//	if (ulSampleRate < 350000 ) ulSampleRate = 400000;
+//	ULONG ulBytes = DBF_SAMPLE_SIZE * sizeof(short);
+//
+//	if (bBandwidthFlag )
+//	{
+//		oWaveOut.GetFormatChunkRef().SetSampleRate( ulSampleRate/2 );
+//		oWaveOut.Write( (unsigned char*)aData, (ulBytes/2) * sizeof(unsigned char) );
+//	}
+//	else
+//	{
+//		oWaveOut.GetFormatChunkRef().SetSampleRate( ulSampleRate );
+//		oWaveOut.Write( (unsigned char*)aData, ulBytes * sizeof(unsigned char) );
+//	}
+//	oWaveOut.GetFormatChunkRef().SetBitsPerSample( 16 );
+//
+//
+//	oWaveOut.GetExtendedInfoRef().GetLutDetailsRef().SetLutID( ulLutID );
+//	oWaveOut.GetExtendedInfoRef().GetSatDetailsRef().SetSatID( ulSatID );
+//	oWaveOut.GetExtendedInfoRef().GetLutDetailsRef().SetAntennaID( (WORD) ulLutID );
+//	oWaveOut.GetExtendedInfoRef().GetPropertiesRef().SetTimeStart( tm );
+//	oWaveOut.GetExtendedInfoRef().GetLutDetailsRef().SetAntennaID( wAntID );
+//
+//	// Set additional properties indicating whether the signal requires
+//	// phase demod or down-conversion.
+//	oWaveOut.GetExtendedInfoRef().GetSignalDetailsRef().SetMeanADC( m_dMeanADC );
+//	oWaveOut.GetExtendedInfoRef().GetSignalDetailsRef().SetStdDevADC( m_dStdDevADC );
+//	if( probability )
+//		oWaveOut.GetExtendedInfoRef().GetSignalDetailsRef().SetMeanCarrierFreq( probability[ iSat ] );
+//
+//	// RR added azimuth and elevation of satellite
+//	oWaveOut.GetExtendedInfoRef().GetSignalDetailsRef().SetMaxModIndex( dSatAzimuth );
+//	oWaveOut.GetExtendedInfoRef().GetSignalDetailsRef().SetMeanModIndex( dSatElevation );
+//	oWaveOut.GetExtendedInfoRef().GetSignalDetailsRef().SetStdDevCarrierFreq( dPlateAzimuth );
+//	oWaveOut.GetExtendedInfoRef().GetSignalDetailsRef().SetStdDevModIndex( dPlateElevation );
+//		
+//	// Add HW/SW version information
+//	oWaveOut.GetExtendedInfoRef().GetPropertiesRef().SetHardwareVersion( dHardWareVersion );
+//	oWaveOut.GetExtendedInfoRef().GetPropertiesRef().SetSoftwareVersion( dSoftWareVersion );
+//
+//	// Wave has not yet been downconverted:
+//	oWaveOut.GetExtendedInfoRef().GetSignalDetailsRef().SetDCState( EMS_DC_NO );
+//	
+//	// Set flag indicating whether the marker bit was found for this measurement.
+//	oWaveOut.GetExtendedInfoRef().GetSignalDetailsRef().SetFlags( CEMSWaveExtSignalDetails::EMSWAVEEXSIGNAL_BAD_MARKER_BIT );
+//
+//	if ( ulSatID < 200 )
+//		oWaveOut.GetExtendedInfoRef().GetSignalDetailsRef().SetPhaseModState( EMS_PHASE_MOD_YES);
+//	else
+//		oWaveOut.GetExtendedInfoRef().GetSignalDetailsRef().SetPhaseModState( EMS_PHASE_MOD_NO); 
+//
+//
+//		oWaveOut.GetExtendedInfoRef().GetPropertiesRef().SetHardwareVersion( dHardWareVersion );
+//		oWaveOut.GetExtendedInfoRef().GetPropertiesRef().SetSoftwareVersion( dSoftWareVersion );
+//
+//		// Add reference beacon indicator
+//		if ( m_aPassSchedule.rec[iSat].fBeaconElevation > 0.0 )
+//		{
+//			DWORD dFlag = (DWORD) m_aPassSchedule.rec[iSat].fFOA;
+//			oWaveOut.GetExtendedInfoRef().GetSatDetailsRef().SetSatFlags( dFlag );
+//		}
+//
+//
+//		dwBytes = oWaveOut.Serialize( abyData );
+//
+//		if( dwBytes > 0  )
+//		{
+//			int iSent = 0;
+//
+//			hr = _InitDT();
+//			if( m_pDataTransmit )
+//			{
+//				hr = m_pDataTransmit->Send( dwBytes, abyData, &iSent);
+//			}
+//			if(FAILED(hr) )
+//			{
+//		
+//				// WAV file output to disk
+//				FILE*	lpWaveFile = NULL;
+//				char	szFileName[256];
+//				ULONG	ulFileNumber = ((ULONG)m_nCounter) % 100;
+//				sprintf(szFileName,"%sDBFRAW_%07d_%03d_%04d.wav", CDBFCollectorConfig::GetInstance().GetWavOutputDir().c_str(), ulFileNumber, ulSatID, ulLutID);
+//
+//				lpWaveFile = fopen(szFileName,"w+b");
+//				if( lpWaveFile != NULL )
+//				{
+//					fwrite(abyData, dwBytes, 1, lpWaveFile);
+//					flushall();
+//					fclose(lpWaveFile);
+//					lpWaveFile = NULL;
+//				}
+//			}
+//		}
+//
+//
+//		delete[] abyData;
+//		abyData = 0;
+//	
+//
+//	return;
+//}
 
 
 //snl for testing..tbr
@@ -1997,7 +2004,8 @@ CDigitalBeamFormer::DBFCarrierTrack( EMSTIME tm, ULONG *m_ulFreqIndex, float *m_
 	EMS_RESULT hr = EMS_OK;
 
 	// Assume downconvertion by 50 kHZ and downlink is centred at 150 kHz
-	DOUBLE dBinSize   = (float) DBF_SAMPLE_RATE / (float) DBF_LOG20_SIZE;
+	//DOUBLE dBinSize   = (float) DBF_SAMPLE_RATE / (float) DBF_LOG20_SIZE;
+	DOUBLE dBinSize = 0.5;
 	ULONG ulOffset50  = (ULONG) (DBF_FREQ_OFFSET / dBinSize); // 50 kHz offset
 	ULONG ulBandWidth = (ULONG) (DBF_FREQ_BANDWIDTH / dBinSize);
 
@@ -2230,7 +2238,8 @@ CDigitalBeamFormer::ApplyDBFBeamVectors( ULONG m_ulSatellites, bool bTimeFreqFla
 	EMSCOMPLEX cScaleFactor;
 
 	// Assuming downlink is centred at 150 kHz with bandwidth 100 kHz
-	DOUBLE dBinSize   = (float) DBF_LOG20_SIZE  / (float) DBF_SAMPLE_RATE;
+	//DOUBLE dBinSize   = (float) DBF_LOG20_SIZE  / (float) DBF_SAMPLE_RATE;
+	DOUBLE dBinSize = 0.5;
 	ULONG ulBandWidth = (ULONG) (DBF_FREQ_BANDWIDTH * dBinSize);
 
 	if ( m_acDBFBeamVectors && m_acMatrix )
@@ -2450,152 +2459,151 @@ CDigitalBeamFormer::ComputeCovariance( ULONG ulNumSamples )
 }
 
 
-BOOL 
-CDigitalBeamFormer::_BuildDBFSatsTrackingInfo( EMSCOMPLEX* acDBFBeamVectors)
-{
-	//call tracking function..
-		//CTrackDBFSatellites objTrackSats;
-		//read existing values
-
-		int i, j, k;
-
-		int CurrentSatIds [ MAX_BEAMS ];
-		memset( CurrentSatIds, 0, sizeof(int) * MAX_BEAMS );
-		for( int i = 0; i < m_ulSatellites; i++ )
-		{
-			CurrentSatIds[i] = m_aPassSchedule.rec[i].ulSatID;
-		}
-
-		//read from q
-		EMSCOMPLEX *prevDBFBeamVectors = m_qrefDBFBeamVectors.ReadFirst( ).dbfBeamVector;
-		int *prevSchedulerSatIDs = m_qrefDBFBeamVectors.ReadFirst( ).schedulerSatIds;
-		int *prevPredSatIDs = m_qrefDBFBeamVectors.ReadFirst( ).predSatIDs;
-		int *prevBeamIds = m_qrefDBFBeamVectors.ReadFirst( ).predBeamIDs;
-		float *prevProbability = m_qrefDBFBeamVectors.ReadFirst( ).probability;
-		int	prevNumBeams = m_qrefDBFBeamVectors.ReadFirst( ).numBeams;
-		//end
-		
-		// Check if first time
-		if( !prevDBFBeamVectors && !prevBeamIds )
-		{
-			memset(m_iBeamIDs, 0, MAX_BEAMS*sizeof(int) );
-			for( i = 0; i < m_ulSatellites; i++ )
-			{
-				//first time so set default beam ids
-				m_iBeamIDs[i] = i+1;
-			}
-			DBFTrackingData obj;
-			memcpy( m_acDBFBeamVectors,acDBFBeamVectors, MAX_BEAMS*NUM_CHANNELS*sizeof(EMSCOMPLEX) );
-			obj.dbfBeamVector = m_acDBFBeamVectors;
-			obj.predBeamIDs = m_iBeamIDs;
-			memcpy( m_iPredictedSATIDs, CurrentSatIds, MAX_BEAMS * sizeof(int) );
-			obj.predSatIDs = m_iPredictedSATIDs;
-			obj.probability = m_fProbability;
-			memcpy( m_iPrevPassSchedSATIDs, CurrentSatIds, sizeof(int) * MAX_BEAMS );
-			obj.schedulerSatIds = m_iPrevPassSchedSATIDs;
-			obj.numBeams = m_ulSatellites;
-			m_qrefDBFBeamVectors.InsertAtFirst( obj );
-			return true;
-		}
-		
-		int newBeamIds[ MAX_BEAMS ];
-		memset( newBeamIds, 0, sizeof(int) * MAX_BEAMS );
-		int newPredSatIds[ MAX_BEAMS ];
-		memset( newPredSatIds, 0, sizeof(int) * MAX_BEAMS );
-
-		// Compute probabilities
-		EMSCOMPLEX cTemp1[NUM_CHANNELS];
-		EMSCOMPLEX cTemp;
-
-		// Find new or missing satellites
-		int iCount[MAX_BEAMS];
-		memset( iCount, 0, sizeof(int) * MAX_BEAMS );
-
-		int iMaxBeam = 0;
-		for ( i = 0; i  < m_ulSatellites; i++ )
-		{
-			for ( j = 0; j  < prevNumBeams; j++ )
-			{
-				if ( CurrentSatIds[i] == prevPredSatIDs[j] )
-				{
-					iCount[i] = j+1;
-					if ( iMaxBeam < prevBeamIds[j] ) iMaxBeam = prevBeamIds[j]+1;
-				}
-			}
-		}
-
-		// Best match to previous eigenvector
-		k = 0;
-		for ( i = 0; i  < m_ulSatellites; i++ )
-		{
-			// Check orthogonality
-			float fProb1[25];
-			for ( j = 0; j  < m_ulSatellites; j++ )
-			{
-				memset(&cTemp1[0], 0.0, NUM_CHANNELS * sizeof( EMSCOMPLEX ) );
-				emscbConj2( &m_acDBFBeamVectors[j * NUM_CHANNELS], &cTemp1[0], NUM_CHANNELS );
-				cTemp = emscDotProd( &m_acDBFBeamVectors[i * NUM_CHANNELS], &cTemp1[0], NUM_CHANNELS );
-				fProb1[k++] = sqrt(cTemp.re*cTemp.re + cTemp.im*cTemp.im ) / NUM_CHANNELS;
-			}
-
-			m_fProbability[i] = 0.0;
-			float fProb       = 0.0;
-
-
-			if ( iCount[i] > 0  ) // Matching satellite condition
-			{
-				for ( j = 0; j  < prevNumBeams; j++ )
-				{
-					memset(&cTemp1[0], 0.0, NUM_CHANNELS * sizeof( EMSCOMPLEX ) );
-					emscbConj2( &prevDBFBeamVectors[j * NUM_CHANNELS], &cTemp1[0], NUM_CHANNELS );
-					cTemp = emscDotProd( &m_acDBFBeamVectors[i * NUM_CHANNELS], &cTemp1[0], NUM_CHANNELS );
-					fProb = sqrt(cTemp.re*cTemp.re + cTemp.im*cTemp.im ) / NUM_CHANNELS;
-					if ( fProb > m_fProbability[i] )
-					{
-						m_fProbability[i] = fProb;
-						newBeamIds[i]    = prevBeamIds[j];
-						newPredSatIds[i] = prevPredSatIDs[j];
-					}
-				}
-			}
-			else
-			{
-				newPredSatIds[i] = CurrentSatIds[i];
-				newBeamIds[i]    = iMaxBeam;
-				iMaxBeam++;
-			}
-
-		}
-
-		//const double Tup = 0.6;
-		//const double Tlo = 0.45;
-		//INT nNumBeams = m_ulSatellites;
-		//int *newBeamIds = new int[ MAX_BEAMS ];
-		//memset( newBeamIds, 0, sizeof(int) * MAX_BEAMS );
-		//int *newPredSatIds = new int [ MAX_BEAMS ];
-		//memset( newPredSatIds, 0, sizeof(int) * MAX_BEAMS );
-
-
-		//objTrackSats.perform_dbf_beam_and_sat_tracking( prevDBFBeamVectors, prevNumBeams, acDBFBeamVectors, nNumBeams,
-		//												prevSchedulerSatIDs,CurrentSatIds,m_iBeamIDs,m_iPredictedSATIDs, Tup, Tlo,
-		//												newBeamIds, newPredSatIds, m_fProbability );
-		memcpy( m_iBeamIDs, newBeamIds, sizeof(int) * MAX_BEAMS );														
-		memcpy( m_iPredictedSATIDs, newPredSatIds, MAX_BEAMS * sizeof(int) );
-		DBFTrackingData obj;
-		memcpy( m_acDBFBeamVectors,acDBFBeamVectors, MAX_BEAMS*NUM_CHANNELS*sizeof(EMSCOMPLEXD) );
-		obj.dbfBeamVector = m_acDBFBeamVectors;
-		obj.predBeamIDs = m_iBeamIDs;
-		obj.predSatIDs = m_iPredictedSATIDs;
-		obj.probability = m_fProbability;
-		memcpy( m_iPrevPassSchedSATIDs, &CurrentSatIds, sizeof(int) * MAX_BEAMS );
-		obj.schedulerSatIds = m_iPrevPassSchedSATIDs;
-		obj.numBeams = m_ulSatellites;
-		//m_qrefDBFBeamVectors.InsertAtFirst( acDBFBeamVectors );
-		m_qrefDBFBeamVectors.InsertAtFirst( obj );
-		delete []newBeamIds;
-		delete []newPredSatIds;
-		return TRUE;
-}
+//BOOL 
+//CDigitalBeamFormer::_BuildDBFSatsTrackingInfo( EMSCOMPLEX* acDBFBeamVectors)
+//{
+//	//call tracking function..
+//		//read existing values
+//
+//		int i, j, k;
+//
+//		int CurrentSatIds [ MAX_BEAMS ];
+//		memset( CurrentSatIds, 0, sizeof(int) * MAX_BEAMS );
+//		for( int i = 0; i < m_ulSatellites; i++ )
+//		{
+//			CurrentSatIds[i] = m_aPassSchedule.rec[i].ulSatID;
+//		}
+//
+//		//read from q
+//		EMSCOMPLEX *prevDBFBeamVectors = m_qrefDBFBeamVectors.ReadFirst( ).dbfBeamVector;
+//		int *prevSchedulerSatIDs = m_qrefDBFBeamVectors.ReadFirst( ).schedulerSatIds;
+//		int *prevPredSatIDs = m_qrefDBFBeamVectors.ReadFirst( ).predSatIDs;
+//		int *prevBeamIds = m_qrefDBFBeamVectors.ReadFirst( ).predBeamIDs;
+//		float *prevProbability = m_qrefDBFBeamVectors.ReadFirst( ).probability;
+//		int	prevNumBeams = m_qrefDBFBeamVectors.ReadFirst( ).numBeams;
+//		//end
+//		
+//		// Check if first time
+//		if( !prevDBFBeamVectors && !prevBeamIds )
+//		{
+//			memset(m_iBeamIDs, 0, MAX_BEAMS*sizeof(int) );
+//			for( i = 0; i < m_ulSatellites; i++ )
+//			{
+//				//first time so set default beam ids
+//				m_iBeamIDs[i] = i+1;
+//			}
+//			DBFTrackingData obj;
+//			memcpy( m_acDBFBeamVectors,acDBFBeamVectors, MAX_BEAMS*NUM_CHANNELS*sizeof(EMSCOMPLEX) );
+//			obj.dbfBeamVector = m_acDBFBeamVectors;
+//			obj.predBeamIDs = m_iBeamIDs;
+//			memcpy( m_iPredictedSATIDs, CurrentSatIds, MAX_BEAMS * sizeof(int) );
+//			obj.predSatIDs = m_iPredictedSATIDs;
+//			obj.probability = m_fProbability;
+//			memcpy( m_iPrevPassSchedSATIDs, CurrentSatIds, sizeof(int) * MAX_BEAMS );
+//			obj.schedulerSatIds = m_iPrevPassSchedSATIDs;
+//			obj.numBeams = m_ulSatellites;
+//			m_qrefDBFBeamVectors.InsertAtFirst( obj );
+//			return true;
+//		}
+//		
+//		int newBeamIds[ MAX_BEAMS ];
+//		memset( newBeamIds, 0, sizeof(int) * MAX_BEAMS );
+//		int newPredSatIds[ MAX_BEAMS ];
+//		memset( newPredSatIds, 0, sizeof(int) * MAX_BEAMS );
+//
+//		// Compute probabilities
+//		EMSCOMPLEX cTemp1[NUM_CHANNELS];
+//		EMSCOMPLEX cTemp;
+//
+//		// Find new or missing satellites
+//		int iCount[MAX_BEAMS];
+//		memset( iCount, 0, sizeof(int) * MAX_BEAMS );
+//
+//		int iMaxBeam = 0;
+//		for ( i = 0; i  < m_ulSatellites; i++ )
+//		{
+//			for ( j = 0; j  < prevNumBeams; j++ )
+//			{
+//				if ( CurrentSatIds[i] == prevPredSatIDs[j] )
+//				{
+//					iCount[i] = j+1;
+//					if ( iMaxBeam < prevBeamIds[j] ) iMaxBeam = prevBeamIds[j]+1;
+//				}
+//			}
+//		}
+//
+//		// Best match to previous eigenvector
+//		k = 0;
+//		for ( i = 0; i  < m_ulSatellites; i++ )
+//		{
+//			// Check orthogonality
+//			float fProb1[25];
+//			for ( j = 0; j  < m_ulSatellites; j++ )
+//			{
+//				memset(&cTemp1[0], 0.0, NUM_CHANNELS * sizeof( EMSCOMPLEX ) );
+//				emscbConj2( &m_acDBFBeamVectors[j * NUM_CHANNELS], &cTemp1[0], NUM_CHANNELS );
+//				cTemp = emscDotProd( &m_acDBFBeamVectors[i * NUM_CHANNELS], &cTemp1[0], NUM_CHANNELS );
+//				fProb1[k++] = sqrt(cTemp.re*cTemp.re + cTemp.im*cTemp.im ) / NUM_CHANNELS;
+//			}
+//
+//			m_fProbability[i] = 0.0;
+//			float fProb       = 0.0;
+//
+//
+//			if ( iCount[i] > 0  ) // Matching satellite condition
+//			{
+//				for ( j = 0; j  < prevNumBeams; j++ )
+//				{
+//					memset(&cTemp1[0], 0.0, NUM_CHANNELS * sizeof( EMSCOMPLEX ) );
+//					emscbConj2( &prevDBFBeamVectors[j * NUM_CHANNELS], &cTemp1[0], NUM_CHANNELS );
+//					cTemp = emscDotProd( &m_acDBFBeamVectors[i * NUM_CHANNELS], &cTemp1[0], NUM_CHANNELS );
+//					fProb = sqrt(cTemp.re*cTemp.re + cTemp.im*cTemp.im ) / NUM_CHANNELS;
+//					if ( fProb > m_fProbability[i] )
+//					{
+//						m_fProbability[i] = fProb;
+//						newBeamIds[i]    = prevBeamIds[j];
+//						newPredSatIds[i] = prevPredSatIDs[j];
+//					}
+//				}
+//			}
+//			else
+//			{
+//				newPredSatIds[i] = CurrentSatIds[i];
+//				newBeamIds[i]    = iMaxBeam;
+//				iMaxBeam++;
+//			}
+//
+//		}
+//
+//		//const double Tup = 0.6;
+//		//const double Tlo = 0.45;
+//		//INT nNumBeams = m_ulSatellites;
+//		//int *newBeamIds = new int[ MAX_BEAMS ];
+//		//memset( newBeamIds, 0, sizeof(int) * MAX_BEAMS );
+//		//int *newPredSatIds = new int [ MAX_BEAMS ];
+//		//memset( newPredSatIds, 0, sizeof(int) * MAX_BEAMS );
+//
+//
+//		//objTrackSats.perform_dbf_beam_and_sat_tracking( prevDBFBeamVectors, prevNumBeams, acDBFBeamVectors, nNumBeams,
+//		//												prevSchedulerSatIDs,CurrentSatIds,m_iBeamIDs,m_iPredictedSATIDs, Tup, Tlo,
+//		//												newBeamIds, newPredSatIds, m_fProbability );
+//		memcpy( m_iBeamIDs, newBeamIds, sizeof(int) * MAX_BEAMS );														
+//		memcpy( m_iPredictedSATIDs, newPredSatIds, MAX_BEAMS * sizeof(int) );
+//		DBFTrackingData obj;
+//		memcpy( m_acDBFBeamVectors,acDBFBeamVectors, MAX_BEAMS*NUM_CHANNELS*sizeof(EMSCOMPLEXD) );
+//		obj.dbfBeamVector = m_acDBFBeamVectors;
+//		obj.predBeamIDs = m_iBeamIDs;
+//		obj.predSatIDs = m_iPredictedSATIDs;
+//		obj.probability = m_fProbability;
+//		memcpy( m_iPrevPassSchedSATIDs, &CurrentSatIds, sizeof(int) * MAX_BEAMS );
+//		obj.schedulerSatIds = m_iPrevPassSchedSATIDs;
+//		obj.numBeams = m_ulSatellites;
+//		//m_qrefDBFBeamVectors.InsertAtFirst( acDBFBeamVectors );
+//		m_qrefDBFBeamVectors.InsertAtFirst( obj );
+//		delete []newBeamIds;
+//		delete []newPredSatIds;
+//		return TRUE;
+//}
 
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -2605,13 +2613,13 @@ CDigitalBeamFormer::ComputeChannelData( bool bTimeFreqFlag, bool bBandwidthFlag 
 	ULONG  i, icell, jsample, index, ichunk;
 
 	// Downconvert by 50 kHZ assuming downlink is centred at 150 kHz
-	DOUBLE dBinSize   = (float) DBF_LOG20_SIZE  / (float) DBF_SAMPLE_RATE;
-	ULONG ulOffset50  = (ULONG) (DBF_FREQ_OFFSET * dBinSize); // 50 kHz offset
-	ULONG ulBandWidth = (ULONG) (DBF_FREQ_BANDWIDTH * dBinSize);
-	ULONG ulExtraFreqOffset = -5000;
-
+	//DOUBLE dBinSize   = (float) DBF_LOG20_SIZE  / (float) DBF_SAMPLE_RATE;
+	DOUBLE dBinSize = 0.5;
+	ULONG ulOffset50  = (ULONG) (DBF_FREQ_OFFSET / dBinSize); // 50 kHz offset
+	ULONG ulBandWidth = (ULONG) (DBF_FREQ_BANDWIDTH / dBinSize);
+	
 	if ( bBandwidthFlag ) ulOffset50 *= 2;
-	ulOffset50 += ulExtraFreqOffset;
+	ulOffset50 -= 5000;
 
 	double dPower  = 0.0;
 	double dMean = 0.0;

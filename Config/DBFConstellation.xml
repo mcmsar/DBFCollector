@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<ns2:computers xmlns:ns2="urn:dbfconstellation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="urn:dbfconstellation file:///C:/Users/joshua.rehm/DBFCollectorMT_03_26_26/Config/DBFConstellation.xsd" version="v1">
-	<SP>1.1.1.108</SP>
+<ns2:computers xmlns:ns2="urn:dbfconstellation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="urn:dbfconstellation file:///C:/dev/trunk/DBFCollectorMT_VS2026_04_17_26/Config/DBFConstellation.xsd" version="v1">
+	<SP>1.1.1.211</SP>
 	    <computer id="computer1">
 		<Switch>2</Switch>
 		<SynthesizerIP>1.1.1.32</SynthesizerIP>

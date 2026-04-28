@@ -116,21 +116,13 @@ DEFINE_GUID(IID_IEMSOrbitInit, 0xce4ec876, 0xa5cf, 0x4f82, 0x9b, 0x7a, 0x53, 0x6
 extern RPC_IF_HANDLE __MIDL_itf_EMSORBIT_0000_v0_0_c_ifspec;
 extern RPC_IF_HANDLE __MIDL_itf_EMSORBIT_0000_v0_0_s_ifspec;
 
-/* Force 4-byte struct member alignment for all EMS type definitions below.
- * The old Windows SDK (VS2010/v100) rpcndr.h contained #pragma pack(4) which
- * gave EMTLEDATA sizeof=252 on x64.  The VS2022/v143 SDK removed that pragma,
- * causing the compiler to insert 4 bytes of padding after int nOrbitNumber
- * (to reach an 8-byte boundary for the following double[]) and making
- * sizeof=256.  All Windows/RPC headers have already been included above at
- * default packing, so their include guards prevent re-entry here and the SDK
- * pack-mismatch static_assert will not fire. */
 #pragma pack(push, 4)
 
 #ifndef __IEMSOrbit_INTERFACE_DEFINED__
 #define __IEMSOrbit_INTERFACE_DEFINED__
 
 /* interface IEMSOrbit */
-/* [unique][helpstring][uuid][object] */
+/* [unique][helpstring][uuid][object] */ 
 
 typedef struct  _tagEMSTLEDATA
     {
@@ -1736,6 +1728,6 @@ extern RPC_IF_HANDLE __MIDL_itf_EMSORBIT_0013_v0_0_s_ifspec;
 }
 #endif
 
-#pragma pack(pop)  /* restore packing after EMS type definitions */
+#pragma pack(pop)
 
 #endif

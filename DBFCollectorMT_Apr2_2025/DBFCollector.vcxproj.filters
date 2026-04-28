@@ -153,9 +153,6 @@
     <ClCompile Include="..\Common\RegistrySettings.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\ADBoards\GS - 64\GSRawBuffer.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="DBFDataMgr.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -204,12 +201,6 @@
     <ClCompile Include="HGTEigenVectors.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="TrackDBFSatellites.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\Common\CBeaconMessage.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="CBeaconMessage.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -222,11 +213,23 @@
     <ClCompile Include="DigitalBeamFormer.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="DBFCollectorConfig.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="EMSConfigClientStub.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="GSRawBuffer.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Win32Stubs.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="ToaFoaProcessor.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="StdAfx.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="..\Common\Include\PointerQueue.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -243,6 +246,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="SigProcHelper.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="DBFCollectorConfig.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

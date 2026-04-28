@@ -177,7 +177,7 @@
       <SuppressStartupBanner>true</SuppressStartupBanner>
       <WarningLevel>Level3</WarningLevel>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
-      <AdditionalIncludeDirectories>..\ADBoards\GS - 64;..\DBFPassScheduler;..\3rdParty\microsoft\microsoft sdk\include;..\3rdParty\microsoft\msxml4;..\common\include;..\3rdParty\Intel\IPP\2022.3\include;.\;$(IntDir);..\3rdParty\Apache\xerces\c\libx64\include;..\3rdParty\XSD-3.3\include;.\FreqSwitch;..\common\include\mkl;..\3rdParty\Intel\MKL\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>.\;..\DBFPassScheduler;..\3rdParty\microsoft\microsoft sdk\include;..\3rdParty\microsoft\msxml4;..\common\include;..\3rdParty\Intel\IPP\2022.3\include;$(IntDir);..\3rdParty\Apache\xerces\c\libx64\include;..\3rdParty\XSD-3.3\include;.\FreqSwitch;..\common\include\mkl;..\3rdParty\Intel\MKL\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;_WIN32_WINNT=0x400;EMS_USE_INTEL_PP;_64BITS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AssemblerListingLocation>.\Debug\</AssemblerListingLocation>
       <BrowseInformation>true</BrowseInformation>
@@ -327,7 +327,6 @@
     <ClCompile Include="FreqSwitch\EMSSNMPTrap.cpp" />
     <ClCompile Include="HGTEigenVectors.cpp" />
     <ClCompile Include="SIGPROC.CPP" />
-    <ClCompile Include="TrackDBFSatellites.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\Common\Include\CBeaconMessage.h" />
@@ -340,7 +339,7 @@
   </ItemGroup>
   <ItemGroup>
     <Midl Include="..\Common\Include\DataTransmitter.idl">
-      <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">..\Common\Include</AdditionalIncludeDirectories>
+	  <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">..\Common\Include</AdditionalIncludeDirectories>
       <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">..\Common\Include</AdditionalIncludeDirectories>
       <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='Release|x64'">..\Common\Include</AdditionalIncludeDirectories>
       <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">..\Common\Include</AdditionalIncludeDirectories>

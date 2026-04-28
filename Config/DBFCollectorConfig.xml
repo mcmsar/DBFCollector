@@ -4,13 +4,9 @@
     Edit this file to change directory paths without recompiling.
     If this file is missing or a tag is absent, the built-in default is used.
 
-    {ROOT} is automatically expanded at load time to the project root directory
-    (the directory one level above the Config\ folder that contains this file).
-    This makes the project relocatable without editing source or config files.
-
-    Convention:
-      Input files/dirs  -> {ROOT}\Config\
-      Output files/dirs -> {ROOT}\Output\<subdir>\
+    Convention used here:
+      Input files/dirs  -> C:\dev\trunk\DBFCollectorMT_VS2026_04_17_26\Config\
+      Output files/dirs -> C:\dev\trunk\DBFCollectorMT_VS2026_04_17_26\<subdir>\
 -->
 <DBFCollectorConfig>
     <Paths>
@@ -20,90 +16,84 @@
         <!-- ============================================================ -->
 
         <!-- INPUT: Directory containing DBFPlate_NN.xml plate config files -->
-        <ConfigDir>{ROOT}\Config\</ConfigDir>
+        <ConfigDir>C:\dev\trunk\DBFCollectorMT_VS2026_04_17_26\Config</ConfigDir>
 
         <!-- OUTPUT: Root directory for pass schedule and output data -->
-        <PassDataDir>{ROOT}\DBFPassData\</PassDataDir>
+        <PassDataDir>C:\hgt\DBFPassData\</PassDataDir>
 
         <!-- OUTPUT: WAV file output when data transmitter send fails -->
-        <WavOutputDir>{ROOT}\DBFPassData\WAV\</WavOutputDir>
+        <WavOutputDir>C:\hgt\DBFPassData\WAV\</WavOutputDir>
 
         <!-- OUTPUT: Eigenvalue bias data output -->
-        <BiasEigenDir>{ROOT}\DBFPassData\BiasEigen\</BiasEigenDir>
+        <BiasEigenDir>C:\hgt\DBFPassData\BiasEigen\</BiasEigenDir>
 
         <!-- OUTPUT: Signal bias data output -->
-        <BiasSignalDir>{ROOT}\DBFPassData\BiasSignal\</BiasSignalDir>
+        <BiasSignalDir>C:\hgt\DBFPassData\BiasSignal\</BiasSignalDir>
 
         <!-- OUTPUT: Hourly pass schedule binary files (EMSDBFPass-HH.bin) -->
-        <BinOutputDir>{ROOT}\DBFPassData\BIN\</BinOutputDir>
+        <BinOutputDir>C:\hgt\DBFPassData\BIN\</BinOutputDir>
 
         <!-- OUTPUT: Satellite ID and TOA/FOA binary output -->
-        <SatIDDir>{ROOT}\DBFPassData\SatID\</SatIDDir>
-
-        <!-- INPUT: Primary raw ADC binary input files (Galileo 2-sec data) -->
-        <RawDataDir>{ROOT}\Output\RawDataBin\Galileo_2sec\</RawDataDir>
+        <SatIDDir>C:\hgt\DBFPassData\SatID\</SatIDDir>
 
         <!-- INPUT: Alternate raw data directory (used by Initialize overload) -->
-        <RawAltDir>{ROOT}\Output\Raw\</RawAltDir>
+        <RawAltDir>C:\Raw\</RawAltDir>
 
         <!-- OUTPUT: Raw ADC capture output directory -->
-        <ADCRawDir>{ROOT}\Output\ADCraw\</ADCRawDir>
+        <ADCRawDir>D:\ADCraw\</ADCRawDir>
 
         <!-- ============================================================ -->
         <!--  Calibration                                                  -->
         <!-- ============================================================ -->
 
         <!-- OUTPUT: Calibration binary file path prefix (appended with _N.bin) -->
-        <CalibFilePrefix>{ROOT}\Output\Calibration\EMSDBF_Calib_</CalibFilePrefix>
+        <CalibFilePrefix>C:\dev\trunk\DBFCollectorMT_VS2026_04_17_26\Calibration\EMSDBF_Calib_</CalibFilePrefix>
 
         <!-- OUTPUT: Directory for per-object calibration trace CSV files -->
-        <CalibTraceDir>{ROOT}\Output\Calibration\</CalibTraceDir>
+        <CalibTraceDir>C:\dev\trunk\DBFCollectorMT_VS2026_04_17_26\Calibration\</CalibTraceDir>
 
         <!-- ============================================================ -->
         <!--  Covariance / eigenvalue                                      -->
         <!-- ============================================================ -->
 
         <!-- OUTPUT: Covariance matrix binary output directory -->
-        <CovarianceDir>{ROOT}\Output\DBFCovarianceFiles\</CovarianceDir>
-
-        <!-- OUTPUT: Eigenvalue matrix debug output CSV -->
-        <EigenOutputFile>{ROOT}\Output\DBFCovarianceFiles\Output.csv</EigenOutputFile>
+        <CovarianceDir>C:\hgt\DBFCovarianceFiles\</CovarianceDir>
 
         <!-- ============================================================ -->
         <!--  Constellation                                                -->
         <!-- ============================================================ -->
 
         <!-- INPUT: DBFConstellation XML configuration file -->
-        <ConstellationFile>{ROOT}\Config\DBFConstellation.xml</ConstellationFile>
+        <ConstellationFile>C:\dev\trunk\DBFCollectorMT_VS2026_04_17_26\Config\DBFConstellation.xml</ConstellationFile>
 
         <!-- ============================================================ -->
         <!--  Logging                                                      -->
         <!-- ============================================================ -->
 
         <!-- OUTPUT: Legacy log file path (CTimeElapsed, unused unless LOG_FILE=1) -->
-        <LogFile>{ROOT}\Output\Logs\logfile</LogFile>
+        <LogFile>C:\dev\trunk\DBFCollectorMT_VS2026_04_17_26\Logs\logfile</LogFile>
 
         <!-- OUTPUT: Directory for phasecorrn.csv and other debug logs -->
-        <LogDir>{ROOT}\Output\Logs\</LogDir>
+        <LogDir>C:\dev\trunk\DBFCollectorMT_VS2026_04_17_26\Logs\</LogDir>
 
         <!-- OUTPUT: stdout redirect target used by RedirectToFile() -->
-        <LogRedirectFile>{ROOT}\Output\Logs\logfile</LogRedirectFile>
+        <LogRedirectFile>C:\dev\trunk\DBFCollectorMT_VS2026_04_17_26\Logs\logfile</LogRedirectFile>
 
         <!-- OUTPUT: EMS DBF logger file prefix (appended with _N.txt) -->
-        <EMSDBFLogPrefix>{ROOT}\Output\Logs\EMSDBFlogger</EMSDBFLogPrefix>
+        <EMSDBFLogPrefix>C:\dev\trunk\DBFCollectorMT_VS2026_04_17_26\Logs\EMSDBFlogger</EMSDBFLogPrefix>
 
         <!-- OUTPUT: Timing log file (used when LOG_FILE=1 in TimeElapsed.h) -->
-        <TimingLogFile>{ROOT}\Output\Logs\dbf_timing_log.txt</TimingLogFile>
+        <TimingLogFile>C:\dev\trunk\DBFCollectorMT_VS2026_04_17_26\Logs\dbf_timing_log.txt</TimingLogFile>
 
         <!-- ============================================================ -->
         <!--  Miscellaneous                                                -->
         <!-- ============================================================ -->
 
         <!-- OUTPUT: Sun azimuth/elevation CSV data file -->
-        <SunAzElFile>{ROOT}\Output\Logs\SunAzEl.csv</SunAzElFile>
+        <SunAzElFile>C:\dev\trunk\DBFCollectorMT_VS2026_04_17_26\Logs\SunAzEl.csv</SunAzElFile>
 
         <!-- OUTPUT: Null-satellite test pass CSV output -->
-        <NullTestFile>{ROOT}\Output\Logs\NullTest.csv</NullTestFile>
+        <NullTestFile>C:\dev\trunk\DBFCollectorMT_VS2026_04_17_26\Logs\NullTest.csv</NullTestFile>
 
         <!-- Drive letter monitored for free disk space (update if data is on a different drive) -->
         <DataDrive>C:\</DataDrive>

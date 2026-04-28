@@ -63,16 +63,24 @@ CToaFoaProcessor::InitializeTOAFOA(
 	{
 		bool bBeaconOK = false;
 
-		memset( pTOAFOA, 0, sizeof( EMSDBFTOAFOARECORD ) );
+		//memset( pTOAFOA, 0, sizeof( EMSDBFTOAFOARECORD ) );
+		memset(pTOAFOA->fTOA, 0, sizeof(pTOAFOA->fTOA));
+		memset(pTOAFOA->fFOA, 0, sizeof(pTOAFOA->fFOA));
+		memset(pTOAFOA->fCNR, 0, sizeof(pTOAFOA->fCNR));
+		memset(pTOAFOA->fCORRTOA, 0, sizeof(pTOAFOA->fCORRTOA));
+		memset(pTOAFOA->ulEigen, 0, sizeof(pTOAFOA->ulEigen));
+		memset(pTOAFOA->fEigenProb, 0, sizeof(pTOAFOA->fEigenProb));
+		memset(pTOAFOA->fPower, 0, sizeof(pTOAFOA->fPower));
+		memset(pTOAFOA->cPower, 0, sizeof(pTOAFOA->cPower));
 
 		pTOAFOA->timestamp.intTime = timestamp.intTime;
 		pTOAFOA->fRefTxFrequency = pPassSchedule->rec[0].fRefTxFrequency;
 
 		for ( int isat = 0; isat < (int)ulSatellites; isat++ )
 		{
-			pTOAFOA->ulSatID[isat] = -pPassSchedule->rec[isat].ulSatID;
+			//pTOAFOA->ulSatID[isat] = pPassSchedule->rec[isat].ulSatID;
 
-			//if ( pPassSchedule->rec[isat].fBeaconElevation > 0 )
+			if ( pPassSchedule->rec[isat].fBeaconElevation > 0 )
 			{
 				pTOAFOA->fBeaFOA[isat] = pPassSchedule->rec[isat].fFOA;
 				pTOAFOA->fBeaTOA[isat] = pPassSchedule->rec[isat].fTOA;
@@ -163,6 +171,8 @@ CToaFoaProcessor::SatelliteTOAFOA(
 {
 	bool bOK = false;
 
+	if (pTOAFOA->fRefTxFrequency < 1.0 ) return bOK;
+	
 	//float fFOA = 0.0;
 	//float fTOA = 0.0;
 	float fBeaconFOA = 0.0;
@@ -175,18 +185,18 @@ CToaFoaProcessor::SatelliteTOAFOA(
 	float fCNR        = 0.0;
 	float fCNRthreshold  = 35.0;
 	float fCORRthreshold = 3.0;
-	float fBinsize = (float)DBF_SAMPLE_RATE / (float)DBF_LOG20_SIZE;
+	float fBinsize = 0.5; 
 	double dAvePower = 0.0;
 
-	//ULONG ulBeaconBandWidth = 5000;
-	//ULONG ulFreqOffset = 60000;
-	//ULONG ulFreqBandWidth = 80000;
-	ULONG ulBeaconBandWidth = 5000;
-	ULONG ulFreqOffset = 100000;
-	ULONG ulFreqBandWidth = DBF_LOG19_SIZE - ulFreqOffset;
-	ULONG ulFreq = 0;
-	ULONG ulFreqIndex = 0;
-	ULONG ulTimeIndex = 0;
+	ULONG ulBeaconBandWidth = (ULONG) (10000.0 / fBinsize);
+							  
+	ULONG ulFreqBandWidth   = (ULONG) (100000.0 / fBinsize);;
+	ULONG ulFreqStart       = (ULONG) (50000.0 / fBinsize);
+	ULONG ulFreq       = 0;
+													   
+	ULONG ulFreqIndex  = 0;
+	ULONG ulTimeIndex  = 0;
+	ULONG ulFreqOffset = 0;
 
 	EMSCOMPLEX cBeaconFreq[2048];
 	EMSCOMPLEX cBeaconTime[2048];
@@ -200,27 +210,22 @@ CToaFoaProcessor::SatelliteTOAFOA(
 	memset( &fCorrBeacon[0], 0 , sizeof(float) * 4096 );
 	memset( &fTestBeacon[0], 0 , sizeof(float) * 1024 );
 	
-	float fBinSize = (float) DBF_SAMPLE_RATE / (float) DBF_LOG20_SIZE;
-	ulFreq = (ULONG) (pTOAFOA->fRefTxFrequency / fBinSize );
-	ulFreqBandWidth = (ULONG) (10000.0 / fBinSize );
-	ulFreqOffset = ulFreq - ulFreqBandWidth/2;
+	ulFreq = (ULONG) (pTOAFOA->fRefTxFrequency / fBinsize );
+	ulFreqOffset = ulFreqStart + (ulFreq - ulBeaconBandWidth/2);  // initial offset of 50 kHz
 
-	if ( ulFreq + ulFreqBandWidth > DBF_LOG19_SIZE )
+	if (  ulFreqOffset > DBF_LOG19_SIZE - ulFreqBandWidth )
 	{
 		ulFreqOffset = DBF_LOG19_SIZE - ulFreqBandWidth;
-	}
-	if ( ulFreq < ulFreqBandWidth )
-	{
-		ulFreqOffset = ulFreq + ulFreqBandWidth;
 	}
 
 	// Find Beacon Power and check above CNR threshold
 	// assumes filter with 200 kHz bandwidth
-	fMaxPower = CSigProcHelpers::_EMSsMaxExt( &pTemp1[ulFreqOffset], ulFreqBandWidth, &ulFreqIndex );
+	fMaxPower = CSigProcHelpers::_EMSsMaxExt( &pTemp1[ulFreqOffset], ulBeaconBandWidth, &ulFreqIndex );
 	ulFreqIndex += ulFreqOffset;
 	fAvePower = CSigProcHelpers::_EMSsMean( &pTemp1[ulFreqIndex + ulBeaconBandWidth], ulBeaconBandWidth / 2 );
 	fCNR = 10.0f * log10( fMaxPower / fAvePower ) + 24.0f;
-
+	//ulFreqIndex -= ulFreqStart;
+	
 	if ( fCNR > fCNRthreshold )
 	{
 		bOK = false;
@@ -243,19 +248,24 @@ CToaFoaProcessor::SatelliteTOAFOA(
 
 		// Perform Power Correlation ( beacon is expected within the first one second )
 		fMaxPower = 0.0;
-		for ( int i = 0; i < (2048 - 512); i++ )
+		int iCorrLength = 2048-512; 
+																									
+		for ( int i = 0; i < iCorrLength; i++ )
 		{
 			//fCorrBeacon[i] = emssDotProd( &fTestBeacon[0], &fBeaconTime[i], 1024 );
 			fCorrBeacon[i] = emssDotProd( &fTestBeacon[0], &fBeaconTime[i], 512 );
 		}
-		fMaxPower    = CSigProcHelpers::_EMSsMaxExt( &fCorrBeacon[0], 2048, &ulTimeIndex );
-		fSigmaPower  = (float)CSigProcHelpers::_EMSsMeanStdDev( &fCorrBeacon[0], 2048, &dAvePower );
-		fMaxPower   -= (float)dAvePower;
+		fMaxPower    = CSigProcHelpers::_EMSsMaxExt( &fCorrBeacon[0], iCorrLength, &ulTimeIndex );
+		fSigmaPower  = (float)CSigProcHelpers::_EMSsMeanStdDev( &fCorrBeacon[0], iCorrLength, &dAvePower );
+		//fMaxPower   -= (float)fAvePower;
 		fMaxPower /= fSigmaPower;
 
 		pTOAFOA->fCORRTOA[isat] = fMaxPower;
 		pTOAFOA->fCNR[isat]	 = fCNR;
-		pTOAFOA->fFOA[isat]	 = (float)(ulFreqIndex - ulFreqOffset)*fBinsize;
+		if (ulFreqIndex > ulFreqStart) {
+			pTOAFOA->fFOA[isat] = (float)(ulFreqIndex - ulFreqStart) * fBinsize;
+		}
+		//pTOAFOA->fFOA[isat] = (float)((long)ulFreqIndex - (long)ulFreqStart) * fBinsize;
 		pTOAFOA->fTOA[isat]	 = (float)ulTimeIndex * 0.001024f;
 		
 		if (isat==0)
@@ -312,62 +322,63 @@ CToaFoaProcessor::IdentifyTOAFOA(
 	float* pProbability,
 	int* pPrevPassSchedSATIDs,
 	EMSCOMPLEX* pAcDBFBeamVectors,
-	EMSDBFTOAFOARECORD* pTOAFOA )
+	EMSDBFTOAFOARECORD* pTOAFOA)
 {
 	bool bOK = false;
 	int iTemp;
 
 	int i, j, k;
 	float fTOAdiff;
-	float fTOAthreshold = 0.005f;
+	float fTOAthreshold = 0.006f;
 	float fFOAdiff;
 	float fFOAthreshold = 25.0f;
 
 	FILE* lpSatIdentityFile = NULL;
+	FILE* lpToaFoaResidualsFile = NULL;
 	char  szFileName[256];
 
 	int CurrentSatIds[MAX_BEAMS];
-	memset( CurrentSatIds, 0, sizeof(int) * MAX_BEAMS );
-	for ( i = 0; i < (int)ulSatellites; i++ )
+	memset(CurrentSatIds, 0, sizeof(int) * MAX_BEAMS);
+	for (i = 0; i < (int)ulSatellites; i++)
 	{
 		CurrentSatIds[i] = pPassSchedule->rec[i].ulSatID;
 	}
 
 	// Read from queue
-	EMSCOMPLEX* prevDBFBeamVectors  = qrefDBFBeamVectors.ReadFirst().dbfBeamVector;
-	int*        prevSchedulerSatIDs = qrefDBFBeamVectors.ReadFirst().schedulerSatIds;
-	int*        prevPredSatIDs      = qrefDBFBeamVectors.ReadFirst().predSatIDs;
-	int*        prevBeamIds         = qrefDBFBeamVectors.ReadFirst().predBeamIDs;
-	float*      prevProbability     = qrefDBFBeamVectors.ReadFirst().probability;
-	int         prevNumBeams        = qrefDBFBeamVectors.ReadFirst().numBeams;
+	EMSCOMPLEX* prevDBFBeamVectors = qrefDBFBeamVectors.ReadFirst().dbfBeamVector;
+	int* prevSchedulerSatIDs = qrefDBFBeamVectors.ReadFirst().schedulerSatIds;
+	int* prevPredSatIDs = qrefDBFBeamVectors.ReadFirst().predSatIDs;
+	int* prevBeamIds = qrefDBFBeamVectors.ReadFirst().predBeamIDs;
+	float* prevProbability = qrefDBFBeamVectors.ReadFirst().probability;
+	int         prevNumBeams = qrefDBFBeamVectors.ReadFirst().numBeams;
 
 	// Check if first time
-	if ( !prevDBFBeamVectors && !prevBeamIds )
+	if (!prevDBFBeamVectors && !prevBeamIds)
 	{
-		memset( pBeamIDs, 0, MAX_BEAMS * sizeof(int) );
-		for ( i = 0; i < (int)ulSatellites; i++ )
+		memset(pBeamIDs, 0, MAX_BEAMS * sizeof(int));
+		for (i = 0; i < (int)ulSatellites; i++)
 		{
 			// First time so set default beam ids
 			pBeamIDs[i] = i + 1;
 		}
 		DBFTrackingData obj;
-		memcpy( pAcDBFBeamVectors, acDBFBeamVectors_In, MAX_BEAMS * NUM_CHANNELS * sizeof(EMSCOMPLEX) );
+		memcpy(pAcDBFBeamVectors, acDBFBeamVectors_In, MAX_BEAMS * NUM_CHANNELS * sizeof(EMSCOMPLEX));
 		obj.dbfBeamVector = pAcDBFBeamVectors;
-		obj.predBeamIDs   = pBeamIDs;
-		memcpy( pPredictedSATIDs, CurrentSatIds, MAX_BEAMS * sizeof(int) );
-		obj.predSatIDs    = pPredictedSATIDs;
-		obj.probability   = pProbability;
-		memcpy( pPrevPassSchedSATIDs, CurrentSatIds, sizeof(int) * MAX_BEAMS );
+		obj.predBeamIDs = pBeamIDs;
+		memcpy(pPredictedSATIDs, CurrentSatIds, MAX_BEAMS * sizeof(int));
+		obj.predSatIDs = pPredictedSATIDs;
+		obj.probability = pProbability;
+		memcpy(pPrevPassSchedSATIDs, CurrentSatIds, sizeof(int) * MAX_BEAMS);
 		obj.schedulerSatIds = pPrevPassSchedSATIDs;
-		obj.numBeams      = ulSatellites;
-		qrefDBFBeamVectors.InsertAtFirst( obj );
+		obj.numBeams = ulSatellites;
+		qrefDBFBeamVectors.InsertAtFirst(obj);
 		return true;
 	}
 
 	int newBeamIds[MAX_BEAMS];
-	memset( newBeamIds, 0, sizeof(int) * MAX_BEAMS );
+	memset(newBeamIds, 0, sizeof(int) * MAX_BEAMS);
 	int newPredSatIds[MAX_BEAMS];
-	memset( newPredSatIds, 0, sizeof(int) * MAX_BEAMS );
+	memset(newPredSatIds, 0, sizeof(int) * MAX_BEAMS);
 
 	// Compute probabilities
 	EMSCOMPLEX cTemp1[NUM_CHANNELS];
@@ -375,50 +386,50 @@ CToaFoaProcessor::IdentifyTOAFOA(
 
 	// Find new or missing satellites
 	int iCount[MAX_BEAMS];
-	memset( iCount, 0, sizeof(int) * MAX_BEAMS );
+	memset(iCount, 0, sizeof(int) * MAX_BEAMS);
 
 	int iMaxBeam = 0;
-	for ( i = 0; i < (int)ulSatellites; i++ )
+	for (i = 0; i < (int)ulSatellites; i++)
 	{
-		for ( j = 0; j < prevNumBeams; j++ )
+		for (j = 0; j < prevNumBeams; j++)
 		{
-			if ( CurrentSatIds[i] == prevPredSatIDs[j] )
+			if (CurrentSatIds[i] == prevPredSatIDs[j])
 			{
 				iCount[i] = j + 1;
-				if ( iMaxBeam < prevBeamIds[j] ) iMaxBeam = prevBeamIds[j] + 1;
+				if (iMaxBeam < prevBeamIds[j]) iMaxBeam = prevBeamIds[j] + 1;
 			}
 		}
 	}
 
 	// Best match to previous eigenvector
 	k = 0;
-	for ( i = 0; i < (int)ulSatellites; i++ )
+	for (i = 0; i < (int)ulSatellites; i++)
 	{
 		// Check orthogonality
 		float fProb1[25];
-		for ( j = 0; j < (int)ulSatellites; j++ )
+		for (j = 0; j < (int)ulSatellites; j++)
 		{
-			memset( &cTemp1[0], 0.0, NUM_CHANNELS * sizeof(EMSCOMPLEX) );
-			emscbConj2( &pAcDBFBeamVectors[j * NUM_CHANNELS], &cTemp1[0], NUM_CHANNELS );
-			cTemp    = emscDotProd( &pAcDBFBeamVectors[i * NUM_CHANNELS], &cTemp1[0], NUM_CHANNELS );
-			fProb1[k++] = (float)sqrt( cTemp.re * cTemp.re + cTemp.im * cTemp.im ) / NUM_CHANNELS;
+			memset(&cTemp1[0], 0.0, NUM_CHANNELS * sizeof(EMSCOMPLEX));
+			emscbConj2(&pAcDBFBeamVectors[j * NUM_CHANNELS], &cTemp1[0], NUM_CHANNELS);
+			cTemp = emscDotProd(&pAcDBFBeamVectors[i * NUM_CHANNELS], &cTemp1[0], NUM_CHANNELS);
+			fProb1[k++] = (float)sqrt(cTemp.re * cTemp.re + cTemp.im * cTemp.im) / NUM_CHANNELS;
 		}
 
 		pProbability[i] = 0.0f;
-		float fProb     = 0.0f;
+		float fProb = 0.0f;
 
-		if ( iCount[i] > 0 )  // Matching satellite condition
+		if (iCount[i] > 0)  // Matching satellite condition
 		{
-			for ( j = 0; j < prevNumBeams; j++ )
+			for (j = 0; j < prevNumBeams; j++)
 			{
-				memset( &cTemp1[0], 0.0, NUM_CHANNELS * sizeof(EMSCOMPLEX) );
-				emscbConj2( &prevDBFBeamVectors[j * NUM_CHANNELS], &cTemp1[0], NUM_CHANNELS );
-				cTemp = emscDotProd( &pAcDBFBeamVectors[i * NUM_CHANNELS], &cTemp1[0], NUM_CHANNELS );
-				fProb = (float)sqrt( cTemp.re * cTemp.re + cTemp.im * cTemp.im ) / NUM_CHANNELS;
-				if ( fProb > pProbability[i] )
+				memset(&cTemp1[0], 0.0, NUM_CHANNELS * sizeof(EMSCOMPLEX));
+				emscbConj2(&prevDBFBeamVectors[j * NUM_CHANNELS], &cTemp1[0], NUM_CHANNELS);
+				cTemp = emscDotProd(&pAcDBFBeamVectors[i * NUM_CHANNELS], &cTemp1[0], NUM_CHANNELS);
+				fProb = (float)sqrt(cTemp.re * cTemp.re + cTemp.im * cTemp.im) / NUM_CHANNELS;
+				if (fProb > pProbability[i])
 				{
-					pProbability[i]  = fProb;
-					newBeamIds[i]    = prevBeamIds[j];
+					pProbability[i] = fProb;
+					newBeamIds[i] = prevBeamIds[j];
 					newPredSatIds[i] = prevPredSatIDs[j];
 				}
 			}
@@ -426,14 +437,14 @@ CToaFoaProcessor::IdentifyTOAFOA(
 		else
 		{
 			newPredSatIds[i] = CurrentSatIds[i];
-			newBeamIds[i]    = iMaxBeam;
+			newBeamIds[i] = iMaxBeam;
 			iMaxBeam++;
 		}
 	}
 
 	EMSTIMEFIELDS tmFlds;
-	CEMSTime oTM( tm );
-	oTM.GetTime( &tmFlds );
+	CEMSTime oTM(tm);
+	oTM.GetTime(&tmFlds);
 	ULONG ulHourSec = tmFlds.nHour * 60 * 60 + tmFlds.nMinute * 60 + tmFlds.nSecond;
 
 	int iBeamTemp;
@@ -441,25 +452,25 @@ CToaFoaProcessor::IdentifyTOAFOA(
 	EMSCOMPLEX acBeamTemp[NUM_CHANNELS];
 
 	// Identify satellite based upon minimum TOA difference
-	for ( int isat = 0; isat < (int)ulSatellites; isat++ )
+	for (int isat = 0; isat < (int)ulSatellites; isat++)
 	{
-		if ( pTOAFOA->fTOA[isat] > 0.0 )
+		if (pTOAFOA->fTOA[isat] > 0.0)
 		{
 			pTOAFOA->fTOA[isat] += tmFlds.lNanosecond * 1e-9f;
-			if ( pTOAFOA->fTOA[isat] > 1.0f ) pTOAFOA->fTOA[isat] -= 1.0f;
-			if ( pTOAFOA->fTOA[isat] > 1.0f ) pTOAFOA->fTOA[isat] -= 1.0f;
+			if (pTOAFOA->fTOA[isat] > 1.0f) pTOAFOA->fTOA[isat] -= 1.0f;
+			if (pTOAFOA->fTOA[isat] > 1.0f) pTOAFOA->fTOA[isat] -= 1.0f;
 		}
 	}
 
-	for ( int isat = 0; isat < (int)ulSatellites; isat++ )
+	for (int isat = 0; isat < (int)ulSatellites; isat++)
 	{
-		for ( int jsat = 0; jsat < (int)ulSatellites; jsat++ )
+		for (int jsat = 0; jsat < (int)ulSatellites; jsat++)
 		{
-			if ( pTOAFOA->fBeaTOA[jsat] > 0.0 )
+			if (pTOAFOA->fBeaTOA[jsat] > 0.0)
 			{
 				fTOAdiff = pTOAFOA->fTOA[isat] - pTOAFOA->fBeaTOA[jsat];
 				fFOAdiff = pTOAFOA->fFOA[isat] - pTOAFOA->fBeaFOA[jsat];
-				if ( (abs(fTOAdiff) < fTOAthreshold) && (abs(fFOAdiff) < fFOAthreshold) )
+				if ((abs(fTOAdiff) < fTOAthreshold) && (abs(fFOAdiff) < fFOAthreshold))
 				{
 					pProbability[isat] = 9.99999999;
 					iSatTemp = newPredSatIds[isat];
@@ -467,65 +478,111 @@ CToaFoaProcessor::IdentifyTOAFOA(
 
 					newPredSatIds[isat] = newPredSatIds[jsat];
 					newPredSatIds[jsat] = iSatTemp;
-					newBeamIds[isat]	= newBeamIds[jsat];
-					newBeamIds[jsat]	= iBeamTemp;
+					newBeamIds[isat] = newBeamIds[jsat];
+					newBeamIds[jsat] = iBeamTemp;
 
-					memcpy( &acBeamTemp[0],&acDBFBeamVectors_In[isat*NUM_CHANNELS], NUM_CHANNELS*sizeof(EMSCOMPLEX) );
-					memcpy( &pAcDBFBeamVectors[isat*NUM_CHANNELS],&acDBFBeamVectors_In[jsat*NUM_CHANNELS], NUM_CHANNELS*sizeof(EMSCOMPLEX) );
-					memcpy( &pAcDBFBeamVectors[jsat*NUM_CHANNELS],&acBeamTemp[0], NUM_CHANNELS*sizeof(EMSCOMPLEX) );
+					memcpy(&acBeamTemp[0], &acDBFBeamVectors_In[isat * NUM_CHANNELS], NUM_CHANNELS * sizeof(EMSCOMPLEX));
+					memcpy(&pAcDBFBeamVectors[isat * NUM_CHANNELS], &acDBFBeamVectors_In[jsat * NUM_CHANNELS], NUM_CHANNELS * sizeof(EMSCOMPLEX));
+					memcpy(&pAcDBFBeamVectors[jsat * NUM_CHANNELS], &acBeamTemp[0], NUM_CHANNELS * sizeof(EMSCOMPLEX));
 				}
 			}
 		}
 	}
 
-	memcpy( pBeamIDs,            newBeamIds,     sizeof(int) * MAX_BEAMS );
-	memcpy( pPredictedSATIDs,    newPredSatIds,  MAX_BEAMS * sizeof(int) );
-	memcpy( pAcDBFBeamVectors,   acDBFBeamVectors_In, MAX_BEAMS * NUM_CHANNELS * sizeof(EMSCOMPLEXD) );
-	memcpy( pPrevPassSchedSATIDs, &CurrentSatIds, sizeof(int) * MAX_BEAMS );
+	memcpy(pBeamIDs, newBeamIds, sizeof(int) * MAX_BEAMS);
+	memcpy(pPredictedSATIDs, newPredSatIds, MAX_BEAMS * sizeof(int));
+	memcpy(pAcDBFBeamVectors, acDBFBeamVectors_In, MAX_BEAMS * NUM_CHANNELS * sizeof(EMSCOMPLEXD));
+	memcpy(pPrevPassSchedSATIDs, &CurrentSatIds, sizeof(int) * MAX_BEAMS);
 
 	DBFTrackingData obj;
-	obj.dbfBeamVector   = pAcDBFBeamVectors;
-	obj.predBeamIDs     = pBeamIDs;
-	obj.predSatIDs      = pPredictedSATIDs;
-	obj.probability     = pProbability;
+	obj.dbfBeamVector = pAcDBFBeamVectors;
+	obj.predBeamIDs = pBeamIDs;
+	obj.predSatIDs = pPredictedSATIDs;
+	obj.probability = pProbability;
 	obj.schedulerSatIds = pPrevPassSchedSATIDs;
-	obj.numBeams        = ulSatellites;
-	qrefDBFBeamVectors.InsertAtFirst( obj );
+	obj.numBeams = ulSatellites;
+	qrefDBFBeamVectors.InsertAtFirst(obj);
 
-	for ( int isat = 0; isat < (int)ulSatellites; isat++ )
+	for (int isat = 0; isat < (int)ulSatellites; isat++)
 	{
-		pTOAFOA->ulEigen[isat]    = pBeamIDs[isat];
+		pTOAFOA->ulEigen[isat] = pBeamIDs[isat];
 		pTOAFOA->fEigenProb[isat] = pProbability[isat];
 	}
-	
+
 	//sprintf( szFileName, "%sDBF_TOAFOA_%06d.bin",
 	//         CDBFCollectorConfig::GetInstance().GetSatIDDir().c_str(), ulHourSec );
 
-	sprintf(szFileName,"C:\\HGT\\DBFPassData\\SatID\\DBF_TOAFOA_%06d.bin", ulHourSec);
+	sprintf(szFileName, "C:\\HGT\\DBFPassData\\SatID\\DBF_TOAFOA_%06d.bin", ulHourSec);
 
-	lpSatIdentityFile = fopen(szFileName,"w+b");
+	lpSatIdentityFile = fopen(szFileName, "w+b");
 
-	if ( lpSatIdentityFile )
+	if (lpSatIdentityFile)
 	{
-		fwrite( pTOAFOA, sizeof(EMSDBFTOAFOARECORD), 1, lpSatIdentityFile );
+		fwrite(pTOAFOA, sizeof(EMSDBFTOAFOARECORD), 1, lpSatIdentityFile);
 
 		flushall();
 		fclose(lpSatIdentityFile);
 		lpSatIdentityFile = NULL;
 		bOK = true;
 
-		CEMSTime oTime( pTOAFOA->timestamp );
+		CEMSTime oTime(pTOAFOA->timestamp);
 		EMSTIMEFIELDS tmFields;
-		memset( &tmFields, 0, sizeof(EMSTIMEFIELDS) );
-		oTime.GetTime( &tmFields );
+		memset(&tmFields, 0, sizeof(EMSTIMEFIELDS));
+		oTime.GetTime(&tmFields);
 
-		float fTOAdiff = pTOAFOA->fBeaTOA[0]-pTOAFOA->fTOA[0];
-		float fFOAdiff = pTOAFOA->fBeaFOA[0]-pTOAFOA->fFOA[0];
+		float tDiff = 10.0f;
+		float fDiff = 10.0f;
+		int iDiffIndex = 0;
 
-		float fDeltaTime = (float)(pTOAFOA->timestamp.intTime - pPassSchedule->rec[0].timestamp.intTime)*1e-9;
-		printf(" %15s, %02d:%02d:%02d.%06d DiffTime %f, CNR %5.2f, dTOA %6.3f, dFOA %7.1f\n",
-				 pTOAFOA->cBeaconID, tmFields.nHour, tmFields.nMinute, tmFields.nSecond, tmFields.lNanosecond/1000,
-				 fDeltaTime,pTOAFOA->fCNR[0], fTOAdiff, fFOAdiff );
+		for (int i = 0; i < ulSatellites; i++) {
+			if (pTOAFOA->fBeaTOA[i] != 0 && pTOAFOA->fBeaFOA[i] != 0) {
+				float tSatDiff = abs(pTOAFOA->fBeaTOA[i] - pTOAFOA->fTOA[i]);
+				float fSatDiff = abs(pTOAFOA->fBeaFOA[i] - pTOAFOA->fFOA[i]);
+				// 0 value indicates an error reading values
+				if (pTOAFOA->fCNR[i] != 0 && tSatDiff < tDiff) {
+					tDiff = tSatDiff;
+					fDiff = fSatDiff;
+					iDiffIndex = i;
+				}
+			}
+		}
+
+		if (pTOAFOA->fCNR[iDiffIndex] != 0) {
+			printf("Index: %d fCNR: %f, fBeaTOA: %f, fBeaFOA: %f, tDiff: %f, fDiff: %f\n", iDiffIndex, pTOAFOA->fCNR[iDiffIndex],
+				pTOAFOA->fBeaTOA[iDiffIndex], pTOAFOA->fBeaFOA[iDiffIndex], tDiff, fDiff);
+		}
+
+		if (tDiff != 10.0f)
+		{
+			sprintf(szFileName, "C:\\HGT\\DBFPassData\\DBF_TOAFOA_Residuals.csv");
+			lpToaFoaResidualsFile = fopen(szFileName, "a");
+
+			//if (pTOAFOA->fBeaTOA[iDiffIndex] != 0 && pTOAFOA->fBeaFOA[iDiffIndex] != 0) 
+			{
+				float fTOAdiff = pTOAFOA->fBeaTOA[iDiffIndex] - pTOAFOA->fTOA[iDiffIndex];
+				float fFOAdiff = pTOAFOA->fBeaFOA[iDiffIndex] - pTOAFOA->fFOA[iDiffIndex];
+
+				float fDeltaTime = (float)(pTOAFOA->timestamp.intTime - pPassSchedule->rec[iDiffIndex].timestamp.intTime) * 1e-9;
+				printf(" %15s, %19I64u, %02d:%02d:%02d.%06d DiffTime %f, CNR %5.2f, dTOA0Bea %6.3f, dTOA0 %6.3f, dFOA0Bea %7.1f, dFOA0 %7.1f, satID %d\n",
+					pTOAFOA->cBeaconID, pTOAFOA->timestamp, tmFields.nHour, tmFields.nMinute, tmFields.nSecond, tmFields.lNanosecond / 1000,
+					fDeltaTime, pTOAFOA->fCNR[iDiffIndex], pTOAFOA->fBeaTOA[iDiffIndex],
+					pTOAFOA->fTOA[iDiffIndex], pTOAFOA->fBeaFOA[iDiffIndex],
+					pTOAFOA->fFOA[iDiffIndex], pTOAFOA->ulSatID[iDiffIndex]);
+
+				if (lpToaFoaResidualsFile)
+				{
+					fprintf(lpToaFoaResidualsFile, "%s, %19I64u, %02d:%02d:%02d.%06d,%f,%5.2f,%6.3f,%6.3f,%7.1f,%7.1f,%d,%7.4f,%7.1f\n",
+						pTOAFOA->cBeaconID, pTOAFOA->timestamp, tmFields.nHour, tmFields.nMinute, tmFields.nSecond, tmFields.lNanosecond / 1000,
+						fDeltaTime, pTOAFOA->fCNR[iDiffIndex], pTOAFOA->fBeaTOA[iDiffIndex], pTOAFOA->fTOA[iDiffIndex],
+						pTOAFOA->fBeaFOA[iDiffIndex], pTOAFOA->fFOA[iDiffIndex], pTOAFOA->ulSatID[iDiffIndex],
+						fTOAdiff, fFOAdiff);
+				}
+			}
+
+			flushall();
+			fclose(lpToaFoaResidualsFile);
+			lpToaFoaResidualsFile = NULL;
+		}
 	}
 
 	return bOK;

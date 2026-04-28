@@ -338,5 +338,4 @@ BOOL CEMSWaveFile::_WriteFile( HANDLE hFile, const LPVOID lpBuffer, DWORD nNumbe
 	return bOK;
 }
 
-#pragma pack()
 

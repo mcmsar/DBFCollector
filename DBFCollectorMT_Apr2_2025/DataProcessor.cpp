@@ -243,7 +243,8 @@ CEMSDataProcessor::_ProcessData()
 		while( (pRawBuff = m_lstUsedBuffObjs.GetNext() ) != NULL)
 		{
 			memset(szFileName, 0, sizeof(szFileName) );
-			sprintf(szFileName,"%sDBF_%04d.bin", CDBFCollectorConfig::GetInstance().GetRawDataDir().c_str(), ms_iSeqNum);
+			//sprintf(szFileName,"%sDBF_%04d.bin", CDBFCollectorConfig::GetInstance().GetRawDataDir().c_str(), ms_iSeqNum);
+			sprintf(szFileName, "D:\\RAW\\DBF_%04d.bin", ms_iSeqNum);
 
 			//printf("\n one second data to process number: %d", ms_iSeqNum ); 
 			ms_iSeqNum++;

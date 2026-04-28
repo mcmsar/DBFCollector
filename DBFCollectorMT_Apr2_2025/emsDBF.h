@@ -175,7 +175,7 @@ public:
 
 	static int GetNextObjID() {return ms_iNextObjectID++;}
 
-	static void SetSPIP( std::string SPIP );
+	static void SetSPIP(std::string SPIP);
 
 	void SetFrequencyOffset( float fHz ) { m_fFrequencyOffset = fHz; }
 	float GetFrequencyOffset() const     { return m_fFrequencyOffset; }

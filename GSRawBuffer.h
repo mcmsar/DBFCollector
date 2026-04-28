@@ -24,7 +24,7 @@
 
 #include "aobjbase.h"
 //#include "logclient.h"
-#include "emsDBFtypes.h"
+#include "emsDBFtypes2.h"
 
 class CEMSRawBuffObj : public CApiObjBase
 {
@@ -63,8 +63,8 @@ public:
 	void SetBuffTime( EMSTIME tm ){ m_timeStamp = tm; }
 	EMSTIME GetBuffTime(){ return m_timeStamp; }
 
-	void SetPassRecs( EMSDBFPASSRECORDS& passRecs );
-	EMSDBFPASSRECORDS* GetPassRecs() {return &m_PassRecords;}
+	void SetPassRecs( EMSDBFPASSRECORDS2& passRecs );
+	EMSDBFPASSRECORDS2* GetPassRecs() {return &m_PassRecords;}
 
 
 	void WriteToFile( const char* szFileName ); 
@@ -74,7 +74,7 @@ private:
 
 	EMSTIME			   m_timeStamp;
 
-	EMSDBFPASSRECORDS  m_PassRecords;
+	EMSDBFPASSRECORDS2  m_PassRecords;
 
 	unsigned char*	   m_aBuff;
 	

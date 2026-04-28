@@ -207,6 +207,18 @@
     <ClCompile Include="TrackDBFSatellites.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="..\Common\CBeaconMessage.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="CBeaconMessage.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Common\HexUtilis.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Common\CBeaconID.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
     <ClCompile Include="DigitalBeamFormer.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -219,6 +231,18 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="TimeElapsed.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="emsDBFtypes2.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Common\Include\CBeaconMessage.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="ToaFoaProcessor.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="SigProcHelper.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

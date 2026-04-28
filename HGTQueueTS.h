@@ -2,12 +2,12 @@
 #ifndef __HGT_QUEUEU_H__
 #define __HGT_QUEUEU_H__
 #include <queue>
-#include <memory>
 #include "criticalsection.h"
 
 struct DBFTrackingData
 {
 	EMSCOMPLEXD *dbfBeamVector;
+	float *prevBiasPhase;
 	int* schedulerSatIds;
 	int* predSatIDs;
 	int* predBeamIDs;
@@ -16,6 +16,7 @@ struct DBFTrackingData
 	DBFTrackingData()
 	{
 		dbfBeamVector = nullptr;
+		prevBiasPhase = nullptr;
 		schedulerSatIds = nullptr;
 		predBeamIDs = nullptr;
 		predSatIDs = nullptr;
@@ -121,7 +122,7 @@ public:
 
 	
 
-	std::unique_ptr<T> get() 
+	std::unique_ptr<T>  get() 
 	{
 		try
 		{

@@ -93,6 +93,8 @@ CEMSDBFCollectorService::_ServiceProcessLoop( void )
 	EMS_RESULT hr = EMS_OK;
 	CEMSCollectionObject* poCS = NULL;
 
+	FILE* m_exitFile;
+
 	try
 	{
 		BOOL bStopped = FALSE;
@@ -123,7 +125,16 @@ CEMSDBFCollectorService::_ServiceProcessLoop( void )
 
 				switch ( dwResult )
 				{
-					case WAIT_OBJECT_0:		// asked to stop 
+					case WAIT_OBJECT_0:		// asked to stop
+					case WAIT_ABANDONED_0: // Fixes crashing in VS debugger
+					case WAIT_ABANDONED_0 + 1:
+					case WAIT_FAILED: 
+						m_exitFile  = fopen( "C:\\exitFile.txt", "wt");
+						fprintf(m_exitFile, "made it to CEMSDBFCollectorService!\n");
+						fprintf(m_exitFile, "hr: %d", hr);
+						fflush(m_exitFile);
+						fclose(m_exitFile);
+
 						bStopped = TRUE;
 						poCS->Stop();
 						Sleep(10000);
@@ -148,10 +159,20 @@ CEMSDBFCollectorService::_ServiceProcessLoop( void )
 	{
 //		LogException( e );
 		hr = e.GetErrCode();
+		m_exitFile  = fopen( "C:\\exitFile.txt", "wt");
+		fprintf(m_exitFile, "made it to CEMSDBFCollectorService catch CEMSException!\n");
+		fprintf(m_exitFile, "hr: %d", hr);
+		fflush(m_exitFile);
+		fclose(m_exitFile);
 	}
 	catch( ... )
 	{
 		hr = EMS_UNKNOWN_ERROR;
+		m_exitFile  = fopen( "C:\\exitFile.txt", "wt");
+		fprintf(m_exitFile, "made it to CEMSDBFCollectorService catch any!\n");
+		fprintf(m_exitFile, "hr: %d", hr);
+		fflush(m_exitFile);
+		fclose(m_exitFile);
 	}
 
 	if( poCS )
@@ -320,6 +341,47 @@ CEMSDBFCollectorService::_Init()
 #include "TimeElapsed.h"
 std::ofstream out( "c:\\temp\\logfile");
 
+// ---------------------------------------------------------------------------
+// Ctrl+C / console close handler
+// ---------------------------------------------------------------------------
+static HANDLE g_hShutdownEvent    = NULL;
+static HANDLE g_hCleanupDoneEvent = NULL;  // signalled by main after join, before destructors
+
+struct ServiceThreadParams
+{
+	CEMSDBFCollectorService* pSvc;
+    const TCHAR*             szName;
+    int                      argc;
+    char**                   argv;
+};
+
+static DWORD WINAPI ServiceThreadProc(LPVOID pv)
+{
+    ServiceThreadParams* p = static_cast<ServiceThreadParams*>(pv);
+    p->pSvc->Run(p->szName, p->argc, p->argv);
+    SetEvent(g_hShutdownEvent);  // also fires if service exits naturally
+    return 0;
+}
+
+BOOL WINAPI CtrlHandler(DWORD dwCtrlType)
+{
+	switch (dwCtrlType)
+	{
+	case CTRL_C_EVENT:
+	case CTRL_BREAK_EVENT:
+	case CTRL_CLOSE_EVENT:
+	case CTRL_SHUTDOWN_EVENT:
+		if (g_hShutdownEvent)
+			SetEvent(g_hShutdownEvent);
+		// Wait for main to finish cleanup rather than sleeping a fixed amount.
+		// Caps at 8 s so Windows doesn't force-kill us for CLOSE/SHUTDOWN events.
+		if (g_hCleanupDoneEvent)
+			WaitForSingleObject(g_hCleanupDoneEvent, 8000);
+		return TRUE;
+	}
+	return FALSE;
+}
+
 std::streambuf* RedirectToFile()
 {
 // open output file
@@ -385,7 +447,32 @@ int main(int argc, char* argv[])
 			}
 
 			oDBFCollectorService.AllowPause( FALSE );
-			oDBFCollectorService.Run( c_szServiceName, argc, argv );
+			//oDBFCollectorService.Run( c_szServiceName, argc, argv );
+
+			g_hShutdownEvent    = CreateEvent(NULL, TRUE, FALSE, NULL);
+			g_hCleanupDoneEvent = CreateEvent(NULL, TRUE, FALSE, NULL);
+			SetConsoleCtrlHandler(CtrlHandler, TRUE);
+
+
+		    ServiceThreadParams tp = { &oDBFCollectorService, c_szServiceName, argc, argv };
+			HANDLE hSvcThread = CreateThread(NULL, 0, ServiceThreadProc, &tp, 0, NULL);
+
+			WaitForSingleObject(g_hShutdownEvent, INFINITE);
+
+			oDBFCollectorService.Stop();  // signals m_hEventStop internally
+			WaitForSingleObject(hSvcThread, INFINITE);
+			CloseHandle(hSvcThread);
+
+			// Signal the handler thread that cleanup is complete.
+			// Must happen before destructors run so the handler doesn't
+			// return into a partially torn-down CRT heap.
+			SetEvent(g_hCleanupDoneEvent);
+			SetConsoleCtrlHandler(CtrlHandler, FALSE);
+
+			CloseHandle(g_hShutdownEvent);
+			g_hShutdownEvent = NULL;
+			CloseHandle(g_hCleanupDoneEvent);
+			g_hCleanupDoneEvent = NULL;
 		}
 			std::cout << "Line 2 " << std::endl;
 

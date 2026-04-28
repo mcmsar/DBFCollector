@@ -26,6 +26,7 @@ class CEMSDBFCollectorService : public CEMSService
 	public:
 		CEMSDBFCollectorService();
 		virtual ~CEMSDBFCollectorService();
+		void Stop() { StopEMSService(); }
 
 	protected:
 		virtual EMS_RESULT StartEMSService( DWORD dwArgc, LPTSTR *lpszArgv );

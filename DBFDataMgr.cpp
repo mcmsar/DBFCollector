@@ -46,7 +46,7 @@
 #include "emsclock.h"
 #include "emsconst.h"
 //#include "emsDBF.h"
-#include "emsDBFtypes.h"
+#include "emsDBFtypes2.h"
 #include "emsDBFDataMgr.h"
 #include "configurationaccessor.h"
 #include <emsdomnode.h>
@@ -62,20 +62,20 @@
 
 CEMSDBFDataMgr::CEMSDBFDataMgr(): m_uiPassSchedIndx( 0 ), m_oConstellationType( UNKNOWN )
 {
-	m_aPassSchedule = new EMSDBFPASSRECORD[MAX_SCHEDULE_RECORDS];
+	m_aPassSchedule = new EMSDBFPASSRECORD2[MAX_SCHEDULE_RECORDS];
 	if ( m_aPassSchedule )
 	{
-		memset( m_aPassSchedule, 0, sizeof(EMSDBFPASSRECORD) * MAX_SCHEDULE_RECORDS );
+		memset( m_aPassSchedule, 0, sizeof(EMSDBFPASSRECORD2) * MAX_SCHEDULE_RECORDS );
 	}
 	else
 	{
 		// memory exception
 	}
 
-	m_aHourPassSchedule = new EMSDBFPASSRECORDS[MAX_SCHEDULE_RECORDS_HOUR];
+	m_aHourPassSchedule = new EMSDBFPASSRECORDS2[MAX_SCHEDULE_RECORDS_HOUR];
 	if ( m_aHourPassSchedule )
 	{
-		memset( m_aHourPassSchedule, 0, sizeof(EMSDBFPASSRECORDS) * MAX_SCHEDULE_RECORDS_HOUR );
+		memset( m_aHourPassSchedule, 0, sizeof(EMSDBFPASSRECORDS2) * MAX_SCHEDULE_RECORDS_HOUR );
 	}
 	else
 	{
@@ -148,7 +148,7 @@ CEMSDBFDataMgr::Initialize( int nPlateNumber )
 
 	wsprintfW( wszFileName, L"%s%s%02d.xml", cDir, cPlateFile, nPlateNumber );
 
-	// hr = ReadDBFPlateXML( wszFileName );
+	//hr = ReadDBFPlateXML( wszFileName );
 
 	// Establish Pass Schedule data files and parameters
 
@@ -212,7 +212,7 @@ CEMSDBFDataMgr::Initialize( int nPlateNumber )
 /********************************************************************/
 
 EMS_RESULT
-CEMSDBFDataMgr::WritePassSchedule( EMSDBFPASSRECORD PassRecord, bool bTestSun )
+CEMSDBFDataMgr::WritePassSchedule( EMSDBFPASSRECORD2 PassRecord, bool bTestSun )
 {
 
 	EMS_RESULT hr = EMS_BAD_PARAM;
@@ -278,7 +278,7 @@ CEMSDBFDataMgr::WritePassSchedule( EMSDBFPASSRECORD PassRecord, bool bTestSun )
 		if ( m_lpPassFileBIN )
 		{
 			// Write binary Pass Record
-			fwrite( &PassRecord, sizeof( EMSDBFPASSRECORD ), 1, m_lpPassFileBIN );
+			fwrite( &PassRecord, sizeof( EMSDBFPASSRECORD2 ), 1, m_lpPassFileBIN );
 
 			hr = EMS_OK;
 
@@ -308,14 +308,14 @@ CEMSDBFDataMgr::WritePassSchedule( EMSDBFPASSRECORD PassRecord, bool bTestSun )
 				PassRecord.fPlateAzimuth,
 				PassRecord.fPlateElevation );
 			
-			for ( ULONG l = 0; l < m_aDBFplate.wCellNumber + 1 ; l++ )
-			{
-				//double dPang = atan2( (double)PassRecord.nPhaseReal[l], (double)PassRecord.nPhaseImag[l] );
-			// Zeinab's change
-				double dPang = atan2(  (double)PassRecord.nPhaseImag[l] , (double)PassRecord.nPhaseReal[l]);
-				if ( dPang < 0.0 ) dPang += c_dTwoPI;
-				fprintf(m_lpPassFileCSV, "%f,", dPang * c_dRadToDeg );
-			}
+			//for ( ULONG l = 0; l < m_aDBFplate.wCellNumber + 1 ; l++ )
+			//{
+			//	//double dPang = atan2( (double)PassRecord.nPhaseReal[l], (double)PassRecord.nPhaseImag[l] );
+			//// Zeinab's change
+			//	double dPang = atan2(  (double)PassRecord.nPhaseImag[l] , (double)PassRecord.nPhaseReal[l]);
+			//	if ( dPang < 0.0 ) dPang += c_dTwoPI;
+			//	fprintf(m_lpPassFileCSV, "%f,", dPang * c_dRadToDeg );
+			//}
 
 			fprintf(m_lpPassFileCSV, "\n" );
 			//snl
@@ -487,12 +487,13 @@ CEMSDBFDataMgr::ReadPassSchedule( EMSTIME tm )
 		oTime.GetTime(&tmFields);
 		int nPassHour = tmFields.nHour;
 
-		EMSDBFPASSRECORD emsPassRec;
+		EMSDBFPASSRECORD2 emsPassRec;
 
-		memset( m_aHourPassSchedule, 0, sizeof(EMSDBFPASSRECORDS) * MAX_SCHEDULE_RECORDS_HOUR );
+		memset( m_aHourPassSchedule, 0, sizeof(EMSDBFPASSRECORDS2) * MAX_SCHEDULE_RECORDS_HOUR );
 		m_ulRecordCount = 0;
 
-		_stprintf( szFileName, TEXT( "\\BIN\\EMSDBFPass-%ld.bin" ), nPassHour );
+		//_stprintf( szFileName, TEXT( "\\BIN\\EMSDBFPass-%ld.bin" ), nPassHour );
+		_stprintf( szFileName, TEXT( "\\BIN\\TSIDBFPass-%ld.bin" ), nPassHour );
 
 		lstrcpy( szFileSpec, m_cFilePath );
 		lstrcat( szFileSpec, szFileName );
@@ -509,7 +510,7 @@ CEMSDBFDataMgr::ReadPassSchedule( EMSTIME tm )
 			ulMaxByteCount       = ftell(m_lpPassFileBIN);
 			ULONG ulByteCount    = fseek(m_lpPassFileBIN, 0, SEEK_SET);
 
-			ULONG ulRecords = ulMaxByteCount / sizeof(EMSDBFPASSRECORD);
+			ULONG ulRecords = ulMaxByteCount / sizeof(EMSDBFPASSRECORD2);
 
 			bool bFirstRecord = true;
 			ULONG ulRecCount = 0;
@@ -517,10 +518,10 @@ CEMSDBFDataMgr::ReadPassSchedule( EMSTIME tm )
 			while ( ( ulByteCount < ulMaxByteCount ) && ( ulRecCount < MAX_SCHEDULE_RECORDS ) ) 
 			{
 				
-				memset( &emsPassRec, 0, sizeof(EMSDBFPASSRECORD) );
-				ULONG ulSize = fread( &emsPassRec,1,sizeof(EMSDBFPASSRECORD),m_lpPassFileBIN);
+				memset( &emsPassRec, 0, sizeof(EMSDBFPASSRECORD2) );
+				ULONG ulSize = fread( &emsPassRec,1,sizeof(EMSDBFPASSRECORD2),m_lpPassFileBIN);
 
-				if( ulSize == sizeof(EMSDBFPASSRECORD) )
+				if( ulSize == sizeof(EMSDBFPASSRECORD2) )
 				{
 					if( bFirstRecord )
 					{
@@ -559,24 +560,20 @@ CEMSDBFDataMgr::ReadPassSchedule( EMSTIME tm )
 }
 
 void 
-CEMSDBFDataMgr::_AddPassRecord( EMSDBFPASSRECORD& dbfPassRec )
+CEMSDBFDataMgr::_AddPassRecord( EMSDBFPASSRECORD2& dbfPassRec )
 {
 //	m_ulRecordCount++;
 	INT64 lDeltaT = (INT64)(( dbfPassRec.timestamp.intTime - m_TimeStart.intTime ) * 1e-9);
 
-	if( lDeltaT >= 0 )
+	if( lDeltaT >= 0 && lDeltaT < MAX_SCHEDULE_RECORDS_HOUR)
 	{
 		int i = 0;
 		while( (m_aHourPassSchedule[lDeltaT].rec[i].timestamp.intTime != 0) && i < DBF_MAX_SATELLITES )
-		//while( (m_aHourPassSchedule[lDeltaT].rec[i].timestamp.intTime != 0) && i < 4 )
-		//while( (m_aHourPassSchedule[lDeltaT].rec[i].timestamp.intTime != 0) && i < 11 )
 		{
 			i++;
 		}
 
 		if( i < DBF_MAX_SATELLITES )
-		//if( i < 4 )
-		//if( i < 11 )
 		{
 			m_aHourPassSchedule[lDeltaT].rec[i] = dbfPassRec;
 		}
@@ -657,14 +654,16 @@ CEMSDBFDataMgr::_SetPolarization( UINT uiSatID )
 }
 
 /********************************************************************/
-EMSDBFPASSRECORDS
+EMSDBFPASSRECORDS2
 CEMSDBFDataMgr::GetPassSchedule( EMSTIME tm )
 {
-	memset( &m_aPassScheduleNow, 0, sizeof( EMSDBFPASSRECORDS ) );
+	memset( &m_aPassScheduleNow, 0, sizeof( EMSDBFPASSRECORDS2 ) );
 	INT64 utime =  ( (INT64) ( tm.intTime * 1e-9 ) ) * 1e9 ;
 
-	if ( ( utime > m_TimeStart.intTime ) &&
-		 ( utime < m_TimeEnd.intTime ) &&
+	// Correction to align pass schedule with buffer time
+	utime -=1e9;
+	if ( ( utime+1e9 > m_TimeStart.intTime ) &&
+		 ( utime+1e9 < m_TimeEnd.intTime ) &&
 		 ( m_ulRecordCount > 0 ) )
 
 	/*if ( ( tm.intTime > m_TimeStart.intTime ) &&
@@ -890,21 +889,21 @@ CEMSDBFDataMgr::ReadDBFPlateXML( const wchar_t* cwszXMLString )
 			{
 				memset( &m_aDBFplate, 0, sizeof( m_aDBFplate ) );
 				CEMSConfigurationAccessor oPlateConfig = olstPlates.GetNext();
-				m_aDBFplate.wCellNumber = (WORD) oPlateConfig.GetAttributeValueULong( L"CellNumber" );
 
-				m_aDBFplate.fPlateFaceAzimuth   = oPlateConfig.GetElementValueFloat( L"PlateFaceAzimuth" );
-				m_aDBFplate.fPlateFaceElevation = oPlateConfig.GetElementValueFloat( L"PlateFaceElevation" );
-
-				m_aDBFplate.fPlateFaceRotation  = oPlateConfig.GetElementValueFloat( L"PlateFaceRotation" );
+				m_aDBFplate.fPlateFaceAzimuth   = oPlateConfig.GetElementValueFloat( L"platefaceazimuth" );
+				m_aDBFplate.fPlateFaceElevation = oPlateConfig.GetElementValueFloat( L"platefaceelevation" );
+				m_aDBFplate.fPlateFaceRotation  = oPlateConfig.GetElementValueFloat( L"platefacerotation" );
 				
 				// Polarization = 0 for LHCP, Polarization = 1 for RHCP
-				std::wstring wstrPlatePolarization = oPlateConfig.GetAttributeValue( L"PlatePolarization" ); 
+				std::wstring wstrPlatePolarization = oPlateConfig.GetAttributeValue( L"platepolarization" ); 
 				if( wstrPlatePolarization == L"RHCP" )
 				{
 					m_aDBFplate.wPlatePolarization = 1;
 				}
 				else
 					m_aDBFplate.wPlatePolarization = 0;
+				
+				m_aDBFplate.wCellNumber = (WORD) oPlateConfig.GetAttributeValueULong( L"cellnumber" );
 							
 				pNode = oPlateConfig.GetNode( L"Cells" );
 				if( pNode )
@@ -1010,7 +1009,7 @@ CEMSDBFDataMgr::_ParseFIXEDPOINTS( const wchar_t* cwszXMLString )
 		{
 			CEMSConfigurationAccessor oFIXED = oConfigAccessList.GetNext();
 
-	bool  bEnabled;
+			bool  bEnabled;
 
 
 			m_aDBFplate.emsFixedPoints[i].wFixedPointID = (WORD) oFIXED.GetAttributeValueULong( L"@id" );
@@ -1021,6 +1020,41 @@ CEMSDBFDataMgr::_ParseFIXEDPOINTS( const wchar_t* cwszXMLString )
 			m_aDBFplate.emsFixedPoints[i].wFixPointPolarization = (WORD) oFIXED.GetAttributeValueULong( L"FixedPointPol" );
 			m_aDBFplate.emsFixedPoints[i].bEnabled = oFIXED.GetAttributeValueBoolean( L"FixedPointEnabled" );
 			
+			if ( m_aDBFplate.emsFixedPoints[i].bEnabled )
+			{
+				float px, py, pz;
+				float saz, caz, sel, cel;
+				float elx, phasex, dx, dy, dz, dist;
+				
+				float lambda = (c_dVelocityOfLight / 1544.5e6) * 100000; // converted to centimetres
+				float dangle = 360.0;
+				
+				saz = sin( m_aDBFplate.emsFixedPoints[i].fFixPointAzimuth * c_dDegToRad);
+				caz = cos( m_aDBFplate.emsFixedPoints[i].fFixPointAzimuth * c_dDegToRad);
+				elx = m_aDBFplate.emsFixedPoints[i].fFixPointElevation + m_aDBFplate.fPlateFaceElevation;
+				sel = sin( elx * c_dDegToRad); 
+				cel = cos( elx * c_dDegToRad);
+				px = saz * m_aDBFplate.emsFixedPoints[i].fFixedPointDistance; 
+				py = caz * cel * m_aDBFplate.emsFixedPoints[i].fFixedPointDistance; 
+				pz = caz * sel * m_aDBFplate.emsFixedPoints[i].fFixedPointDistance; 
+
+				for ( int k = 0; k < DBF_NUM_ELEMENTS; k++ )
+				{
+					// Assume plate is flat and the fixed point is oriented in the plate coordinates
+					dx = m_aDBFplate.emsDBFCells[i].fXcoord - px;
+					dy = m_aDBFplate.emsDBFCells[i].fYcoord - py;
+					dz = - pz;
+					dist = sqrt( dx*dx + dy*dy + dz*dz );
+					m_aDBFplate.emsDBFCells[i].fNearField = dist/lambda * dangle;;
+				}
+
+				dangle = 360.0;
+				for ( int k = 0; k < DBF_NUM_ELEMENTS; k++ )
+				{
+					phasex = m_aDBFplate.emsDBFCells[i].fNearField - m_aDBFplate.emsDBFCells[DBF_CENTRE_ELEMENT].fNearField;
+					m_aDBFplate.emsDBFCells[i].fNearField = fmod(phasex, dangle );
+				}
+			}
 		}
 	}
 
@@ -1043,7 +1077,7 @@ CEMSDBFDataMgr::_Convert2UnitVector( const double dAzimuth, const double dElevat
 }
 
 EMS_RESULT
-CEMSDBFDataMgr::_PhaseCorrection( EMSDBFPASSRECORD *passrecord )
+CEMSDBFDataMgr::_PhaseCorrection( EMSDBFPASSRECORD2 *passrecord )
 {
 	EMS_RESULT hr = EMS_OK;
 
@@ -1083,8 +1117,8 @@ CEMSDBFDataMgr::_PhaseCorrection( EMSDBFPASSRECORD *passrecord )
 
 			j = m_aDBFplate.emsDBFCells[i].wChannelID - 1;
 
-			passrecord->nPhaseReal[j] = (short) ( sin( dPhase  ) * fScaleFactor );
-			passrecord->nPhaseImag[j] = (short) ( cos( dPhase  ) * fScaleFactor );
+			//passrecord->nPhaseReal[j] = (short) ( sin( dPhase  ) * fScaleFactor );
+			//passrecord->nPhaseImag[j] = (short) ( cos( dPhase  ) * fScaleFactor );
 		}
 
 		hr = EMS_OK;

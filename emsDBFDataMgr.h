@@ -39,7 +39,7 @@
 #include "emstypes.h"
 #include "emserror.h"
 #include <stdio.h>
-#include "emsDBFtypes.h"
+#include "emsDBFtypes2.h"
 #include "emsdbfconstellationmanager.h"
 using std::string;
 using std::wstring;
@@ -65,17 +65,17 @@ public:
 
 	EMS_RESULT ReadDBFPlateXML( const wchar_t* cwszXMLString );
 
-	EMSDBFPASSRECORDS GetPassSchedule( EMSTIME tm );
+	EMSDBFPASSRECORDS2 GetPassSchedule( EMSTIME tm );
 
 	EMSDBFARRAY GetPlate(){ return m_aDBFplate; };
 
 	EMS_RESULT ReadPassSchedule( EMSTIME tm );
 
-	EMS_RESULT WritePassSchedule( EMSDBFPASSRECORD aPass, bool bTestSun = false );
+	EMS_RESULT WritePassSchedule( EMSDBFPASSRECORD2 aPass, bool bTestSun = false );
 
 	EMS_RESULT WritePassSchedule_Debug(  EMSDBFAZEL* aAzEls, ULONG* pulActual  );
 
-	EMS_RESULT _PhaseCorrection( EMSDBFPASSRECORD *aPass );
+	EMS_RESULT _PhaseCorrection( EMSDBFPASSRECORD2 *aPass );
 
 	void Reset( );
 
@@ -85,7 +85,7 @@ protected:
 	EMS_RESULT _ParseCELLS( const wchar_t* cwszXMLString );
 	EMS_RESULT _ParseFIXEDPOINTS( const wchar_t* cwszXMLString );
 
-	void _AddPassRecord( EMSDBFPASSRECORD& dbfPassRec );
+	void _AddPassRecord( EMSDBFPASSRECORD2& dbfPassRec );
 	
 	EMSVECTORD _Convert2UnitVector( const double dAzimuth, const double dElevation );
 
@@ -98,9 +98,9 @@ private: // data
 	FILE 					*m_lpPassFileCSV;
 	TCHAR					m_cFilePath[256];
 
-	EMSDBFPASSRECORD*		m_aPassSchedule;
-	EMSDBFPASSRECORDS*		m_aHourPassSchedule;
-	EMSDBFPASSRECORDS		m_aPassScheduleNow;
+	EMSDBFPASSRECORD2*		m_aPassSchedule;
+	EMSDBFPASSRECORDS2*		m_aHourPassSchedule;
+	EMSDBFPASSRECORDS2		m_aPassScheduleNow;
 
 	EMSDBFARRAY				m_aDBFplate;
 

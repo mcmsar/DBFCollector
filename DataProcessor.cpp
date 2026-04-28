@@ -131,13 +131,22 @@ CEMSDataProcessor::run()
 		while( m_bRunning )
 		{
 			
+			FILE* m_exitFile;
 			try
 			{
 				hr = WaitForMultipleObjects( dwEventCount, hEvent, FALSE, dwTimeout ); // Wait for the interrupt
 				switch(hr)	
 				 {						
-					case WAIT_OBJECT_0:	
+					case WAIT_OBJECT_0:
+					case WAIT_ABANDONED_0: // Fixes crashing in VS debugger
+					case WAIT_ABANDONED_0 + 1:
+					case WAIT_FAILED:
 						{
+							m_exitFile  = fopen( "C:\\exitFile.txt", "wt");
+							fprintf(m_exitFile, "made it to CEMSDataProcessor!\n");
+							fprintf(m_exitFile, "hr: %d", hr);
+							fflush(m_exitFile);
+							fclose(m_exitFile);
 							//stop
 							m_bRunning = false;
 						}
@@ -157,6 +166,11 @@ CEMSDataProcessor::run()
 			}
 			catch( ... )
 			{
+				m_exitFile  = fopen( "C:\\exitFile.txt", "wt");
+				fprintf(m_exitFile, "made it to CEMSDataProcessor catch any!\n");
+				fprintf(m_exitFile, "hr: %d", hr);
+				fflush(m_exitFile);
+				fclose(m_exitFile);
 				// a error occured, log it and stop the thread.
 				m_bRunning = false;
 				if( m_lpLogFile )

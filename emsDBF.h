@@ -40,7 +40,7 @@
 #include "emserror.h"
 #include <stdio.h>
 #include "sigproc.h"
-#include "emsDBFtypes.h"
+#include "emsDBFtypes2.h"
 //#include "emsDBFDataMgr.h"
 #include "HGTQueueTS.h"
 
@@ -82,12 +82,16 @@ using std::wstring;
 #define DBF_LOG20_SIZE		(1048576)	// 2^20 maximum Real FFT size
 #define DBF_LOG19_SIZE      (524288)	// 2^19 complex FFT size
 #define DBF_LOG18_SIZE      (262144)	// 2^18 complex FFT size
+#define DBF_LOG17_SIZE      (131072)	// 2^17 complex FFT size
+#define DBF_LOG16_SIZE      (65536)		// 2^16 complex FFT size
 #define MEO_MIN_ELEVATION	20.0        // Minimum plate elevation allowed
 
 
 #define COVARIANCE_SIZE     (DBF_NUM_ELEMENTS * DBF_NUM_ELEMENTS)
 #define DBF_LOG20			(20)
 #define DBF_LOG19           (19)
+#define DBF_LOG17           (17)
+#define DBF_LOG16           (16)
 #define ADC_OFFSET          (524288)
 //#define ADC_OFFSET          (32768)
 #define PULSE_SHAPE_SIZE    (100)
@@ -142,13 +146,25 @@ public:
 
 	EMS_RESULT GetADCBuffer( const char *szFilename1, const char *szFilename2, const char *szFilename3, const char *szFilename4 );
 	EMS_RESULT GetPassSchedule( EMSTIME tm );
-	EMS_RESULT SetPassSchedule( EMSDBFPASSRECORDS* pPassRecords, EMSTIME tm );
+	EMS_RESULT SetPassSchedule( EMSDBFPASSRECORDS2* pPassRecords, EMSTIME tm );
 
 	EMS_RESULT ConvertComplex2Real( EMSCOMPLEX* cData, float* fData, ULONG ulNpts );
 	
 	EMS_RESULT SatelliteIdentify(ULONG m_ulSatellites );
 
-	WORD       GetProcess( ){ return ( m_aPassSchedule.rec[0].wProcessID ); };
+	EMS_RESULT	InitializeTOAFOA( EMSTIME timestamp);
+	
+	EMS_RESULT	SeparationAngle( ULONG m_ulSatellites );
+
+	bool	    SatelliteTOAFOA(  int isat );
+
+	bool		IdentifyTOAFOA( EMSTIME tm, EMSCOMPLEX* acDBFBeamVectors );
+
+	bool		ReferenceBeaconCheck(  int isat, ULONG* ulFreqIndex, float* fCNR );
+
+	bool		CheckBit(  char cHex[36], int iBit );
+
+	WORD        GetProcess( ){ return ( m_aPassSchedule.rec[0].wProcessID ); };
 
 	void ProcessAll();
 
@@ -193,7 +209,7 @@ protected:
 	float _EMSsMaxExt(const float  *vec, int len, ULONG* index);
 	float _EMSsMinExt(const float  *vec, int len, ULONG* index);
 	int   _Power2( ULONG ulInput );
-
+	int   _Hex2Int( char cHex );
 
 	void _OutputBufferPhases( const CEMSTime& emsCurrTime );
 
@@ -202,6 +218,10 @@ protected:
 	BOOL  _BuildDBFSatsTrackingInfo( EMSCOMPLEXD*);
 
 	void  _FormatWAVoutput( int isat );
+
+	EMS_RESULT  _CopyData(  float* fTest, float fValue, ULONG nCount );
+
+
 
 //private: // methods
 
@@ -213,6 +233,7 @@ protected:
 	EMSCOMPLEX*				m_acTemp1;
 	EMSCOMPLEX*				m_acTemp2;
 	EMSCOMPLEX*				m_acTemp3;
+	EMSCOMPLEX*				m_acFFTBeacon;
 
 	short**					m_nBeam;
 
@@ -270,21 +291,25 @@ protected:
 	float					m_afMean[DBF_MAX_CHANNELS];
 	float					m_afStdDev[DBF_MAX_CHANNELS];
 
+	double					m_dSAmin[DBF_MAX_SATELLITES];  //min separation angle
 	double					m_dCellPositionX[DBF_MAX_CHANNELS];
 	double					m_dCellPositionY[DBF_MAX_CHANNELS];
 	EMSCOMPLEX				m_acPhaseVector[DBF_MAX_CHANNELS];
 
 	IEMSDataTransmitter*    m_pDataTransmit;
 
-	EMSDBFPASSRECORDS		m_aPassSchedule;
+	EMSDBFPASSRECORDS2		m_aPassSchedule;
 
 	EMSDBFMAINTENANCE		m_aMaintenance;
 
 	EMSDBFARRAY				m_aDBFplate;
 
 	EMSDBFCALIBRECORD       m_LastCalibRecord;
+		
+	EMSDBFTOAFOARECORD		m_aTOAFOA;
 
-	bool  m_bOutputOK;
+	bool	m_bOutputOK;
+	bool	m_bEigenFlag;
 
 	EMSDBFBUFFERPHASE      m_emsDBFBufferPhase;
 
@@ -300,8 +325,9 @@ protected:
 	void _IsTimeToCopyCovarFile( const EMSTIME& oCurrentTime );
 	
 
-	EMSCOMPLEX*		m_acDBFBeamVectors/*[MAX_BEAMS*DBF_NUM_ELEMENTS]*/; 
-
+	EMSCOMPLEX*		m_acDBFBeamVectors; //[MAX_BEAMS*DBF_NUM_ELEMENTS] 
+	EMSCOMPLEX*		m_acDBFCarrierVectors;//[MAX_BEAMS*DBF_NUM_ELEMENTS]
+	float*			m_fPrevPhaseBias;
 	int*			m_iBeamIDs;
 	int*			m_iPredictedSATIDs;
 	float*			m_fProbability;
@@ -316,6 +342,7 @@ protected:
 	WORD			m_ProcessFlag;
 	int*			m_iOutputBuffer;
 	ULONG			m_ulOutputLength;
+
 
 	const char*		m_FileNames[MAX_TEST_FILES];
 

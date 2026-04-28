@@ -39,7 +39,8 @@
 
 #define DBF_MAX_CHANNELS    (32)		// maximum number of input channels (based upon ADC board capabilities)
 #define DBF_NUM_ELEMENTS	(31)		// number of antenna elements (assume 1 channel is reserved for 1 pPS signal)
-#define DBF_MAX_SATELLITES  (10)			// maximum number of DBF tracked satellites per face
+#define DBF_MAX_SATELLITES  (5)			// maximum number of DBF tracked satellites
+#define DBF_CENTRE_ELEMENT	(23)		// Assumes centre element is connected to channel 23
 
 typedef struct tagEMSDBFAZEL
 {
@@ -63,6 +64,7 @@ typedef struct tagEMSDBFCELLCONFG
 	float fYcoord;// Cell Y coordinate relative to plate phase centre (metres)
 	float fRHCP;// Cell RHCP phase bias (deg)
 	float fLHCP;// Cell LHCP phase bias (deg)
+	float fNearField; // Cell near field correction (deg)
 } EMSDBFCELLCONFG;
 
 typedef struct tagEMSDBFCELLCONFG __RPC_FAR *LPEMSDBFCELLCONFG;

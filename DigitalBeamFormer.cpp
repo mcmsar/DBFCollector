@@ -49,15 +49,21 @@
 
 #include "emsDBF.h"
 #include "TrackDBFSatellites.h"
+//#include "ToaFoaProcessor.h"
 
 //snl
 #include "emsDBFDataMgr.h"
-#include "emsDBFtypes.h"
+#include "emsDBFtypes2.h"
 #include "convutility.h"
 #include <vector>
 
+#include "CBeaconMessage.h"
+#include "CBeaconID.h"
+#include "HexUtilis.h"
+
 int CDigitalBeamFormer::ms_iNextObjectID = 1;
 std::wstring		CDigitalBeamFormer::m_wsSPIP;
+FILE* lpToaFoaResidualsFile = NULL;
 
 
 const char  c_szCalibFile[] = "C:\\EMSDBF_Calib_";
@@ -72,7 +78,7 @@ CEMSTime CDigitalBeamFormer::m_oDBFCovarFileLastWriteTime = 0;
 BOOL CDigitalBeamFormer::m_bIsCovarFileSendTime = FALSE;
 CDigitalBeamFormer::CDigitalBeamFormer(CEMSQueue<DBFTrackingData >&  dbfBeamVect) : m_ulChannels(0), m_ulSamplesPerChannel(0), m_ulSatellites(0),
 	m_lpOutputFile( nullptr ),m_lpCalibFile(NULL), m_asRawTimeSeries( NULL ), m_asDBFVector( NULL ), 
-	m_afRawInputSamples( NULL ), m_afPowerSpectrum(nullptr), m_acMatrix(nullptr), m_qrefDBFBeamVectors( dbfBeamVect )
+	m_afRawInputSamples( NULL ), m_afPowerSpectrum(nullptr), m_acMatrix(nullptr), m_nBeam(nullptr), m_qrefDBFBeamVectors( dbfBeamVect )
 //CDigitalBeamFormer::CDigitalBeamFormer(CEMSQueue<DBFTrackingData >&  dbfBeamVect) : m_ulChannels(0), m_ulSamplesPerChannel(0), m_ulSatellites(0),
 //	m_lpOutputFile( nullptr ),m_lpCalibFile(NULL), m_asRawTimeSeries( NULL ), m_asPhaseVector( NULL ), m_asDBFVector( NULL ), 
 //	m_afRawInputSamples( NULL ), m_afPowerSpectrum(nullptr), m_acMatrix(nullptr), m_qrefDBFBeamVectors( dbfBeamVect )
@@ -83,7 +89,23 @@ CDigitalBeamFormer::CDigitalBeamFormer(CEMSQueue<DBFTrackingData >&  dbfBeamVect
 	m_lpTraceFile = NULL;
 	m_pDataTransmit = NULL;
 	m_ulLastStartPPS = 0;
-	m_ulRawBuffSize = 0;
+	m_ulRawBuffSize = 0;	
+	
+	m_acTemp1           = NULL;
+	m_acTemp2           = NULL;
+	m_acTemp3           = NULL;
+	m_afTemp1           = NULL;
+	m_afTemp2           = NULL;
+	m_acFFTBeacon       = NULL;
+	m_afChan0           = NULL;
+	m_iBeamIDs          = NULL;
+	m_fPrevPhaseBias    = NULL;
+	m_iPredictedSATIDs  = NULL;
+	m_fProbability      = NULL;
+	m_iPrevPassSchedSATIDs = NULL;
+	m_acCovariance      = NULL;
+	m_acDBFBeamVectors  = NULL;
+	m_acDBFCarrierVectors = NULL;
 
 	m_timeActual.intTime = 0L;
 
@@ -205,6 +227,11 @@ CDigitalBeamFormer::~CDigitalBeamFormer( void )
 		delete [] m_afTemp2;
 		m_afTemp2 = NULL;
 	}
+	if (m_acFFTBeacon)
+	{
+		delete [] m_acFFTBeacon;
+		m_acFFTBeacon = NULL;
+	}
 
 	if( m_afChan0 )
 	{
@@ -223,6 +250,12 @@ CDigitalBeamFormer::~CDigitalBeamFormer( void )
 	{
 		delete [] m_iBeamIDs;
 		m_iBeamIDs = NULL;
+	}
+	
+	if( m_fPrevPhaseBias )
+	{
+		delete [] m_fPrevPhaseBias;
+		m_fPrevPhaseBias = NULL;
 	}
 
 	if( m_iPredictedSATIDs	)
@@ -296,6 +329,46 @@ CDigitalBeamFormer::Initialize( const TCHAR *cDir )
 	m_ulChannels   = DBF_MAX_CHANNELS;
 	m_ulSatellites = DBF_MAX_SATELLITES;
 
+	m_aDBFplate.emsDBFCells[0].fNearField = 35.592494;
+	m_aDBFplate.emsDBFCells[1].fNearField = 5.572746;
+	m_aDBFplate.emsDBFCells[2].fNearField = 355.490853;
+	m_aDBFplate.emsDBFCells[3].fNearField = 5.572746;
+
+	m_aDBFplate.emsDBFCells[4].fNearField = 199.019379;
+	m_aDBFplate.emsDBFCells[5].fNearField = 180.19177;
+	m_aDBFplate.emsDBFCells[6].fNearField = 199.019379;
+	m_aDBFplate.emsDBFCells[7].fNearField = 11.630403;
+
+	m_aDBFplate.emsDBFCells[8].fNearField = 46.176249;
+	m_aDBFplate.emsDBFCells[9].fNearField = 102.650786;
+	m_aDBFplate.emsDBFCells[10].fNearField = 200.2468;
+	m_aDBFplate.emsDBFCells[11].fNearField = 178.699527;
+	
+	m_aDBFplate.emsDBFCells[12].fNearField = 178.699527;
+	m_aDBFplate.emsDBFCells[13].fNearField = 200.2468;
+	m_aDBFplate.emsDBFCells[14].fNearField = 242.794422;
+	m_aDBFplate.emsDBFCells[15].fNearField = 216.540413;
+
+	m_aDBFplate.emsDBFCells[16].fNearField = 191.527404;
+	m_aDBFplate.emsDBFCells[17].fNearField = 191.527404;
+	m_aDBFplate.emsDBFCells[18].fNearField = 216.540413;
+	m_aDBFplate.emsDBFCells[19].fNearField = 102.650786;
+
+	m_aDBFplate.emsDBFCells[20].fNearField = 46.176249;
+	m_aDBFplate.emsDBFCells[21].fNearField = 11.630403;
+	m_aDBFplate.emsDBFCells[22].fNearField = 0;
+	m_aDBFplate.emsDBFCells[23].fNearField = 256.362618;
+
+	m_aDBFplate.emsDBFCells[24].fNearField = 226.931752;
+	m_aDBFplate.emsDBFCells[25].fNearField = 256.362618;
+	m_aDBFplate.emsDBFCells[26].fNearField = 35.894619;
+	m_aDBFplate.emsDBFCells[27].fNearField = 22.279002;
+
+	m_aDBFplate.emsDBFCells[28].fNearField = 35.894619;
+	m_aDBFplate.emsDBFCells[29].fNearField = 76.19085;
+	m_aDBFplate.emsDBFCells[30].fNearField = 265.717048;
+
+
 	// One second pulse shape function
 
 	m_afPulseShape = new float[ PULSE_SHAPE_SIZE ];
@@ -314,6 +387,7 @@ CDigitalBeamFormer::Initialize( const TCHAR *cDir )
 
 	m_acCovariance    = new EMSCOMPLEX[ COVARIANCE_SIZE ];     // Covariance matrix
 	m_acDBFBeamVectors = new EMSCOMPLEX[ DBF_NUM_ELEMENTS * DBF_MAX_SATELLITES ];
+	m_acDBFCarrierVectors = new EMSCOMPLEX[ DBF_NUM_ELEMENTS * DBF_MAX_SATELLITES ];
 
 	memset( m_asRawTimeSeries, 0, DBF_SAMPLE_SIZE * DBF_MAX_CHANNELS * sizeof(unsigned long) );
 	//memset( m_asPhaseVector, 1.0, DBF_NUM_ELEMENTS * DBF_MAX_SATELLITES * 2 * sizeof(short));
@@ -326,7 +400,7 @@ CDigitalBeamFormer::Initialize( const TCHAR *cDir )
 	m_afPowerSpectrum	= new float[DBF_LOG19_SIZE + 1];
 	//m_acFFTdata			= new EMSCOMPLEX*[DBF_MAX_SATELLITES];
 	m_nBeam				= new short*[DBF_MAX_SATELLITES];
-
+	m_fPrevPhaseBias		= new float[DBF_NUM_ELEMENTS];
 	m_iBeamIDs				= new int[DBF_MAX_SATELLITES];
 	m_iPredictedSATIDs		= new int[DBF_MAX_SATELLITES];
 	m_fProbability			= new float[DBF_MAX_SATELLITES];
@@ -346,6 +420,7 @@ CDigitalBeamFormer::Initialize( const TCHAR *cDir )
 	m_acTemp1	= new EMSCOMPLEX[DBF_LOG20_SIZE];
 	m_acTemp2	= new EMSCOMPLEX[DBF_LOG20_SIZE];
 	m_acTemp3	= new EMSCOMPLEX[DBF_LOG20_SIZE];
+	m_acFFTBeacon = new EMSCOMPLEX[DBF_LOG16_SIZE];
 	m_acMatrix	= new EMSCOMPLEX[DBF_NUM_ELEMENTS*DBF_LOG19_SIZE];
 	//m_acMatrixT	= new EMSCOMPLEX[DBF_NUM_ELEMENTS*DBF_LOG19_SIZE];
 
@@ -360,7 +435,7 @@ CDigitalBeamFormer::Initialize( const TCHAR *cDir )
 	//memset( m_acMatrixT, 0, (DBF_NUM_ELEMENTS*DBF_LOG19_SIZE)*sizeof(EMSCOMPLEX));
 	memset( m_afChan0, 0, DBF_SAMPLE_SIZE*sizeof(float));
 
-	memset( &m_aPassSchedule, 0, sizeof(EMSDBFPASSRECORDS));
+	memset( &m_aPassSchedule, 0, sizeof(EMSDBFPASSRECORDS2));
 	memset( &m_aMaintenance, 0, sizeof(EMSDBFMAINTENANCE));
 	memset( &m_aDBFplate, 0, sizeof(EMSDBFARRAY));
 
@@ -958,10 +1033,19 @@ CDigitalBeamFormer::DBFprocessorCP(EMSTIME tm )
 	EMS_RESULT hr = EMS_BAD_PARAM;
 	ULONG ulBand50  = 50000; // 50 kHz bandwidth offset 
 	ULONG ulBand100 = ulBand50 *2; // 100 kHz downlink bandwidth
+
+	CEMSTime oTime( tm );
+	EMSTIMEFIELDS tmFields;
+	memset( &tmFields, 0, sizeof(EMSTIMEFIELDS) );
+	oTime.GetTime( &tmFields );
+	
+	//CToaFoaProcessor toaFoaProc(m_qrefDBFBeamVectors, m_ulSatellites); 
 	
 	bool bTimeFreqFlag = false;  // flag set false for frequency domain storage
 	bool bBandwidthFlag = false;
 	if ( m_ProcessFlag & PROCESS_OUTPUT_SAMPLERATE ) bBandwidthFlag = true;
+		
+	m_bEigenFlag = false;
 
 	if (m_asRawTimeSeries )
 	{
@@ -983,26 +1067,25 @@ CDigitalBeamFormer::DBFprocessorCP(EMSTIME tm )
 		m_fMaxPower   = 0.0;
 		hr = DBFCarrierTrack( tm, &m_ulFreqIndex, &m_fMaxPower );
 		
+		hr = BiasEstimator( tm );
+		
 		hr = ApplyDBFBeamVectors( m_ulSatellites, bTimeFreqFlag, bBandwidthFlag );
 		
-		//_BuildDBFSatsTrackingInfo( m_acDBFBeamVectors );
-
 		_OutputWaveEx( tm, m_ulSatellites, bBandwidthFlag );
-		//for ( int i = 0; i < m_ulSatellites; i++ )
-		//{
-		//	_OutputWaveFile( (unsigned char*)  &m_nBeam[i][0], tm, DBF_OUTPUT_SIZE * sizeof(short) );
-		//}
-
-		hr = BiasEstimator( tm );
 
 		timeEnd =  CEMSSystemClock::GetTime();
 		i = 0;
-		printf("CP Index %d, Power %6.2f, Sat %d (%d), Az %6.2f (%6.1f), El %6.2f (%6.2f), Time %f, Id: %i \n",
-				m_ulFreqIndex, m_fMaxPower, m_aPassSchedule.rec[i].ulSatID, m_ulSatellites,
+		float fTOAdiff = m_aTOAFOA.fBeaTOA[i]-m_aTOAFOA.fTOA[i];
+		float fFOAdiff = m_aTOAFOA.fBeaFOA[i]-m_aTOAFOA.fFOA[i];
+
+		printf("%04d/%02d/%02d %02d:%02d:%02d.%06d, dTOA %6.3f, dFOA %6.1f, Sat %d (%d), Az %6.2f (%6.1f), El %5.2f (%5.2f), Time %f\n",
+			tmFields.nYear, tmFields.nMonth, tmFields.nDay, tmFields.nHour,
+			tmFields.nMinute, tmFields.nSecond, (UINT)(tmFields.lNanosecond/1000),	
+			fTOAdiff, fFOAdiff, m_aPassSchedule.rec[i].ulSatID, m_ulSatellites,
 				m_aPassSchedule.rec[i].fAzimuth,m_aPassSchedule.rec[i].fPlateAzimuth,
 				m_aPassSchedule.rec[i].fElevation,m_aPassSchedule.rec[i].fPlateElevation,
-				timeStart.SecondsDifferent( timeEnd), GetCurrentThreadId());
-
+				timeStart.SecondsDifferent( timeEnd) );
+				
 	}
 
 	return hr;
@@ -1015,9 +1098,10 @@ CDigitalBeamFormer::DBFprocessorCP(EMSTIME tm )
 EMS_RESULT 
 CDigitalBeamFormer::DBFprocessorEP( EMSTIME tm )
 {
-
 	EMS_RESULT hr = EMS_BAD_PARAM;
 	bool bTimeFreqFlag = true;  // flag set true for time domain storage
+
+	//CToaFoaProcessor toaFoaProc = CToaFoaProcessor(m_qrefDBFBeamVectors, m_ulSatellites);
 
 	ULONG ulBand50  = 100000; // 50 kHz bandwidth (0.5 Hz bin size)
 	ULONG ulBand100 = ulBand50 *2; // 100 kHz bandwidth
@@ -1043,6 +1127,10 @@ CDigitalBeamFormer::DBFprocessorEP( EMSTIME tm )
 
 		hr = InitializeMemory();
 		
+		hr = InitializeTOAFOA( tm );
+
+		hr = SeparationAngle( m_ulSatellites );
+
 		//hr = BufferStatistics( m_asRawTimeSeries );
 
 		hr = ComputeChannelData(  bTimeFreqFlag, bBandwidthFlag );
@@ -1055,17 +1143,22 @@ CDigitalBeamFormer::DBFprocessorEP( EMSTIME tm )
 		//printf( "ProcessEP1 COV -> Time elapsed 1 : %f seconds, id: %i \n" ,timeStart1.SecondsDifferent( timeEnd) , GetCurrentThreadId() );
 
 		timeStart1 =  CEMSSystemClock::GetTime();
+
 		hr = ComputeDBFBeamVectors( m_ulSatellites, m_acCovariance);
 
+		m_bEigenFlag = true;
+		m_ulFreqIndex = 0;
+		m_fMaxPower   = 0.0;
+		hr = DBFCarrierTrack( tm, &m_ulFreqIndex, &m_fMaxPower );
 
-		if ( m_ulSatellites > 1 ) // Only required when more than 1 satellite
-			hr = SatelliteIdentify( m_ulSatellites ); // Reorder beam vectors to best match pass schedule
-		
+		hr = BiasEstimator( tm  );
+
 		hr = ApplyDBFBeamVectors( m_ulSatellites, bTimeFreqFlag, bBandwidthFlag );
-		
-		_BuildDBFSatsTrackingInfo( m_acDBFBeamVectors );
+
+		IdentifyTOAFOA( tm, m_acDBFBeamVectors);
 
 		_OutputWaveEx( tm, m_ulSatellites, bBandwidthFlag );
+
 		for ( int i = 0; i < m_ulSatellites; i++ )
 		{
 			timeEnd =  CEMSSystemClock::GetTime();
@@ -1077,8 +1170,8 @@ CDigitalBeamFormer::DBFprocessorEP( EMSTIME tm )
 			{
 				printf("   ");
 			}
-			printf("%02d:%02d:%02d : Rec %d, Sat %d, Az %6.2f (%6.2f), El %6.2f (%6.2f), Prob %6.4f, Time %6.3f, Id: %i \n",
-				tmFields.nHour, tmFields.nMinute, tmFields.nSecond,
+			printf("%02d:%02d:%02d.%3d : Rec %d,Sat %d,Az %6.2f(%6.2f),El %5.2f(%5.2f),Prob %5.3f,Time %6.3f,Id:%i\n",
+				tmFields.nHour, tmFields.nMinute, tmFields.nSecond,tmFields.lNanosecond/1000,
 				i, m_aPassSchedule.rec[i].ulSatID,
 				m_aPassSchedule.rec[i].fAzimuth,m_aPassSchedule.rec[i].fPlateAzimuth,
 				m_aPassSchedule.rec[i].fElevation,m_aPassSchedule.rec[i].fPlateElevation, m_fProbability[i],
@@ -1118,7 +1211,7 @@ CDigitalBeamFormer::DBFprocessorRAW(EMSTIME tm)
 
 //---------------------------------------------------------------------------
 EMS_RESULT 
-CDigitalBeamFormer::SetPassSchedule( EMSDBFPASSRECORDS* pPassRecords, EMSTIME tm )
+CDigitalBeamFormer::SetPassSchedule( EMSDBFPASSRECORDS2* pPassRecords, EMSTIME tm )
 {
 
 	EMS_RESULT hr = EMS_OK;
@@ -1126,7 +1219,7 @@ CDigitalBeamFormer::SetPassSchedule( EMSDBFPASSRECORDS* pPassRecords, EMSTIME tm
 	{
 		// read pass schedule information for time 'tm'
 
-		memcpy(&m_aPassSchedule, pPassRecords, sizeof(EMSDBFPASSRECORDS) );
+		memcpy(&m_aPassSchedule, pPassRecords, sizeof(EMSDBFPASSRECORDS2) );
 
 		m_ulSatellites = 0;
 		for( int i = 0; i < DBF_MAX_SATELLITES; i++ )
@@ -1142,7 +1235,7 @@ CDigitalBeamFormer::SetPassSchedule( EMSDBFPASSRECORDS* pPassRecords, EMSTIME tm
 	}
 	else
 	{
-		memset(&m_aPassSchedule, 0, sizeof(EMSDBFPASSRECORDS) );
+		memset(&m_aPassSchedule, 0, sizeof(EMSDBFPASSRECORDS2) );
 		hr = EMS_BAD_PARAM;
 	}
 
@@ -1249,8 +1342,17 @@ CDigitalBeamFormer::_OutputWaveEx( EMSTIME tm, ULONG culNumSats, bool bBandwidth
 		ULONG ulBytes = sizeof(short) * DBF_OUTPUT_SIZE;
 		if ( bBandwidthFlag ) ulBytes /= 2;
 
-		oWaveOut.Write( (unsigned char*)&m_nBeam[iSat][0], ulBytes );
-
+		// Select satellite id that matches pass schedule ID
+		//for ( int jsat = 0; jsat < culNumSats; jsat++)
+		{
+			//if (( ulSatID == m_iPredictedSATIDs[jsat]) || culNumSats==1 )
+			{
+				//oWaveOut.Write( (unsigned char*)&m_nBeam[iSat][0], ulBytes );
+				oWaveOut.Write( (unsigned char*)&m_nBeam[iSat][0], ulBytes/2 );
+				//oWaveOut.Write( (unsigned char*)&m_nBeam[jsat][0], ulBytes/2 ); // 1 second buffers
+				//break;
+			}
+		}
 		oWaveOut.GetFormatChunkRef().SetAudioFormat( 1 );	// PCM
 		oWaveOut.GetFormatChunkRef().SetNumChannels( 1 );	// Mono
 
@@ -1308,6 +1410,14 @@ CDigitalBeamFormer::_OutputWaveEx( EMSTIME tm, ULONG culNumSats, bool bBandwidth
 
 		oWaveOut.GetExtendedInfoRef().GetPropertiesRef().SetHardwareVersion( dHardWareVersion );
 		oWaveOut.GetExtendedInfoRef().GetPropertiesRef().SetSoftwareVersion( dSoftWareVersion );
+
+		// Add reference beacon indicator
+		if ( m_aPassSchedule.rec[iSat].fBeaconElevation > 0.0 )
+		{
+			DWORD dFlag = (DWORD) m_aPassSchedule.rec[iSat].fFOA;
+			oWaveOut.GetExtendedInfoRef().GetSatDetailsRef().SetSatFlags( dFlag );
+		}
+
 
 		dwBytes = oWaveOut.Serialize( abyData );
 
@@ -1435,27 +1545,59 @@ CDigitalBeamFormer::_OutputWaveFile( unsigned char* aData, EMSTIME tm, int iSat,
 	if ( ulSatID < 200 )
 		oWaveOut.GetExtendedInfoRef().GetSignalDetailsRef().SetPhaseModState( EMS_PHASE_MOD_YES);
 	else
-		oWaveOut.GetExtendedInfoRef().GetSignalDetailsRef().SetPhaseModState( EMS_PHASE_MOD_NO );
+		oWaveOut.GetExtendedInfoRef().GetSignalDetailsRef().SetPhaseModState( EMS_PHASE_MOD_NO); 
 
-	dwBytes = oWaveOut.Serialize( abyData );
-	if( dwBytes > 0 )
-	{
-		memset(szFileName, 0, sizeof(szFileName) );
-		ULONG	ulFileNumber = ((ULONG)m_nCounter) % 10000;
-		sprintf(szFileName,"C:\\HGT\\DBFPassData\\WAV\\DBFRAW_%07d_%03d_%04d.wav", ulFileNumber, ulSatID, ulLutID);
-		pWaveFile = fopen(szFileName,"w+b");
-		if( pWaveFile != NULL )
+
+		oWaveOut.GetExtendedInfoRef().GetPropertiesRef().SetHardwareVersion( dHardWareVersion );
+		oWaveOut.GetExtendedInfoRef().GetPropertiesRef().SetSoftwareVersion( dSoftWareVersion );
+
+		// Add reference beacon indicator
+		if ( m_aPassSchedule.rec[iSat].fBeaconElevation > 0.0 )
 		{
-			fwrite(abyData, 1, dwBytes, pWaveFile);
-			fclose(pWaveFile);
+			DWORD dFlag = (DWORD) m_aPassSchedule.rec[iSat].fFOA;
+			oWaveOut.GetExtendedInfoRef().GetSatDetailsRef().SetSatFlags( dFlag );
 		}
+
+
+		dwBytes = oWaveOut.Serialize( abyData );
+
+		if( dwBytes > 0  )
+		{
+			int iSent = 0;
+
+			hr = _InitDT();
+			if( m_pDataTransmit )
+			{
+				hr = m_pDataTransmit->Send( dwBytes, abyData, &iSent);
+			}
+			if(FAILED(hr) )
+			{
+		
+				// WAV file output to disk
+				FILE*	lpWaveFile = NULL;
+				char	szFileName[256];
+				ULONG	ulFileNumber = ((ULONG)m_nCounter) % 100;
+				sprintf(szFileName,"C:\\HGT\\DBFPassData\\WAV\\DBFRAW_%07d_%03d_%04d.wav", ulFileNumber, ulSatID, ulLutID);
+
+				lpWaveFile = fopen(szFileName,"w+b");
+				if( lpWaveFile != NULL )
+				{
+					fwrite(abyData, dwBytes, 1, lpWaveFile);
+					flushall();
+					fclose(lpWaveFile);
+					lpWaveFile = NULL;
+				}
+			}
+		}
+
 
 		delete[] abyData;
 		abyData = 0;
-	}
+	
 
 	return;
 }
+
 
 //snl for testing..tbr
 #include <complex>
@@ -1481,9 +1623,11 @@ unsigned long long  GetFreeDiskSpaceInGBs ()
         return (freeAvail /std::pow(1024.0,3));	//, total / 1024 / 1024, totalfree / 1024 / 1024);
 	}
 }
+//---------------------------------------------------------------------------
 
 void
 CDigitalBeamFormer::_OutpuRawDigitalDataFile( unsigned char* aData, EMSTIME tm, ULONG culSize )
+
 {
 	EMS_RESULT hr = EMS_OK;
 
@@ -1500,25 +1644,24 @@ CDigitalBeamFormer::_OutpuRawDigitalDataFile( unsigned char* aData, EMSTIME tm, 
 		float fSeconds = (float)(tmFields.nMinute)*60 + (float) (tmFields.nSecond)  + (float) (tmFields.lNanosecond)*1e-9;
 
 		memset(szFileName, 0, sizeof(szFileName) );
-		sprintf(szFileName,"D:\\ADCraw\\DBFRawData_%09.6f_%lu_%lu_%lu_%lu_%lu.bin", fSeconds, m_aPassSchedule.rec[0].ulSatID
-			, m_aPassSchedule.rec[1].ulSatID, m_aPassSchedule.rec[2].ulSatID
-			, m_aPassSchedule.rec[3].ulSatID, m_aPassSchedule.rec[4].ulSatID);
+		sprintf(szFileName,"D:\\ADCraw\\DBFRawData_%09.6f_%03d_%03d_%03d_%03d.bin",
+			fSeconds, m_aPassSchedule.rec[0].ulSatID,
+			m_aPassSchedule.rec[1].ulSatID,
+			m_aPassSchedule.rec[2].ulSatID,
+			m_aPassSchedule.rec[3].ulSatID);
 		pRawDataFile  = fopen(szFileName,"w+b");
 		if( pRawDataFile  != NULL )
 		{
 			printf(" %s\n",szFileName);
 			
-			for ( int i = 0; i < DBF_MAX_SATELLITES; i++ )
-			{
-				fwrite(&m_aPassSchedule.rec[i].ulSatID, sizeof(ULONG), 1, pRawDataFile );
-				fwrite(&m_aPassSchedule.rec[i].fAzimuth, sizeof(float), 1, pRawDataFile );
-				fwrite(&m_aPassSchedule.rec[i].fElevation, sizeof(float), 1, pRawDataFile );
-				fwrite(&m_aPassSchedule.rec[i].fPlateAzimuth, sizeof(float), 1, pRawDataFile );
-				fwrite(&m_aPassSchedule.rec[i].fPlateElevation, sizeof(float), 1, pRawDataFile );
-			}
 			ULONG ulLength = culSize;
 			fwrite(&ulLength, sizeof(ULONG), 1, pRawDataFile );
 			fwrite(aData, culSize, 1, pRawDataFile );
+
+			for ( int i = 0; i < m_ulSatellites; i++ )
+			{
+				fwrite( &m_aPassSchedule.rec[i],sizeof(EMSDBFPASSRECORD2), 1, pRawDataFile);
+			}
 			fclose(pRawDataFile );
 		}
 
@@ -1534,7 +1677,6 @@ CDigitalBeamFormer::_OutpuRawDigitalDataFile( unsigned char* aData, EMSTIME tm, 
 EMS_RESULT 
 CDigitalBeamFormer::GetPassSchedule( EMSTIME tm )
 {
-
 	EMS_RESULT hr = EMS_BAD_PARAM;
 
 	// read pass schedule information for time 'tm'
@@ -1572,6 +1714,7 @@ CDigitalBeamFormer::_SetActualTimeNew()
 	ULONG jsample, index;
 
 	for ( jsample = 0, index = 0; jsample < m_ulSamplesPerChannel;  jsample++, index += m_ulChannels )
+
 	{
 		unsigned long mTempTimeSeries = m_asRawTimeSeries[index] & 0x000FFFFF;
 		m_afChan0[jsample] = (float) ( mTempTimeSeries * fScaleFactorInverse) ;
@@ -1651,7 +1794,7 @@ CDigitalBeamFormer::ProcessAll()
 	//m_ProcessFlag = 8; // RAW
 
 	// Temporary fix
-	m_ProcessFlag = PROCESS_DEFAULT + PROCESS_OUTPUT_SAMPLERATE; // 100khz
+	//m_ProcessFlag = PROCESS_DEFAULT + PROCESS_OUTPUT_SAMPLERATE; // 100khz
 	
 
 	switch( m_ProcessFlag & 0x00FF ) 
@@ -1661,6 +1804,7 @@ CDigitalBeamFormer::ProcessAll()
 		case 1:
 			{
 				if ( m_ulSatellites > 0 )
+				//if ( m_ulSatellites > 1 )
 				{
 					// Time Domain Processing ( Eigenvector Method )
 					DBFprocessorEP(m_aMaintenance.timestamp);
@@ -1670,6 +1814,7 @@ CDigitalBeamFormer::ProcessAll()
 				else
 				{
 					// Frequency Domain Processing ( carrier tracking)
+					//m_ulSatellites = 1;
 					DBFprocessorCP(m_aMaintenance.timestamp);
 				}
 			}
@@ -1720,7 +1865,14 @@ CDigitalBeamFormer::_OutputCalibData( EMSTIME tm )
 
 			memset( &emsDBFCalib, 0, sizeof(EMSDBFCALIBRECORD) );
 
-			emsDBFCalib.Pass = m_aPassSchedule.rec[0];
+			emsDBFCalib.Pass.fAzimuth = m_aPassSchedule.rec[0].fAzimuth;
+			emsDBFCalib.Pass.fElevation = m_aPassSchedule.rec[0].fElevation;
+			emsDBFCalib.Pass.fPlateAzimuth= m_aPassSchedule.rec[0].fPlateAzimuth;
+			emsDBFCalib.Pass.fPlateElevation = m_aPassSchedule.rec[0].fPlateElevation;
+			emsDBFCalib.Pass.timestamp.intTime = m_aPassSchedule.rec[0].timestamp.intTime;
+			emsDBFCalib.Pass.ulSatID = m_aPassSchedule.rec[0].ulSatID;
+			emsDBFCalib.Pass.wPlateID = m_aPassSchedule.rec[0].wPlateID;
+			emsDBFCalib.Pass.ulLutID = m_aPassSchedule.rec[0].ulLutID;
 
 			memcpy( emsDBFCalib.fCalibPhaseReal, m_LastCalibRecord.fCalibPhaseReal, sizeof(m_LastCalibRecord.fCalibPhaseReal) );
 			memcpy( emsDBFCalib.fCalibPhaseImag, m_LastCalibRecord.fCalibPhaseImag, sizeof(m_LastCalibRecord.fCalibPhaseImag) );
@@ -1838,9 +1990,9 @@ CDigitalBeamFormer::DBFCarrierTrack( EMSTIME tm, ULONG *m_ulFreqIndex, float *m_
 	EMS_RESULT hr = EMS_OK;
 
 	// Assume downconvertion by 50 kHZ and downlink is centred at 150 kHz
-	DOUBLE dBinSize   = (float) DBF_LOG20_SIZE  / (float) DBF_SAMPLE_RATE;
-	ULONG ulOffset50  = (ULONG) (DBF_FREQ_OFFSET * dBinSize); // 50 kHz offset
-	ULONG ulBandWidth = (ULONG) (DBF_FREQ_BANDWIDTH * dBinSize);
+	DOUBLE dBinSize   = (float) DBF_SAMPLE_RATE / (float) DBF_LOG20_SIZE;
+	ULONG ulOffset50  = (ULONG) (DBF_FREQ_OFFSET / dBinSize); // 50 kHz offset
+	ULONG ulBandWidth = (ULONG) (DBF_FREQ_BANDWIDTH / dBinSize);
 
 	WORD wOutSampleRate = PROCESS_OUTPUT_SAMPLERATE;
 	if ( m_ProcessFlag & wOutSampleRate ) ulOffset50 *= 2;
@@ -1856,23 +2008,29 @@ CDigitalBeamFormer::DBFCarrierTrack( EMSTIME tm, ULONG *m_ulFreqIndex, float *m_
 	// Find maximum carrier power over downlink bandwidth
 	float fMaxPower = 0.0;
 	ULONG index = 0;
-	ULONG ulOffset = 15000;
-	for( ULONG i = ulOffset; i < ulBandWidth-ulOffset; i++ )
+	ULONG ulOffset = 10000;
+
+	fMaxPower = _EMSsMaxExt( &m_afTemp2[ulOffset], ulBandWidth, &index);
+	//ULONG ulOffset = 15000;
+	//for( ULONG i = ulOffset; i < ulBandWidth-ulOffset; i++ )
+	//for( ULONG i = ulOffset; i < ulOffset+100000; i++ )
+	//{
+	//	if ( m_afTemp2[i] > fMaxPower )
+	//	{
+	//		fMaxPower = m_afTemp2[i];
+	//		index = i;
+	//	}
+	//}
+
+	if ( !m_bEigenFlag )
 	{
-		if ( m_afTemp2[i] > fMaxPower )
+		// Assign phase coefficients from complex conjugate of strongest carrier signal
+		for( ULONG i = 0; i < DBF_NUM_ELEMENTS; i++ )
 		{
-			fMaxPower = m_afTemp2[i];
-			index = i;
+			m_acDBFBeamVectors[i].re =  m_acMatrix[i*DBF_LOG19_SIZE + index ].re;
+			m_acDBFBeamVectors[i].im = -m_acMatrix[i*DBF_LOG19_SIZE + index ].im;
 		}
 	}
-	
-	// Assign phase coefficients from complex conjugate of strongest carrier signal
-	for( ULONG i = 0; i < DBF_NUM_ELEMENTS; i++ )
-	{
-		m_acDBFBeamVectors[i].re =  m_acMatrix[i*DBF_LOG19_SIZE + index ].re;
-		m_acDBFBeamVectors[i].im = -m_acMatrix[i*DBF_LOG19_SIZE + index ].im;
-	}
-
 	*m_ulFreqIndex = index;
 	fMaxPower   = 10*log10(fMaxPower);
 	m_fMaxPower = fMaxPower;
@@ -1901,7 +2059,7 @@ CDigitalBeamFormer::ComputeDBFBeamVectors( INT nNumBeams, const EMSCOMPLEX *m_ac
     if ( m_acCovariance )
 	{
 		hr = PerformEigenDecomposition(m_acCovariance, EigenValues, acEigenVectors);
-
+		memcpy(&m_aTOAFOA.fEigenvalue[0], &EigenValues[0], DBF_NUM_ELEMENTS * sizeof(float) );
 	}
 
 	if(EMS_OK == hr)
@@ -1924,6 +2082,25 @@ CDigitalBeamFormer::ComputeDBFBeamVectors( INT nNumBeams, const EMSCOMPLEX *m_ac
 		  
 			   hr = ComputeNullingVectors(acLargestEigenVectors, nNumBeams, m_acDBFBeamVectors); 	
 			   delete [] acLargestEigenVectors;		   
+			   
+			   // Compute phases of eigenvectors and store
+			   float fBeamReal;
+			   float fBeamImag;
+			   double dPhase;
+
+			   for ( int ibeam = 0; ibeam < nNumBeams; ibeam++ )
+			   {
+				   for ( int ielement = 0; ielement < DBF_NUM_ELEMENTS; ielement++ )
+				   {
+					   fBeamReal	 = m_acDBFBeamVectors[ibeam*DBF_NUM_ELEMENTS + ielement].re;
+					   fBeamImag	 = m_acDBFBeamVectors[ibeam*DBF_NUM_ELEMENTS + ielement].im;
+
+					   dPhase = atan2( (double)fBeamReal , (double)fBeamImag ) * (360.0/c_dTwoPI);
+
+					   m_aTOAFOA.fEigenvector[ibeam*DBF_NUM_ELEMENTS + ielement ] = (float) dPhase;
+				   }
+			   }
+
 		   }
 	 }
 
@@ -2031,9 +2208,11 @@ CDigitalBeamFormer::ComputeNullingVectors(const EMSCOMPLEX *acEigenVectors,
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 EMS_RESULT
-CDigitalBeamFormer::ApplyDBFBeamVectors( ULONG m_ulSatellites, bool bTimeFreqFlag, bool bBandwidthFlag )
+CDigitalBeamFormer::ApplyDBFBeamVectors( ULONG m_ulSatellites, bool bTimeFreqFlag, bool bBandwidthFlag)
 {
 	EMS_RESULT hr = EMS_FALSE;
+
+	bool bBeaconCheck = false; // Check for Reference Beacon
 	double dMean = 0;
 	double dStdDev = 0;
 	double dMean0 = 0;
@@ -2053,7 +2232,16 @@ CDigitalBeamFormer::ApplyDBFBeamVectors( ULONG m_ulSatellites, bool bTimeFreqFla
 			m_ulSatellites = MAX_BEAMS;
 
 		hr = EMS_OK;
-					
+
+		for ( int isat = 0; isat < m_ulSatellites; isat++ )
+		{
+			// Find 1st pass record with possible reference beacon
+			if ( m_aPassSchedule.rec[isat].fBeaconElevation > 0 )
+			{
+				bBeaconCheck  = true;
+				break;
+			}
+		}	
 
 		for ( int isat = 0; isat < m_ulSatellites; isat++ )
 		{
@@ -2089,8 +2277,12 @@ CDigitalBeamFormer::ApplyDBFBeamVectors( ULONG m_ulSatellites, bool bTimeFreqFla
 			}
 
 			// Compute maximum power and its frequency bin
-			_EMScbPowerSpectr( &m_acTemp3[0], &m_afTemp1[0], ulBandWidth);
+			_EMScbPowerSpectr( &m_acTemp3[0], &m_afTemp1[0], DBF_LOG19_SIZE);
 			m_dMaxPower = _EMSsMaxExt(&m_afTemp1[0], ulBandWidth, &m_ulMaxPowerIndex );
+			
+			// Determine TOA and FOA estimates for Eigenvector power spectrum
+			//if ( bBeaconCheck )	SatelliteTOAFOA( isat );
+			SatelliteTOAFOA( isat );
 
 			// Store the complex conjugate of the original FFT in resevse order
 			m_acTemp3[ 0 ].re = 0.0;
@@ -2212,14 +2404,19 @@ CDigitalBeamFormer::PerformEigenVectorNormalization(const MKL_Complex8 *acEigenV
 EMS_RESULT
 CDigitalBeamFormer::ComputeCovariance( ULONG ulNumSamples )
 {
+	// Note: Remove 1st 50 kHz given elements are centred at 150 kHz.
+	// ulStart is the 50 kHz offset given the sample rate 500000.
+	ULONG ulStart = DBF_LOG19_SIZE / 5;
+	ULONG ulLength = DBF_LOG19_SIZE - ulStart;
+
 	// Compute sample covariance over the 100 kHz L-Band downlink
 	for( ULONG i = 0; i < DBF_NUM_ELEMENTS; i++ )
 	{
-		emscbConj2( &m_acMatrix[i*DBF_LOG19_SIZE], &m_acTemp1[0], ulNumSamples ); // 100 kHz
+		emscbConj2( &m_acMatrix[i*DBF_LOG19_SIZE+ulStart], &m_acTemp1[0], ulLength ); // 100 kHz
 
 		for( ULONG j = i; j < DBF_NUM_ELEMENTS; j++)
 		{
-			m_acCovariance[i*DBF_NUM_ELEMENTS+j] = emscDotProd(&m_acTemp1[0], &m_acMatrix[j*DBF_LOG19_SIZE], ulNumSamples);
+			m_acCovariance[i*DBF_NUM_ELEMENTS+j] = emscDotProd(&m_acTemp1[0], &m_acMatrix[j*DBF_LOG19_SIZE+ulStart], ulLength);
 			m_acCovariance[j*DBF_NUM_ELEMENTS+i].re =  m_acCovariance[i*NUM_CHANNELS+j].re;
 			m_acCovariance[j*DBF_NUM_ELEMENTS+i].im = -m_acCovariance[i*NUM_CHANNELS+j].im;
 		}
@@ -2247,11 +2444,14 @@ CDigitalBeamFormer::ComputeCovariance( ULONG ulNumSamples )
 
 
 BOOL 
-CDigitalBeamFormer::_BuildDBFSatsTrackingInfo( EMSCOMPLEXD* acDBFBeamVectors)
+CDigitalBeamFormer::_BuildDBFSatsTrackingInfo( EMSCOMPLEX* acDBFBeamVectors)
 {
 	//call tracking function..
 		//CTrackDBFSatellites objTrackSats;
 		//read existing values
+
+		int i, j, k;
+
 		int CurrentSatIds [ MAX_BEAMS ];
 		memset( CurrentSatIds, 0, sizeof(int) * MAX_BEAMS );
 		for( int i = 0; i < m_ulSatellites; i++ )
@@ -2260,7 +2460,7 @@ CDigitalBeamFormer::_BuildDBFSatsTrackingInfo( EMSCOMPLEXD* acDBFBeamVectors)
 		}
 
 		//read from q
-		EMSCOMPLEXD *prevDBFBeamVectors = m_qrefDBFBeamVectors.ReadFirst( ).dbfBeamVector;
+		EMSCOMPLEX *prevDBFBeamVectors = m_qrefDBFBeamVectors.ReadFirst( ).dbfBeamVector;
 		int *prevSchedulerSatIDs = m_qrefDBFBeamVectors.ReadFirst( ).schedulerSatIds;
 		int *prevPredSatIDs = m_qrefDBFBeamVectors.ReadFirst( ).predSatIDs;
 		int *prevBeamIds = m_qrefDBFBeamVectors.ReadFirst( ).predBeamIDs;
@@ -2272,13 +2472,13 @@ CDigitalBeamFormer::_BuildDBFSatsTrackingInfo( EMSCOMPLEXD* acDBFBeamVectors)
 		if( !prevDBFBeamVectors && !prevBeamIds )
 		{
 			memset(m_iBeamIDs, 0, MAX_BEAMS*sizeof(int) );
-			for( int i = 0; i < m_ulSatellites; i++ )
+			for( i = 0; i < m_ulSatellites; i++ )
 			{
 				//first time so set default beam ids
 				m_iBeamIDs[i] = i+1;
 			}
 			DBFTrackingData obj;
-			memcpy( m_acDBFBeamVectors,acDBFBeamVectors, MAX_BEAMS*NUM_CHANNELS*sizeof(EMSCOMPLEXD) );
+			memcpy( m_acDBFBeamVectors,acDBFBeamVectors, MAX_BEAMS*NUM_CHANNELS*sizeof(EMSCOMPLEX) );
 			obj.dbfBeamVector = m_acDBFBeamVectors;
 			obj.predBeamIDs = m_iBeamIDs;
 			memcpy( m_iPredictedSATIDs, CurrentSatIds, MAX_BEAMS * sizeof(int) );
@@ -2291,21 +2491,73 @@ CDigitalBeamFormer::_BuildDBFSatsTrackingInfo( EMSCOMPLEXD* acDBFBeamVectors)
 			return true;
 		}
 		
-		int *newBeamIds = new int[ MAX_BEAMS ];
+		int newBeamIds[ MAX_BEAMS ];
 		memset( newBeamIds, 0, sizeof(int) * MAX_BEAMS );
-		int *newPredSatIds = new int [ MAX_BEAMS ];
+		int newPredSatIds[ MAX_BEAMS ];
 		memset( newPredSatIds, 0, sizeof(int) * MAX_BEAMS );
 
 		// Compute probabilities
 		EMSCOMPLEX cTemp1[NUM_CHANNELS];
 		EMSCOMPLEX cTemp;
-		for ( int i = 0; i  < m_ulSatellites; i++ )
+
+		// Find new or missing satellites
+		int iCount[MAX_BEAMS];
+		memset( iCount, 0, sizeof(int) * MAX_BEAMS );
+
+		int iMaxBeam = 0;
+		for ( i = 0; i  < m_ulSatellites; i++ )
 		{
-			emscbConj2(&prevDBFBeamVectors[i], &cTemp1[0], NUM_CHANNELS );
-			cTemp = emscDotProd( &m_acDBFBeamVectors[i], &cTemp1[0], NUM_CHANNELS );
-			m_fProbability[i] = sqrt(cTemp.re*cTemp.re + cTemp.im*cTemp.im ) / NUM_CHANNELS;
-			newBeamIds[i] = m_iBeamIDs[i];
-			newPredSatIds[i] = m_aPassSchedule.rec[i].ulSatID;
+			for ( j = 0; j  < prevNumBeams; j++ )
+			{
+				if ( CurrentSatIds[i] == prevPredSatIDs[j] )
+				{
+					iCount[i] = j+1;
+					if ( iMaxBeam < prevBeamIds[j] ) iMaxBeam = prevBeamIds[j]+1;
+				}
+			}
+		}
+
+		// Best match to previous eigenvector
+		k = 0;
+		for ( i = 0; i  < m_ulSatellites; i++ )
+		{
+			// Check orthogonality
+			float fProb1[25];
+			for ( j = 0; j  < m_ulSatellites; j++ )
+			{
+				memset(&cTemp1[0], 0.0, NUM_CHANNELS * sizeof( EMSCOMPLEX ) );
+				emscbConj2( &m_acDBFBeamVectors[j * NUM_CHANNELS], &cTemp1[0], NUM_CHANNELS );
+				cTemp = emscDotProd( &m_acDBFBeamVectors[i * NUM_CHANNELS], &cTemp1[0], NUM_CHANNELS );
+				fProb1[k++] = sqrt(cTemp.re*cTemp.re + cTemp.im*cTemp.im ) / NUM_CHANNELS;
+			}
+
+			m_fProbability[i] = 0.0;
+			float fProb       = 0.0;
+
+
+			if ( iCount[i] > 0  ) // Matching satellite condition
+			{
+				for ( j = 0; j  < prevNumBeams; j++ )
+				{
+					memset(&cTemp1[0], 0.0, NUM_CHANNELS * sizeof( EMSCOMPLEX ) );
+					emscbConj2( &prevDBFBeamVectors[j * NUM_CHANNELS], &cTemp1[0], NUM_CHANNELS );
+					cTemp = emscDotProd( &m_acDBFBeamVectors[i * NUM_CHANNELS], &cTemp1[0], NUM_CHANNELS );
+					fProb = sqrt(cTemp.re*cTemp.re + cTemp.im*cTemp.im ) / NUM_CHANNELS;
+					if ( fProb > m_fProbability[i] )
+					{
+						m_fProbability[i] = fProb;
+						newBeamIds[i]    = prevBeamIds[j];
+						newPredSatIds[i] = prevPredSatIDs[j];
+					}
+				}
+			}
+			else
+			{
+				newPredSatIds[i] = CurrentSatIds[i];
+				newBeamIds[i]    = iMaxBeam;
+				iMaxBeam++;
+			}
+
 		}
 
 		//const double Tup = 0.6;
@@ -2349,7 +2601,7 @@ CDigitalBeamFormer::ComputeChannelData( bool bTimeFreqFlag, bool bBandwidthFlag 
 	DOUBLE dBinSize   = (float) DBF_LOG20_SIZE  / (float) DBF_SAMPLE_RATE;
 	ULONG ulOffset50  = (ULONG) (DBF_FREQ_OFFSET * dBinSize); // 50 kHz offset
 	ULONG ulBandWidth = (ULONG) (DBF_FREQ_BANDWIDTH * dBinSize);
-	ULONG ulExtraFreqOffset = 5000;
+	LONG ulExtraFreqOffset = -5000;
 
 	if ( bBandwidthFlag ) ulOffset50 *= 2;
 	ulOffset50 += ulExtraFreqOffset;
@@ -2404,18 +2656,20 @@ CDigitalBeamFormer::ComputeChannelData( bool bTimeFreqFlag, bool bBandwidthFlag 
 			memcpy(&m_acMatrix[icell*DBF_LOG19_SIZE], m_acTemp2, DBF_LOG19_SIZE * sizeof(EMSCOMPLEX));
 		}
 
-		// Compute the total mean and standard deviation
-
-		m_dMeanADC   = 0.0;
-		m_dStdDevADC = 0.0;
-		for ( int i = 0; i < DBF_NUM_ELEMENTS; i++ )
-		{
-			m_dMeanADC +=  m_aMaintenance.dMean[i];
-			m_dStdDevADC += m_aMaintenance.dStdDev[i];
-		}
-		m_dMeanADC   /= DBF_NUM_ELEMENTS;
-		m_dStdDevADC /= DBF_NUM_ELEMENTS;
 	}
+		
+	// Compute the total mean and standard deviation
+
+	m_dMeanADC   = 0.0;
+	m_dStdDevADC = 0.0;
+	for ( int i = 0; i < DBF_NUM_ELEMENTS; i++ )
+	{
+		m_dMeanADC +=  m_aMaintenance.dMean[i];
+		m_dStdDevADC += m_aMaintenance.dStdDev[i];
+	}
+	m_dMeanADC   /= DBF_NUM_ELEMENTS;
+	m_dStdDevADC /= DBF_NUM_ELEMENTS;
+	
 	return EMS_OK;
 }
 
@@ -2568,6 +2822,7 @@ CDigitalBeamFormer::InitializeMemory( )
 		memset( m_acMatrix,  0, (DBF_NUM_ELEMENTS*DBF_LOG19_SIZE)*sizeof(EMSCOMPLEX));
 		memset( m_acDBFBeamVectors, 0, (DBF_NUM_ELEMENTS*DBF_MAX_SATELLITES)*sizeof(EMSCOMPLEX));
 
+		memset( &m_aTOAFOA, 0, sizeof(EMSDBFTOAFOARECORD) );
 	}
 	catch( ... )
 	{
@@ -2579,59 +2834,93 @@ CDigitalBeamFormer::InitializeMemory( )
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
 EMS_RESULT
-CDigitalBeamFormer::BiasEstimator( EMSTIME tm )
+CDigitalBeamFormer::BiasEstimator( EMSTIME tm  )
 {
 	EMS_RESULT hr = EMS_OK;
 
 	FILE*	lpBiasFile = NULL;
 	char	szFileName[256];
+	float	fPhase0[DBF_NUM_ELEMENTS];
+	float	fPhase1[DBF_NUM_ELEMENTS];
+	float	fPhase2[DBF_NUM_ELEMENTS];
+	float	fPhase3[DBF_NUM_ELEMENTS];
+	float	fPhase4[DBF_NUM_ELEMENTS];
 
+
+	EMSCOMPLEX cTemp[DBF_NUM_ELEMENTS];
+	
 	EMSTIMEFIELDS tmFlds;
 	CEMSTime oTM(tm);
+	ULONG ulIndex;
 
-	float fAmplitude = 0.0;
-	EMSCOMPLEX cTemp;
-
+	// Output results to temporary bias data files
 	oTM.GetTime(&tmFlds);
-	ULONG ulHourSec = tmFlds.nMinute*60 + tmFlds.nSecond;
-				
-	sprintf(szFileName,"C:\\HGT\\DBFPassData\\BiasOutput\\DBF_Bias_%04d.bin", ulHourSec);
+	ULONG ulDaySec = tmFlds.nHour*3600 + tmFlds.nMinute*60 + tmFlds.nSecond;
+	if ( m_bEigenFlag )
+	{
+		sprintf(szFileName,"C:\\HGT\\DBFPassData\\BiasEigen\\DBF_Bias_%05d.bin", ulDaySec);
+	}
+	else
+	{
+		sprintf(szFileName,"C:\\HGT\\DBFPassData\\BiasSignal\\DBF_Bias_%05d.bin", ulDaySec);
+	}
 
 	lpBiasFile = fopen(szFileName,"w+b");
-	if( lpBiasFile != NULL )
+
+	// Assume first beamvector is harmonic or probe
+	memcpy(&cTemp[0], &m_acDBFBeamVectors[0], sizeof(cTemp) );
+	float fAmplitude = 0.0;
+
+	for ( int i = 0; i < DBF_NUM_ELEMENTS; i++ )
 	{
-		for (int isat = 0; isat < m_ulSatellites; isat++ )
-		{
-			int nBytes = DBF_NUM_ELEMENTS * sizeof( EMSCOMPLEX);
-			memset(m_acTemp1, 0, nBytes );
-			memset(m_acTemp2, 0, nBytes );
-
-			for ( int i = 0; i < DBF_NUM_ELEMENTS; i++ )
-			{
-				memcpy(m_acTemp2, &m_acDBFBeamVectors[isat*DBF_NUM_ELEMENTS], nBytes );
-				m_acTemp1[i].re = m_acTemp2[i].re - m_acTemp2[DBF_CENTRE_ELEMENT].re;
-				m_acTemp1[i].im = m_acTemp2[i].im - m_acTemp2[DBF_CENTRE_ELEMENT].im;
-
-				cTemp.re = (float)m_aPassSchedule.rec[isat].nPhaseReal[i+1];
-				cTemp.im = (float)m_aPassSchedule.rec[isat].nPhaseImag[i+1];
-
-				fAmplitude = sqrt( cTemp.re*cTemp.re + cTemp.im*cTemp.im );
-
-				m_acTemp1[i].re -= cTemp.re/fAmplitude;
-				m_acTemp1[i].im -= cTemp.im/fAmplitude;;
-			}
-
-			fwrite( &m_aPassSchedule.rec[isat], sizeof(EMSDBFPASSRECORD), 1, lpBiasFile );
-			fwrite( &m_acTemp1,  nBytes, 1, lpBiasFile );
-			fwrite( &m_ulFreqIndex, sizeof(ULONG), 1, lpBiasFile );
-			fwrite( &m_fMaxPower, sizeof(float), 1, lpBiasFile );
-
-
-		}
-		flushall();
-		fclose(lpBiasFile);
-		lpBiasFile = NULL;
+		// Normalize Beam Vector and compute bias phase angles
+		fAmplitude = sqrt( cTemp[i].re*cTemp[i].re + cTemp[i].im*cTemp[i].im );
+		cTemp[i].re /= fAmplitude;
+		cTemp[i].im /= fAmplitude;
+		fPhase0[i] = atan2( (double) cTemp[i].im, (double) cTemp[i].re ) * c_dRadToDeg;
+		fPhase3[i] = fAmplitude;
 	}
+
+	// Adjust predicted satellite phase angles by subtracting bias phase angles
+	for (int isat = 0; isat < m_ulSatellites; isat++ )
+	{
+		ULONG ulIndex = isat*DBF_NUM_ELEMENTS;
+		float f360Angle = 360.0;
+		for ( int i = 0; i < DBF_NUM_ELEMENTS; i++ )
+		{
+			fPhase1[i] = fPhase0[i] - fPhase0[DBF_CENTRE_ELEMENT-1];
+			fPhase2[i] = m_aPassSchedule.rec[isat].fPhase[i+1] - fPhase1[i];
+			//fPhase2[i] = m_aPassSchedule.rec[isat].fPhase[i+1] + fPhase1[i];
+			fPhase2[i] = fmod(fPhase2[i], f360Angle );
+
+			if ( !m_bEigenFlag )
+			{
+				fPhase2[i] -= m_aDBFplate.emsDBFCells[i].fNearField;
+				fPhase2[i] = fmod(fPhase2[i], f360Angle );
+				m_acDBFBeamVectors[ulIndex+i].re = cos(fPhase2[i]*c_dDegToRad);
+				m_acDBFBeamVectors[ulIndex+i].im = -sin(fPhase2[i]*c_dDegToRad);
+			}
+		}
+		if( lpBiasFile != NULL && isat==0)
+		{
+
+			fwrite( &m_aPassSchedule.rec[isat], sizeof(EMSDBFPASSRECORD2), 1, lpBiasFile );
+			ulIndex = ftell(lpBiasFile);
+
+			fwrite( &fPhase1[0],  sizeof(float), 31, lpBiasFile );
+			fwrite( &fPhase2[0],  sizeof(float), 31, lpBiasFile );
+			fwrite( &fPhase3[0],  sizeof(float), 31, lpBiasFile );
+
+			ulIndex = ftell(lpBiasFile);
+			fwrite( &m_ulFreqIndex, sizeof(ULONG), 1, lpBiasFile );
+			ulIndex = ftell(lpBiasFile);
+			fwrite( &m_fMaxPower, sizeof(float), 1, lpBiasFile );
+			ulIndex = ftell(lpBiasFile);
+		}
+	}
+	flushall();
+	fclose(lpBiasFile);
+	lpBiasFile = NULL;
 
 	return hr;
 }
@@ -2652,7 +2941,7 @@ CDigitalBeamFormer::TestDBFprocessor( int nProcess )
 	ULONG	RawOffset[10];
 	ULONG	lSize, lSize0, lSizeMax;
 
-	EMSDBFPASSRECORD pPassRecord; 
+	EMSDBFPASSRECORD2 pPassRecord; 
 
 	lSize = sizeof(ULONG);
 
@@ -2729,7 +3018,7 @@ CDigitalBeamFormer::TestDBFprocessor( int nProcess )
 			int icount = 0;
 			while ( lSize < lSizeMax )
 			{
-				lSize0 = fread( &pPassRecord,1,sizeof(EMSDBFPASSRECORD),lpPassFile);
+				lSize0 = fread( &pPassRecord,1,sizeof(EMSDBFPASSRECORD2),lpPassFile);
 
 				if ( icount == 0 )
 				{
@@ -2800,6 +3089,9 @@ CDigitalBeamFormer::DirectoryList(string folder, string filetype)
 EMS_RESULT
 CDigitalBeamFormer::SatelliteIdentify( ULONG m_ulSatellites  )
 {
+	// Note: Pass schedule phase predictions include the 1st channel with the  1 PPS. 
+	//       Therefore all 'real' phases are from 2 to 32 channels.
+	
 	EMS_RESULT hr = EMS_OK;
 	
 	EMSCOMPLEX PhaseBias[MAX_BEAMS][MAX_BEAMS][NUM_CHANNELS];
@@ -2829,214 +3121,114 @@ CDigitalBeamFormer::SatelliteIdentify( ULONG m_ulSatellites  )
 	memset( cVect1,				0, NUM_CHANNELS*sizeof(EMSCOMPLEX) );
 
 	int sat1, sat2, eig1, eig2, kindex;
-	int i, j, k, m, n;
+	int i, j, k, m, n, nmax;
 	m = 0;
 	n = 0;
 
-	// --- Re-purposed and new variables for the direct matching algorithm ---
-	float      fSimilarityMatrix[MAX_BEAMS][MAX_BEAMS];
-	bool       bEigenvectorAssigned[MAX_BEAMS];
-	bool       bSatelliteAssigned[MAX_BEAMS];
+	nmax = MAX_BEAMS*MAX_BEAMS*MAX_BEAMS*MAX_BEAMS;
 
-	//EMSCOMPLEX cVect1[NUM_CHANNELS]; // Will hold measured eigenvector
-	//EMSCOMPLEX cVect2[NUM_CHANNELS]; // Will hold predicted satellite vector
-	//EMSCOMPLEX cTemp1;
-	//float      fAmplitude1; // Will hold L2 norm of eigenvector
-	//float      fAmplitude2; // Will hold L2 norm of predicted vector
-	//float      fMaxBias; // Re-used as fMaxScore
-	//int        nIndex;
 
-	// --- Original initializations ---
-	/*memset(m_iPredictedSATIDs, 0, MAX_BEAMS * sizeof(ULONG));
-	memset(m_fProbability, 0, MAX_BEAMS * sizeof(float));*/
-	memset(&fSimilarityMatrix, 0, MAX_BEAMS * MAX_BEAMS * sizeof(float));
-	memset(&bEigenvectorAssigned, 0, MAX_BEAMS * sizeof(bool));
-	memset(&bSatelliteAssigned, 0, MAX_BEAMS * sizeof(bool));
-
-	//// Generate all possible phase bias vectors
-	//for ( sat1 = 0; sat1 < m_ulSatellites; sat1++ ) // predicted satellite
-	//{
-	//	
-	//	for ( eig1 = 0; eig1 < m_ulSatellites; eig1++ ) // eigenvector
-	//	{
-	//		memset(&PhaseBias[sat1][eig1][0], 0, NUM_CHANNELS*sizeof(EMSCOMPLEX));
-	//	    memcpy(&cVect1, &m_acDBFBeamVectors[eig1], NUM_CHANNELS*sizeof(EMSCOMPLEX));
-
-	//		for ( k = 0; k < NUM_CHANNELS; k++ )
-	//		{
-	//			cVect1[k].re -= cVect1[DBF_CENTRE_ELEMENT].re;
-	//			cVect1[k].im -= cVect1[DBF_CENTRE_ELEMENT].im;
-	//			cTemp1 = cVect1[k];
-	//			cTemp2.re = (float) m_aPassSchedule.rec[sat1].nPhaseReal[k];
-	//			cTemp2.im = (float) m_aPassSchedule.rec[sat1].nPhaseImag[k];
-
-	//			fAmplitude1 = sqrt( cTemp1.re*cTemp1.re + cTemp1.im*cTemp1.im );
-	//			fAmplitude2 = sqrt( cTemp2.re*cTemp2.re + cTemp2.im*cTemp2.im );
-
-	//			if ( fAmplitude1 < 1e-6 ) fAmplitude1 = 1e-6;
-	//			if ( fAmplitude2 < 1e-6 ) fAmplitude2 = 1e-6;
-
-	//			PhaseBias[sat1][eig1][k].re = cTemp1.re/fAmplitude1 - cTemp2.re/fAmplitude2 ;
-	//			PhaseBias[sat1][eig1][k].im = cTemp1.im/fAmplitude1 - cTemp2.im/fAmplitude2;
-	//			
-	//		}
-	//	}
-	//}
-
-	//// Compute dot products of phase bias estimates
-	// for ( sat1 = 0; sat1 < m_ulSatellites; sat1++ )
-	// {
-	//	 for ( eig1 = 0; eig1 < m_ulSatellites; eig1++ )
-	//	 {
-	//		 memcpy(&cVect1, &PhaseBias[sat1][eig1][0], NUM_CHANNELS*sizeof(EMSCOMPLEX));
-	//		 
-	//		for ( sat2 = 0; sat2 < m_ulSatellites; sat2++ )
-	//		{
-	//			if ( sat1 != sat2 )
-	//			{
-	//				for ( eig2 = 0; eig2 < m_ulSatellites; eig2++ )
-	//				{
-	//					if ( eig1 != eig2 )
-	//					{
-	//						memcpy(&cVect2, &PhaseBias[sat2][eig2][0], NUM_CHANNELS*sizeof(EMSCOMPLEX));
-	//						emscbConj1(cVect2, NUM_CHANNELS);
-	//						cTemp1 = emscDotProd( cVect1, cVect2, NUM_CHANNELS);
-	//			 
-	//						 // cosine of angle between two complex vectors
-	//						 emscbMag(cVect1, fVect1, NUM_CHANNELS );
-	//						 emscbMag(cVect2, fVect2, NUM_CHANNELS );
-	//						 fAmplitude1 = 0.0;
-	//						 fAmplitude2 = 0.0;
-	//						 for ( m = 0; m < NUM_CHANNELS; m++ )
-	//						 {
-	//							 fAmplitude1 += fVect1[m];
-	//							 fAmplitude2 += fVect2[m];
-	//						 }
-	//				
-	//						 fAmplitude1 = cTemp1.re / (fAmplitude1 * fAmplitude2 );
-	//						 if ( fAmplitude1 > 0.0 )
-	//						 {
-	//							fBiasDotProd[n] = fAmplitude1;
-	//							ulBiasIndex[n] = sat1*1000 + eig1*100 + sat2*10 + eig2;
-	//							n++;
-	//						 }
-	//					}	// ieg1, ieg2 if test
-	//				}		// eig2 loop
-	//			}			// sat1, sat2 if test
-	//		 }				// sat2 loop
-	//	 }					// eig1 loop
-	// }						// sat1 loop
-
-	// 
-	// for ( k = 0; k < m_ulSatellites; k++ )
-	// {
-	//	 fMaxBias = emssMaxExt( &fBiasDotProd[0], n, &nIndex);
-	//	 sat1 = ulBiasIndex[nIndex]/1000;
-	//	 eig1 = (ulBiasIndex[nIndex] - sat1*1000)/100;
-	//	 sat2 = (ulBiasIndex[nIndex] - sat1*1000 - eig1*100)/10; 
-	//	 eig2 = (ulBiasIndex[nIndex] - sat1*1000 - eig1*100 - sat2*10); 
-
-	//	 if ( m_fProbability[eig1] == 0.0 )
-	//	 {
-	//		m_iPredictedSATIDs[eig1] = m_aPassSchedule.rec[sat1].ulSatID;
-	//		m_fProbability[eig1]     = fMaxBias;
-	//	 }
-	//	 if ( m_fProbability[eig2] == 0.0 )
-	//	 {
-	//		m_iPredictedSATIDs[eig2] = m_aPassSchedule.rec[sat2].ulSatID;
-	//		m_fProbability[eig2]     = fMaxBias;
-	//	 }
-
-	//	 printf("index %d, sat1 %d, eig1 %d, sat2 %d, eig2 %d, sateig1 %d, sateig2 %d, prob %f\n",
-	//		 ulBiasIndex[nIndex], sat1, eig1, sat2, eig2, m_iPredictedSATIDs[eig1], m_iPredictedSATIDs[eig2], fMaxBias);
-	//	 fBiasDotProd[nIndex]  = -1000.0;
-	//}
-
-	// ===================================================================================
-	// === ALGORITHM REPLACEMENT START: Populate Similarity Matrix =======================
-	// ===================================================================================
-	// Instead of calculating PhaseBias, we directly compute the Cosine Similarity
-	// between each measured eigenvector and each predicted satellite vector.
-	// The result is a score from 0 (dissimilar) to 1 (perfect match).
-
-	for (eig1 = 0; eig1 < m_ulSatellites; eig1++) // Loop through measured eigenvectors
+	// Generate all possible phase bias vectors
+	for ( sat1 = 0; sat1 < m_ulSatellites; sat1++ ) // predicted satellite
 	{
-		for (sat1 = 0; sat1 < m_ulSatellites; sat1++) // Loop through predicted satellites
+		
+		for ( eig1 = 0; eig1 < m_ulSatellites; eig1++ ) // eigenvector
 		{
-			// 1. Get the measured eigenvector and its L2 norm
-			memcpy(&cVect1, &m_acDBFBeamVectors[eig1], NUM_CHANNELS * sizeof(EMSCOMPLEX));
-			fAmplitude1 = 0.0f;
+			memset(&PhaseBias[sat1][eig1][0], 0, NUM_CHANNELS*sizeof(EMSCOMPLEX));
+		    memcpy(&cVect1, &m_acDBFBeamVectors[eig1], NUM_CHANNELS*sizeof(EMSCOMPLEX));
 
-			// 2. Get the predicted satellite vector and its L2 norm
-			for (k = 0; k < NUM_CHANNELS; k++)
+			for ( k = 0; k < NUM_CHANNELS; k++ )
 			{
-				cVect2[k].re = (float)m_aPassSchedule.rec[sat1].nPhaseReal[k];
-				cVect2[k].im = (float)m_aPassSchedule.rec[sat1].nPhaseImag[k];
-			}
-			fAmplitude2 = 0.0f;
+				// Note: centre element is 23 starting at number 1 not zero
+				cVect1[k].re -= cVect1[DBF_CENTRE_ELEMENT-1].re;
+				cVect1[k].im -= cVect1[DBF_CENTRE_ELEMENT-1].im;
+				cTemp1 = cVect1[k];
+				//cTemp2.re = (float) m_aPassSchedule.rec[sat1].nPhaseReal[k+1];
+				//cTemp2.im = (float) m_aPassSchedule.rec[sat1].nPhaseImag[k+1];
+				cTemp2.re = cos(m_aPassSchedule.rec[sat1].fPhase[k+1]);
+				cTemp2.im = sin(m_aPassSchedule.rec[sat1].fPhase[k+1]);
 
-			// 3. Calculate the Cosine Similarity score
-			if (fAmplitude1 > 1e-6 && fAmplitude2 > 1e-6)
-			{
-				// Numerator: Absolute value of the complex dot product (A dot B*)
-				cTemp1 = EMSCOMPLEX();
-				float dot_product_magnitude = sqrtf(cTemp1.re * cTemp1.re + cTemp1.im * cTemp1.im);
+				fAmplitude1 = sqrt( cTemp1.re*cTemp1.re + cTemp1.im*cTemp1.im );
+				fAmplitude2 = sqrt( cTemp2.re*cTemp2.re + cTemp2.im*cTemp2.im );
 
-				// Denominator: Product of the vector norms
-				float norm_product = fAmplitude1 * fAmplitude2;
+				if ( fAmplitude1 < 1e-6 ) fAmplitude1 = 1e-6;
+				if ( fAmplitude2 < 1e-6 ) fAmplitude2 = 1e-6;
 
-				// Final Score
-				fSimilarityMatrix[eig1][sat1] = dot_product_magnitude / norm_product;
-			}
-			else
-			{
-				fSimilarityMatrix[eig1][sat1] = 0.0f; // Cannot compute similarity for zero-length vector
+				PhaseBias[sat1][eig1][k].re = cTemp1.re/fAmplitude1 - cTemp2.re/fAmplitude2 ;
+				PhaseBias[sat1][eig1][k].im = cTemp1.im/fAmplitude1 - cTemp2.im/fAmplitude2;
+				
 			}
 		}
 	}
 
-	// ===================================================================================
-	// === ALGORITHM REPLACEMENT PART 2: Greedy Assignment ===============================
-	// ===================================================================================
-	// Now, we repeatedly find the best remaining match in the similarity matrix
-	// until all satellites are identified.
-
-	for (k = 0; k < m_ulSatellites; k++)
-	{
-		fMaxBias = -1.0f; // Re-using fMaxBias to find the max score
-		int nBestEig = -1;
-		int nBestSat = -1;
-
-		// Find the highest score among unassigned pairs
-		for (eig1 = 0; eig1 < m_ulSatellites; eig1++)
-		{
-			if (bEigenvectorAssigned[eig1]) continue; // Skip if this eigenvector is already assigned
-
-			for (sat1 = 0; sat1 < m_ulSatellites; sat1++)
+	// Compute dot products of phase bias estimates
+	 for ( sat1 = 0; sat1 < m_ulSatellites; sat1++ )
+	 {
+		 for ( eig1 = 0; eig1 < m_ulSatellites; eig1++ )
+		 {
+			 memcpy(&cVect1, &PhaseBias[sat1][eig1][0], NUM_CHANNELS*sizeof(EMSCOMPLEX));
+			 
+			for ( sat2 = 0; sat2 < m_ulSatellites; sat2++ )
 			{
-				if (bSatelliteAssigned[sat1]) continue; // Skip if this satellite is already assigned
-
-				if (fSimilarityMatrix[eig1][sat1] > fMaxBias)
+				if ( sat1 != sat2 )
 				{
-					fMaxBias = fSimilarityMatrix[eig1][sat1];
-					nBestEig = eig1;
-					nBestSat = sat1;
-				}
-			}
-		}
+					for ( eig2 = 0; eig2 < m_ulSatellites; eig2++ )
+					{
+						if ( eig1 != eig2 )
+						{
+							memcpy(&cVect2, &PhaseBias[sat2][eig2][0], NUM_CHANNELS*sizeof(EMSCOMPLEX));
+							emscbConj1(cVect2, NUM_CHANNELS);
+							cTemp1 = emscDotProd( cVect1, cVect2, NUM_CHANNELS);
+				 
+							 // cosine of angle between two complex vectors
+							 emscbMag(cVect1, fVect1, NUM_CHANNELS );
+							 emscbMag(cVect2, fVect2, NUM_CHANNELS );
+							 fAmplitude1 = 0.0;
+							 fAmplitude2 = 0.0;
+							 for ( m = 0; m < NUM_CHANNELS; m++ )
+							 {
+								 fAmplitude1 += fVect1[m];
+								 fAmplitude2 += fVect2[m];
+							 }
+					
+							 fAmplitude1 = cTemp1.re / (fAmplitude1 * fAmplitude2 );
+							 //if ( fAmplitude1 > 0.0 )
+							 {
+								fBiasDotProd[n] = fAmplitude1;
+								ulBiasIndex[n] = sat1*1000 + eig1*100 + sat2*10 + eig2;
+								n++;
+								if ( n > nmax ) n = nmax;
+							 }
+						}	// ieg1, ieg2 if test
+					}		// eig2 loop
+				}			// sat1, sat2 if test
+			 }				// sat2 loop
+		 }					// eig1 loop
+	 }						// sat1 loop
 
-		// If a valid match was found, assign it and mark as used
-		if (nBestEig != -1)
-		{
-			m_iPredictedSATIDs[nBestEig] = m_aPassSchedule.rec[nBestSat].ulSatID;
-			m_fProbability[nBestEig] = fMaxBias; // fMaxBias holds the similarity score
+	 
+	 for ( k = 0; k < m_ulSatellites; k++ )
+	 {
+		 fMaxBias = emssMaxExt( &fBiasDotProd[0], n, &nIndex);
+		 sat1 = ulBiasIndex[nIndex]/1000;
+		 eig1 = (ulBiasIndex[nIndex] - sat1*1000)/100;
+		 sat2 = (ulBiasIndex[nIndex] - sat1*1000 - eig1*100)/10; 
+		 eig2 = (ulBiasIndex[nIndex] - sat1*1000 - eig1*100 - sat2*10); 
 
-			bEigenvectorAssigned[nBestEig] = true;
-			bSatelliteAssigned[nBestSat] = true;
+		 if ( m_fProbability[eig1] == 0.0 )
+		 {
+			m_iPredictedSATIDs[eig1] = m_aPassSchedule.rec[sat1].ulSatID;
+			m_fProbability[eig1]     = fMaxBias;
+		 }
+		 if ( m_fProbability[eig2] == 0.0 )
+		 {
+			m_iPredictedSATIDs[eig2] = m_aPassSchedule.rec[sat2].ulSatID;
+			m_fProbability[eig2]     = fMaxBias;
+		 }
 
-			printf("Match found: eig %d -> sat %d (ID: %lu) with probability %f\n",
-				nBestEig, nBestSat, m_iPredictedSATIDs[nBestEig], m_fProbability[nBestEig]);
-		}
+		 printf("index %d, sat1 %d, eig1 %d, sat2 %d, eig2 %d, sateig1 %d, sateig2 %d, prob %f\n",
+			 ulBiasIndex[nIndex], sat1, eig1, sat2, eig2, m_iPredictedSATIDs[eig1], m_iPredictedSATIDs[eig2], fMaxBias);
+		 fBiasDotProd[nIndex]  = -1000.0;
 	}
 
 	// reorder eigenvectors to match predicted satellite IDs from Pass Schedule
@@ -3049,7 +3241,7 @@ CDigitalBeamFormer::SatelliteIdentify( ULONG m_ulSatellites  )
 			{
 				memcpy ( cVect1, &m_acDBFBeamVectors[sat2], NUM_CHANNELS*sizeof(EMSCOMPLEX) );
 				memcpy ( &m_acDBFBeamVectors[sat2], &m_acDBFBeamVectors[sat1], NUM_CHANNELS*sizeof(EMSCOMPLEX) );
-				memcpy ( &m_acDBFBeamVectors[sat1], cVect1, NUM_CHANNELS*sizeof(EMSCOMPLEX) );
+				memcpy (  &m_acDBFBeamVectors[sat1], cVect1, NUM_CHANNELS*sizeof(EMSCOMPLEX) );
 
 				fAmplitude1 = m_fProbability[sat2];
 				m_fProbability[sat2] = m_fProbability[sat1];
@@ -3080,20 +3272,14 @@ CDigitalBeamFormer::SatelliteIdentify( ULONG m_ulSatellites  )
 	{
 		fwrite( &m_aPassSchedule.rec[sat1].ulSatID, sizeof(ULONG), 1, lpSatIdentityFile);
 		fwrite( &m_iPredictedSATIDs[sat1], sizeof(ULONG), 1, lpSatIdentityFile);
-		fwrite( &m_fProbability[sat1], sizeof(double), 1, lpSatIdentityFile);
+		fwrite( &m_fProbability[sat1], sizeof(float), 1, lpSatIdentityFile);
 	}
 	kindex = ftell(lpSatIdentityFile);
 
 	for (sat1 = 0; sat1 < m_ulSatellites; sat1++ )
 	{
 		
-		for (k = 0; k < NUM_CHANNELS; k++ )
-		{
-			cTemp1.re = (float)m_aPassSchedule.rec[sat1].nPhaseReal[k];
-			cTemp1.im = (float)m_aPassSchedule.rec[sat1].nPhaseImag[k];
-			fwrite( &cTemp1, sizeof(EMSCOMPLEX), 1, lpSatIdentityFile);
-		}
-		n = ftell(lpSatIdentityFile);
+		kindex = ftell(lpSatIdentityFile);
 
 		for (eig1 = 0; eig1 < m_ulSatellites; eig1++ )
 		{
@@ -3104,6 +3290,7 @@ CDigitalBeamFormer::SatelliteIdentify( ULONG m_ulSatellites  )
 	kindex = ftell(lpSatIdentityFile);
 	fwrite( &n, sizeof(ULONG), 1, lpSatIdentityFile);
 
+	if ( n> nmax ) n= nmax;
 	for ( i = 0; i < n; i++ )
 	{
 		fwrite( &ulBiasIndex[i], sizeof(ULONG), 1, lpSatIdentityFile);
@@ -3115,5 +3302,634 @@ CDigitalBeamFormer::SatelliteIdentify( ULONG m_ulSatellites  )
 	fclose(lpSatIdentityFile);
 	lpSatIdentityFile = NULL;
 	
+	return hr;
+}
+
+///////////////////////////////////////////////////////////////////////////////////////////////////
+EMS_RESULT
+CDigitalBeamFormer::InitializeTOAFOA( EMSTIME timestamp)
+{
+	EMS_RESULT hr = EMS_BAD_PARAM;
+
+	if ( &m_aTOAFOA )
+	{
+		bool bBeaconOK = false;
+
+		memset( &m_aTOAFOA, 0, sizeof( EMSDBFTOAFOARECORD ) );
+
+		m_aTOAFOA.timestamp.intTime = timestamp.intTime;
+		m_aTOAFOA.fRefTxFrequency = m_aPassSchedule.rec[0].fRefTxFrequency;
+
+
+		for ( int isat = 0; isat < m_ulSatellites; isat++ )
+		{
+			m_aTOAFOA.ulSatID[isat] = -m_aPassSchedule.rec[isat].ulSatID;
+			
+			//if ( m_aPassSchedule.rec[isat].fBeaconElevation > 0 )
+			{
+				m_aTOAFOA.fBeaFOA[isat] = m_aPassSchedule.rec[isat].fFOA;
+				m_aTOAFOA.fBeaTOA[isat] = m_aPassSchedule.rec[isat].fTOA;
+				m_aTOAFOA.ulSatID[isat] = m_aPassSchedule.rec[isat].ulSatID;
+
+				m_aTOAFOA.fPlateAz[isat] = m_aPassSchedule.rec[isat].fPlateAzimuth;
+				m_aTOAFOA.fPlateEl[isat] = m_aPassSchedule.rec[isat].fPlateElevation;
+
+
+				if ( !bBeaconOK )
+				{
+					memcpy( &m_aTOAFOA.cBeaconID[0], & m_aPassSchedule.rec[isat].cBeaconID[0], 15 );
+					
+					// Establish beacon meassage FFT for correlation tests
+					char cBeacon[36];
+					ULONG j,n, len2 = 0;
+
+					// Assumes beacon with exactly 400 bps and 200 kHz banadwidth and 2 seconds duration
+					
+					ULONG ulBitSize = (ULONG)(0.0025/2*DBF_LOG16_SIZE);
+					ULONG ulBits   = 112;
+					ULONG ulSize   = ulBits * ulBitSize + 1;
+					float fBit     = 0.0;
+
+					memset(	&m_afTemp1[0],0.0, DBF_LOG16_SIZE * sizeof(float));
+					memset(	&m_acTemp1[0],0.0, DBF_LOG16_SIZE * sizeof(EMSCOMPLEX));
+					memset(	&m_acFFTBeacon[0],0.0, DBF_LOG16_SIZE * sizeof(EMSCOMPLEX));
+					memcpy( &cBeacon[0], &m_aPassSchedule.rec[isat].cBeaconMess[0], 36 );
+
+					for( j = 0; j < ulBits; j++ )
+					{
+						n  =  ulBitSize * j;
+						if ( CheckBit( &cBeacon[0], j ) ) 
+						{	
+							fBit = 1.0;
+						}
+						else
+						{
+							fBit = -1.0;
+						}
+						{ 
+							_CopyData( &m_afTemp1[n],fBit, ulBitSize/2 );
+							_CopyData( &m_afTemp1[n + ulBitSize/2],-fBit, ulBitSize/2 );
+						}
+					}
+
+					//for ( j = 0; j < DBF_LOG17_SIZE; j++ ) m_acTemp1[j].re = m_afTemp1[j];
+
+					emssRealFftNip( m_afTemp1, m_acFFTBeacon, DBF_LOG16 , EMS_SPL_FWD );
+
+					// Normalize and conjugate
+					float fFactor = 1.0/ (float)DBF_LOG16_SIZE;
+					for ( j = 0; j < DBF_LOG16_SIZE; j++ )
+					{
+						m_acFFTBeacon[j].re /= fFactor;	 
+						m_acFFTBeacon[j].im /= -fFactor; 
+					}
+					bBeaconOK = true;
+				}
+			}
+		}
+
+
+		//if ( bBeaconOK )
+		//{
+		//	CEMSTime oTime( m_aTOAFOA.timestamp );
+		//	EMSTIMEFIELDS tmFields;
+		//	memset( &tmFields, 0, sizeof(EMSTIMEFIELDS) );
+		//	oTime.GetTime( &tmFields );
+
+		//	float fDeltaTime = (float)(m_aTOAFOA.timestamp.intTime - m_aPassSchedule.rec[0].timestamp.intTime)*1e-9;
+		//	printf(" %15s, %02d:%02d:%02d.%06d DiffTime (Current - Schedule) %f\n",
+		//		 m_aTOAFOA.cBeaconID, tmFields.nHour, tmFields.nMinute, tmFields.nSecond, tmFields.lNanosecond/1000, fDeltaTime);
+		//}
+		hr = EMS_OK;
+	}
+	return hr;
+}
+
+///////////////////////////////////////////////////////////////////////////////////////////////////
+
+bool
+CDigitalBeamFormer::ReferenceBeaconCheck(  int isat, ULONG* pulFreqIndex, float* pfCNR )
+{
+	bool bOK = false;
+	float fMaxPower = 0.0;
+	float fAvePower = 0.0;
+	float fSigmaPower = 0.0;
+	float fCNRthreshold  = 35.0; // temporary
+	ULONG ulBeaconBandWidth = 5000;
+	ULONG ulFreqOffset = 100000;
+	ULONG ulFreqIndex = 0;
+	ULONG ulFreqBandWidth = DBF_LOG19_SIZE - ulFreqOffset;
+
+	// Find Beacon Power and check above CNR threshold
+		
+	// assumes filter with 200 kHz bandwidth
+	fMaxPower = _EMSsMaxExt(&m_afTemp1[ulFreqOffset], ulFreqBandWidth, &ulFreqIndex);
+	ulFreqIndex += ulFreqOffset;
+	fAvePower = _EMSsMean(&m_afTemp1[ulFreqIndex + ulBeaconBandWidth], ulBeaconBandWidth/2 );
+	*pfCNR = 10.0*log10(fMaxPower / fAvePower ) + 24.0;
+	*pulFreqIndex = ulFreqIndex;
+	if ( *pfCNR > fCNRthreshold ) bOK = true;
+
+	return bOK;
+}
+
+///////////////////////////////////////////////////////////////////////////////////////////////////
+
+bool
+CDigitalBeamFormer::SatelliteTOAFOA(  int isat )
+{
+	// Assumes that m_afTemp1 and m_acTemp3 are previously computed as frequency domain of the input satellite ID
+	
+	bool bOK = false;
+	if ( m_aTOAFOA.fRefTxFrequency < 1.0 ) return bOK;
+
+	//float fFOA = 0.0;
+	//float fTOA = 0.0;
+	float fBeaconFOA = 0.0;
+	float fBeaconTOA = 0.0;
+	float fBeaconEL = 0.0;
+	float fAvePower = 0.0;
+
+	float fMaxPower = 0.0;
+	float fSigmaPower = 0.0;
+	float fCNR = 0.0;
+	float fCNRthreshold  = 35.0; // temporary
+	float fCORRthreshold = 3.0;
+	float fBinsize = 0.5; //(float)DBF_SAMPLE_RATE / (float)DBF_LOG20_SIZE;
+	double dAvePower = 0.0;
+
+	ULONG ulBeaconBandWidth = (ULONG) (10000.0 / fBinsize);
+	ULONG ulFreqBandWidth   = (ULONG) (100000.0 / fBinsize);;
+	ULONG ulFreqStart       = (ULONG) (50000.0 / fBinsize);
+	ULONG ulFreq       = 0;
+	ULONG ulFreqIndex  = 0;
+	ULONG ulTimeIndex  = 0;
+	ULONG ulFreqOffset = 0;
+
+	EMSCOMPLEX cBeaconFreq[2048];
+	EMSCOMPLEX cBeaconTime[2048];
+	float fBeaconTime[2048];
+	float fCorrBeacon[4096];
+	float fTestBeacon[1024];
+
+	
+	ulFreq = (ULONG) (m_aTOAFOA.fRefTxFrequency / fBinsize );  // Beacon Transmit Frequency (Hz)
+	ulFreqOffset = ulFreqStart + (ulFreq - ulBeaconBandWidth/2);  // initial offset of 50 kHz
+
+	if ( ulFreqOffset > DBF_LOG19_SIZE - ulFreqBandWidth )
+	{
+		ulFreqOffset = DBF_LOG19_SIZE - ulFreqBandWidth ;
+	}
+
+	// Find Beacon Power and check above CNR threshold
+	// assumes filter with 200 kHz bandwidth
+
+	fMaxPower = _EMSsMaxExt(&m_afTemp1[ulFreqOffset], ulBeaconBandWidth, &ulFreqIndex);
+	ulFreqIndex += ulFreqOffset;
+	fAvePower = _EMSsMean(&m_afTemp1[ulFreqIndex + ulBeaconBandWidth], ulBeaconBandWidth/2 );
+	fCNR = 10.0*log10(fMaxPower / fAvePower ) + 24.0;
+	//ulFreqIndex -= ulFreqStart;
+
+	if ( fCNR > fCNRthreshold )
+	{
+
+		// Verify beaon detection
+		
+		bOK = false;
+		memset( &cBeaconFreq[0], 0 , sizeof(EMSCOMPLEX) * 2048 );
+		memset( &cBeaconTime[0], 0 , sizeof(EMSCOMPLEX) * 2048 );
+		memset( &fBeaconTime[0], 0 , sizeof(float) * 2048 );
+		memset( &fCorrBeacon[0], 0 , sizeof(float) * 4096 );
+		memset( &fTestBeacon[0], 0 , sizeof(float) * 1024 );
+
+		// Generate beacon power template
+
+		_CopyData( &fTestBeacon[0], 2.0, 20*8 );
+		_CopyData( &fTestBeacon[160], 1.0, 44*8 );
+		//fAvePower = _EMSsMean(&fTestBeacon[0], 1024 );
+		//emssbSub1( fAvePower, &fTestBeacon[0], 1024 );
+
+		// Convert from frequency domain to time domain
+		memcpy(&cBeaconFreq[0],&m_acTemp3[ulFreqIndex-128], 256*sizeof(EMSCOMPLEX) );
+		emscFftNip( &cBeaconFreq[0], &cBeaconTime[0], 11, EMS_SPL_INV );
+		_EMScbPowerSpectr( &cBeaconTime[0], &fBeaconTime[0], 2048);
+
+		memcpy( &m_aTOAFOA.fPower[isat * 2048], &fBeaconTime[0], 2048 * sizeof(float) );
+		memcpy( &m_aTOAFOA.cPower[isat * 2048], &m_acTemp3[ulFreqIndex-1024], 2048 * sizeof(EMSCOMPLEX) );
+
+		// Perform Power Coorelation ( beacon is expected within the first one second )
+		fMaxPower = 0.0;
+		int iCorrLength = 2048-512; 
+		for ( int i = 0; i < iCorrLength; i++ )
+		{
+			//fCorrBeacon[i] = emssDotProd( &fTestBeacon[0], &fBeaconTime[i], 1024 );
+			fCorrBeacon[i] = emssDotProd( &fTestBeacon[0], &fBeaconTime[i], 512 ) / 2048.0;
+		}
+		fMaxPower = _EMSsMaxExt(&fCorrBeacon[0], iCorrLength, &ulTimeIndex );
+		fSigmaPower = _EMSsMeanStdDev(&fCorrBeacon[0],iCorrLength, &dAvePower );
+		fMaxPower -= fAvePower;
+		fMaxPower /= fSigmaPower;
+
+		m_aTOAFOA.fCORRTOA[isat] = fMaxPower;
+		m_aTOAFOA.fCNR[isat]	 = fCNR;
+		m_aTOAFOA.fFOA[isat]	 = (float)(ulFreqIndex - ulFreqStart)*fBinsize;
+		m_aTOAFOA.fTOA[isat]	 = (float)ulTimeIndex * 0.001024;
+		
+		if (isat==0)
+		{
+			m_aTOAFOA.fPower[0] = (float)ulTimeIndex;
+			m_aTOAFOA.fPower[1] = (float)ulFreqIndex;
+		}
+
+		if ( fMaxPower > fCORRthreshold && m_aPassSchedule.rec[isat].fBeaconElevation > 0)
+		{
+		
+			// Beacon Message correlation
+			memset( &m_acTemp1[0], 0, DBF_LOG16_SIZE * sizeof(EMSCOMPLEX) );
+			for ( int i = 0; i < 2048; i++ )
+			{
+				m_acTemp1[i].re = m_acTemp3[ulFreqIndex+i].re;
+				m_acTemp1[i].im = m_acTemp3[ulFreqIndex+i].im;
+				m_acTemp1[DBF_LOG16_SIZE-i].re = m_acTemp3[ulFreqIndex-i].re;
+				m_acTemp1[DBF_LOG16_SIZE-i].im = m_acTemp3[ulFreqIndex-i].im;
+			}
+			emscbMul2( &m_acFFTBeacon[0], &m_acTemp1[0], DBF_LOG16_SIZE );  
+
+			emscFftNip( &m_acTemp1[0], &m_acTemp2[0], DBF_LOG16, EMS_SPL_INV );
+			_EMScbPowerSpectr( &m_acTemp2[0], &m_afTemp1[0], DBF_LOG16_SIZE);
+
+			fMaxPower = _EMSsMaxExt(&m_afTemp1[0], DBF_LOG16_SIZE, &ulTimeIndex );
+			fSigmaPower = _EMSsMeanStdDev(&m_afTemp1[0], DBF_LOG16_SIZE, &dAvePower );
+			fMaxPower /= fSigmaPower;
+	
+			bOK = true;
+		}
+	}
+	return bOK;
+}
+
+
+bool
+CDigitalBeamFormer::IdentifyTOAFOA( EMSTIME tm, EMSCOMPLEX* acDBFBeamVectors )
+{
+	bool bOK = false;
+	int iTemp;
+
+	int i, j, k;
+	float fTOAdiff;
+	float fTOAthreshold = 0.005;
+	float fFOAdiff;
+	float fFOAthreshold = 25.0;
+
+	FILE*	lpSatIdentityFile = NULL;
+	char	szFileName[256];
+
+
+	int CurrentSatIds [ MAX_BEAMS ];
+	memset( CurrentSatIds, 0, sizeof(int) * MAX_BEAMS );
+	for( int i = 0; i < m_ulSatellites; i++ )
+	{
+		CurrentSatIds[i] = m_aPassSchedule.rec[i].ulSatID;
+	}
+
+	//read from q
+	EMSCOMPLEX *prevDBFBeamVectors = m_qrefDBFBeamVectors.ReadFirst( ).dbfBeamVector;
+	int *prevSchedulerSatIDs = m_qrefDBFBeamVectors.ReadFirst( ).schedulerSatIds;
+	int *prevPredSatIDs = m_qrefDBFBeamVectors.ReadFirst( ).predSatIDs;
+	int *prevBeamIds = m_qrefDBFBeamVectors.ReadFirst( ).predBeamIDs;
+	float *prevProbability = m_qrefDBFBeamVectors.ReadFirst( ).probability;
+	int	prevNumBeams = m_qrefDBFBeamVectors.ReadFirst( ).numBeams;
+	//end
+			
+	// Check if first time
+	if( !prevDBFBeamVectors && !prevBeamIds )
+	{
+		memset(m_iBeamIDs, 0, MAX_BEAMS*sizeof(int) );
+		for( i = 0; i < m_ulSatellites; i++ )
+		{
+			//first time so set default beam ids
+			m_iBeamIDs[i] = i+1;
+		}
+		DBFTrackingData obj;
+		memcpy( m_acDBFBeamVectors,acDBFBeamVectors, MAX_BEAMS*NUM_CHANNELS*sizeof(EMSCOMPLEX) );
+		obj.dbfBeamVector = m_acDBFBeamVectors;
+		obj.predBeamIDs = m_iBeamIDs;
+		memcpy( m_iPredictedSATIDs, CurrentSatIds, MAX_BEAMS * sizeof(int) );
+		obj.predSatIDs = m_iPredictedSATIDs;
+		obj.probability = m_fProbability;
+		memcpy( m_iPrevPassSchedSATIDs, CurrentSatIds, sizeof(int) * MAX_BEAMS );
+		obj.schedulerSatIds = m_iPrevPassSchedSATIDs;
+		obj.numBeams = m_ulSatellites;
+		m_qrefDBFBeamVectors.InsertAtFirst( obj );
+		return true;
+	}
+		
+	int newBeamIds[ MAX_BEAMS ];
+	memset( newBeamIds, 0, sizeof(int) * MAX_BEAMS );
+	int newPredSatIds[ MAX_BEAMS ];
+	memset( newPredSatIds, 0, sizeof(int) * MAX_BEAMS );
+
+	// Compute probabilities
+	EMSCOMPLEX cTemp1[NUM_CHANNELS];
+	EMSCOMPLEX cTemp;
+
+	// Find new or missing satellites
+	int iCount[MAX_BEAMS];
+	memset( iCount, 0, sizeof(int) * MAX_BEAMS );
+
+	int iMaxBeam = 0;
+	for ( i = 0; i  < m_ulSatellites; i++ )
+	{
+		for ( j = 0; j  < prevNumBeams; j++ )
+		{
+			if ( CurrentSatIds[i] == prevPredSatIDs[j] )
+			{
+				iCount[i] = j+1;
+				if ( iMaxBeam < prevBeamIds[j] ) iMaxBeam = prevBeamIds[j]+1;
+			}
+		}
+	}
+	
+
+	// Best match to previous eigenvector
+	k = 0;
+	for ( i = 0; i  < m_ulSatellites; i++ )
+	{
+		// Check orthogonality
+		float fProb1[25];
+		for ( j = 0; j  < m_ulSatellites; j++ )
+		{
+			memset(&cTemp1[0], 0.0, NUM_CHANNELS * sizeof( EMSCOMPLEX ) );
+			emscbConj2( &m_acDBFBeamVectors[j * NUM_CHANNELS], &cTemp1[0], NUM_CHANNELS );
+			cTemp = emscDotProd( &m_acDBFBeamVectors[i * NUM_CHANNELS], &cTemp1[0], NUM_CHANNELS );
+			fProb1[k++] = sqrt(cTemp.re*cTemp.re + cTemp.im*cTemp.im ) / NUM_CHANNELS;
+		}
+
+		m_fProbability[i] = 0.0;
+		float fProb       = 0.0;
+
+
+		if ( iCount[i] > 0  ) // Matching satellite condition
+		{
+			for ( j = 0; j  < prevNumBeams; j++ )
+			{
+				memset(&cTemp1[0], 0.0, NUM_CHANNELS * sizeof( EMSCOMPLEX ) );
+				emscbConj2( &prevDBFBeamVectors[j * NUM_CHANNELS], &cTemp1[0], NUM_CHANNELS );
+				cTemp = emscDotProd( &m_acDBFBeamVectors[i * NUM_CHANNELS], &cTemp1[0], NUM_CHANNELS );
+				fProb = sqrt(cTemp.re*cTemp.re + cTemp.im*cTemp.im ) / NUM_CHANNELS;
+				if ( fProb > m_fProbability[i] )
+				{
+					m_fProbability[i] = fProb;
+					newBeamIds[i]    = prevBeamIds[j];
+					newPredSatIds[i] = prevPredSatIDs[j];
+				}
+			}
+		}
+		else
+		{
+			newPredSatIds[i] = CurrentSatIds[i];
+			newBeamIds[i]    = iMaxBeam;
+			iMaxBeam++;
+			}
+
+		}
+
+	EMSTIMEFIELDS tmFlds;
+	CEMSTime oTM(tm);
+
+	oTM.GetTime(&tmFlds);
+	ULONG ulHourSec = tmFlds.nHour*60*60 + tmFlds.nMinute*60 + tmFlds.nSecond;
+
+	int iBeamTemp;
+	int iSatTemp;
+	EMSCOMPLEX acBeamTemp[NUM_CHANNELS];
+
+	// Identify satellite based upon minimum TOA difference
+	for ( int isat = 0; isat < m_ulSatellites; isat++ )
+	{
+		if (m_aTOAFOA.fTOA[isat] > 0.0)
+		{
+			m_aTOAFOA.fTOA[isat] += tmFlds.lNanosecond *1e-9;
+			if (m_aTOAFOA.fTOA[isat] > 1.0 ) m_aTOAFOA.fTOA[isat] -= 1.0;
+			if (m_aTOAFOA.fTOA[isat] > 1.0 ) m_aTOAFOA.fTOA[isat] -= 1.0;
+		}
+	}
+
+	for ( int isat = 0; isat < m_ulSatellites; isat++ )
+	{
+		for ( int jsat = 0; jsat < m_ulSatellites; jsat++ )
+		{
+			if (m_aTOAFOA.fBeaTOA[jsat] > 0.0)
+			{
+				fTOAdiff = m_aTOAFOA.fTOA[isat]-m_aTOAFOA.fBeaTOA[jsat];
+				fFOAdiff = m_aTOAFOA.fFOA[isat]-m_aTOAFOA.fBeaFOA[jsat];
+				if ( (abs(fTOAdiff) < fTOAthreshold) && (abs(fFOAdiff) < fFOAthreshold) )
+				{
+					m_fProbability[isat] = 9.99999999;
+					iSatTemp = newPredSatIds[isat];
+					iBeamTemp = newBeamIds[isat];
+
+					newPredSatIds[isat] = newPredSatIds[jsat];
+					newPredSatIds[jsat] = iSatTemp;
+					newBeamIds[isat]	= newBeamIds[jsat];
+					newBeamIds[jsat]	= iBeamTemp;
+
+					memcpy( &acBeamTemp[0],&acDBFBeamVectors[isat*NUM_CHANNELS], NUM_CHANNELS*sizeof(EMSCOMPLEX) );
+					memcpy( &m_acDBFBeamVectors[isat*NUM_CHANNELS],&acDBFBeamVectors[jsat*NUM_CHANNELS], NUM_CHANNELS*sizeof(EMSCOMPLEX) );
+					memcpy( &m_acDBFBeamVectors[jsat*NUM_CHANNELS],&acBeamTemp[0], NUM_CHANNELS*sizeof(EMSCOMPLEX) );
+				}
+			}
+		}
+	}
+
+		memcpy( m_iBeamIDs, newBeamIds, sizeof(int) * MAX_BEAMS );														
+		memcpy( m_iPredictedSATIDs, newPredSatIds, MAX_BEAMS * sizeof(int) );
+		memcpy( m_acDBFBeamVectors,acDBFBeamVectors, MAX_BEAMS*NUM_CHANNELS*sizeof(EMSCOMPLEX) );
+		memcpy( m_iPrevPassSchedSATIDs, &CurrentSatIds, sizeof(int) * MAX_BEAMS );
+
+		DBFTrackingData obj;
+		obj.dbfBeamVector = m_acDBFBeamVectors;
+		obj.predBeamIDs = m_iBeamIDs;
+		obj.predSatIDs = m_iPredictedSATIDs;
+		obj.probability = m_fProbability;
+		obj.schedulerSatIds = m_iPrevPassSchedSATIDs;
+		obj.numBeams = m_ulSatellites;
+		m_qrefDBFBeamVectors.InsertAtFirst( obj );
+	
+	for ( int isat = 0; isat < m_ulSatellites; isat++ )
+	{
+		m_aTOAFOA.ulEigen[isat]		= m_iBeamIDs[isat];
+		m_aTOAFOA.fEigenProb[isat]  = m_fProbability[isat];
+	}
+
+	sprintf(szFileName,"C:\\HGT\\DBFPassData\\SatID\\DBF_TOAFOA_%06d.bin", ulHourSec);
+
+	lpSatIdentityFile = fopen(szFileName,"w+b");
+
+	if ( lpSatIdentityFile )
+	{
+		fwrite( &m_aTOAFOA, sizeof(EMSDBFTOAFOARECORD), 1, lpSatIdentityFile);
+
+		flushall();
+		fclose(lpSatIdentityFile);
+		lpSatIdentityFile = NULL;
+		bOK = true;
+			
+		CEMSTime oTime( m_aTOAFOA.timestamp );
+		EMSTIMEFIELDS tmFields;
+		memset( &tmFields, 0, sizeof(EMSTIMEFIELDS) );
+		oTime.GetTime( &tmFields );
+
+		float tDiff = 10.0f;
+		float fDiff = 10.0f;
+		int iDiffIndex = 0;
+
+		for (int i = 0; i < m_ulSatellites; i++) {
+			if (m_aTOAFOA.fBeaTOA[i] != 0 && m_aTOAFOA.fBeaFOA[i] != 0) {
+				float tSatDiff = abs(m_aTOAFOA.fBeaTOA[i] - m_aTOAFOA.fTOA[i]);
+				float fSatDiff = abs(m_aTOAFOA.fBeaFOA[i] - m_aTOAFOA.fFOA[i]);
+				// 0 value indicates an error reading values
+				if (m_aTOAFOA.fCNR[i] != 0 && tSatDiff < tDiff) {
+					tDiff = tSatDiff;
+					fDiff = fSatDiff;
+					iDiffIndex = i;
+				}
+			}
+		}
+
+		if (m_aTOAFOA.fCNR[iDiffIndex] != 0 && m_aTOAFOA.fBeaTOA[iDiffIndex] != 0 && m_aTOAFOA.fBeaFOA[iDiffIndex] != 0) {
+			printf("Index: %d fCNR: %f, fBeaTOA: %f, fBeaFOA: %f, tDiff: %f, fDiff: %f\n", iDiffIndex, m_aTOAFOA.fCNR[iDiffIndex],
+				m_aTOAFOA.fBeaTOA[iDiffIndex], m_aTOAFOA.fBeaFOA[iDiffIndex], tDiff, fDiff);
+		}
+
+		if (tDiff != 10.0f)
+		{
+			sprintf(szFileName, "C:\\HGT\\DBFPassData\\DBF_TOAFOA_Residuals.csv");
+			lpToaFoaResidualsFile = fopen(szFileName, "a");
+
+			//if (m_aTOAFOA.fBeaTOA[iDiffIndex] != 0 && m_aTOAFOA.fBeaFOA[iDiffIndex] != 0) 
+			{/*
+				float fTOAdiff = m_aTOAFOA.fBeaTOA[iDiffIndex] - m_aTOAFOA.fTOA[iDiffIndex];
+				float fFOAdiff = m_aTOAFOA.fBeaFOA[iDiffIndex] - m_aTOAFOA.fFOA[iDiffIndex];*/
+
+				float fDeltaTime = (float)(m_aTOAFOA.timestamp.intTime - m_aPassSchedule.rec[iDiffIndex].timestamp.intTime) * 1e-9;
+				printf(" %15s, %19I64u, %02d:%02d:%02d.%06d DiffTime %f, CNR %5.2f, dTOA0Bea %6.3f, dTOA0 %6.3f, dFOA0Bea %7.1f, dFOA0 %7.1f, satID %d\n",
+					m_aTOAFOA.cBeaconID, m_aTOAFOA.timestamp, tmFields.nHour, tmFields.nMinute, tmFields.nSecond, tmFields.lNanosecond / 1000,
+					fDeltaTime, m_aTOAFOA.fCNR[iDiffIndex], m_aTOAFOA.fBeaTOA[iDiffIndex],
+					m_aTOAFOA.fTOA[iDiffIndex], m_aTOAFOA.fBeaFOA[iDiffIndex],
+					m_aTOAFOA.fFOA[iDiffIndex], m_aTOAFOA.ulSatID[iDiffIndex]);
+
+				if (lpToaFoaResidualsFile)
+				{
+					fprintf(lpToaFoaResidualsFile, "%s, %19I64u, %02d:%02d:%02d.%06d,%f,%5.2f,%6.3f,%6.3f,%7.1f,%7.1f,%d\n",
+						m_aTOAFOA.cBeaconID, m_aTOAFOA.timestamp, tmFields.nHour, tmFields.nMinute, tmFields.nSecond, tmFields.lNanosecond / 1000,
+						fDeltaTime, m_aTOAFOA.fCNR[iDiffIndex], m_aTOAFOA.fBeaTOA[iDiffIndex], m_aTOAFOA.fTOA[iDiffIndex],
+						m_aTOAFOA.fBeaFOA[iDiffIndex], m_aTOAFOA.fFOA[iDiffIndex], m_aTOAFOA.ulSatID[iDiffIndex]);
+				}
+			}
+
+			flushall();
+			fclose(lpToaFoaResidualsFile);
+			lpToaFoaResidualsFile = NULL;
+		}
+
+		/*float fTOAdiff = m_aTOAFOA.fBeaTOA[0]-m_aTOAFOA.fTOA[0];
+		float fFOAdiff = m_aTOAFOA.fBeaFOA[0]-m_aTOAFOA.fFOA[0];
+
+
+		float fDeltaTime = (float)(m_aTOAFOA.timestamp.intTime - m_aPassSchedule.rec[0].timestamp.intTime)*1e-9;
+		printf(" %15s, %u, %02d:%02d:%02d.%06d DiffTime %f, CNR %5.2f, dTOA %6.3f, dFOA %7.1f\n",
+				 m_aTOAFOA.cBeaconID, m_aTOAFOA.timestamp.intTime, tmFields.nHour, tmFields.nMinute, tmFields.nSecond, tmFields.lNanosecond/1000,
+				 fDeltaTime,m_aTOAFOA.fCNR[0], fTOAdiff, fFOAdiff );*/
+	}
+
+
+	return bOK;
+}
+
+///////////////////////////////////////////////////////////////////////////////////////////////////
+
+bool
+CDigitalBeamFormer::CheckBit(  char cHex[36], int iBit )
+{
+	bool bOK = false;
+	int i1, i2, i3, iHex;
+
+	i1 = iBit/4;
+	i2 = ( iBit - i1*4 );
+	i3 = 1 << i2;
+	iHex = _Hex2Int( cHex[i1] );
+
+	bOK = ( i3 & iHex );
+
+	return bOK;
+}
+
+int
+CDigitalBeamFormer::_Hex2Int(  char cHex )
+{
+	if ( cHex == 'A'  ) return 10;
+	if ( cHex == 'B'  ) return 11;
+	if ( cHex == 'C'  ) return 12;
+	if ( cHex == 'D'  ) return 13;
+	if ( cHex == 'E'  ) return 14;
+	if ( cHex == 'F'  ) return 15;
+	return ( (int)cHex - 48 );
+}
+
+EMS_RESULT
+CDigitalBeamFormer::_CopyData(  float* fTest, float fValue, ULONG nCount )
+{
+	EMS_RESULT hr = EMS_OK;
+
+	if ( nCount > 0 )
+	{
+		for ( ULONG i = 0; i < nCount; i++ )
+		{
+			fTest[i] = fValue;
+		}
+	}
+	return hr;
+}
+
+/////////////////////////////////////////////////////////////////////////////////////////////////
+EMS_RESULT
+CDigitalBeamFormer::SeparationAngle( ULONG m_ulSatellites )
+{
+	
+	EMS_RESULT hr = EMS_OK;
+	double dX1, dY1, dZ1 = 0.0;
+	double dX2, dY2, dZ2 = 0.0;
+	double dAzimuth, dElevation = 0.0;
+	double dSAmin = 0.0;
+
+	m_dSAmin[0] = 180.0;
+
+	if ( m_ulSatellites > 1 )
+	{
+		for ( int i = 0; i < m_ulSatellites; i++ )
+		{
+			m_dSAmin[i] = 180.0;
+			dAzimuth = m_aPassSchedule.rec[i].fPlateAzimuth;
+			dElevation = m_aPassSchedule.rec[i].fPlateElevation;;
+			// Compute unit vector pointing vectors
+			dX1 = cos( dAzimuth * c_dDegToRad ) * sin( dElevation * c_dDegToRad );
+			dY1 = sin( dAzimuth * c_dDegToRad ) * sin( dElevation * c_dDegToRad );
+			dZ1 = cos( dElevation * c_dDegToRad );
+
+			for ( int j = i+1; j < m_ulSatellites; j++ )
+			{
+				dAzimuth = m_aPassSchedule.rec[j].fPlateAzimuth;
+				dElevation = m_aPassSchedule.rec[j].fPlateElevation;;
+				// Compute unit vector pointing vectors
+				dX2 = cos( dAzimuth * c_dDegToRad ) * sin( dElevation * c_dDegToRad );
+				dY2 = sin( dAzimuth * c_dDegToRad ) * sin( dElevation * c_dDegToRad );
+				dZ2 = cos( dElevation * c_dDegToRad );
+
+				dSAmin = acos( dX1*dX2 + dY1*dY2 + dZ1*dZ2 ) * c_dRadToDeg;
+				if ( m_dSAmin[i] > dSAmin ) m_dSAmin[i] = dSAmin;
+			}
+		}
+	}
 	return hr;
 }

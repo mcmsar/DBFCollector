@@ -13,20 +13,17 @@
   <PropertyGroup Label="Globals">
     <SccProjectName />
     <SccLocalPath />
-    <ProjectGuid>{5B77D649-577C-FEA6-1EA3-73B0EAE9F86C}</ProjectGuid>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseOfMfc>false</UseOfMfc>
     <CharacterSet>MultiByte</CharacterSet>
-    <PlatformToolset>v145</PlatformToolset>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseOfMfc>false</UseOfMfc>
     <CharacterSet>MultiByte</CharacterSet>
-    <PlatformToolset>v145</PlatformToolset>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
   <ImportGroup Label="ExtensionSettings">
@@ -106,7 +103,6 @@
       <ObjectFileName>.\Debug\</ObjectFileName>
       <ProgramDataBaseFileName>.\Debug\</ProgramDataBaseFileName>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
-      <AdditionalOptions>/w14103 %(AdditionalOptions)</AdditionalOptions>
     </ClCompile>
     <Midl>
       <TypeLibraryName>.\Debug\DBFCollector.tlb</TypeLibraryName>
@@ -124,16 +120,19 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <SubSystem>Console</SubSystem>
       <OutputFile>x64\Debug\DBFCollector.exe</OutputFile>
-      <AdditionalDependencies>odbc32.lib;odbccp32.lib;ws2_32.lib;..\3rdParty\Intel\IPP\8.0\intel64\stublib\ipps.lib;..\3rdParty\Intel\IPP\8.0\intel64\stublib\ippm.lib;Wsnmp32.lib;xerces-c_3D.lib;mkl_intel_lp64.lib;mkl_core.lib;mkl_sequential.lib;comsuppw.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <AdditionalLibraryDirectories>..\3rdParty\apache\xerces\c\libx64;..\common\library\mkl\intel64_win;..\3rdParty\Intel\mkl\include;..\3rdParty\Intel\MKL;..\common\library;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>odbc32.lib;odbccp32.lib;ws2_32.lib;EMSConfigClientCPP x64.lib;..\3rdParty\Intel\IPP\8.0\intel64\stublib\ipps.lib;..\3rdParty\Intel\IPP\8.0\intel64\stublib\ippm.lib;Wsnmp32.lib;xerces-c_3D.lib;mkl_intel_lp64.lib;mkl_core.lib;mkl_sequential.lib;comsuppw.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>..\Common\Library;..\3rdParty\apache\xerces\c\libx64;..\common\library\mkl\intel64_win;..\3rdParty\Intel\mkl\include;..\3rdParty\Intel\MKL;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="..\Common\AOBJBASE.CPP" />
     <ClCompile Include="..\Common\ArrayHelper.cpp" />
+    <ClCompile Include="..\Common\CBeaconID.cpp" />
+    <ClCompile Include="..\Common\CBeaconMessage.cpp" />
     <ClCompile Include="..\Common\ccbootstrap.cpp" />
     <ClCompile Include="..\Common\EMSCONFG.CPP" />
     <ClCompile Include="..\Common\EMSRGKEY.CPP" />
+    <ClCompile Include="..\Common\HexUtilis.cpp" />
     <ClCompile Include="..\Common\RegistrySettings.cpp" />
     <ClCompile Include="..\Common\RIFFHeader.cpp" />
     <ClCompile Include="..\Common\StdRIFF.cpp" />
@@ -148,6 +147,7 @@
     <ClCompile Include="..\Common\WaveExtSubBandDetails.cpp" />
     <ClCompile Include="..\Common\WaveExtSubBandsDetails.cpp" />
     <ClCompile Include="..\Common\WaveFormatChunk.cpp" />
+    <ClCompile Include="CBeaconMessage.cpp" />
     <ClCompile Include="CollectionObject.cpp" />
     <ClCompile Include="..\Common\ConfigurationAccessor.cpp" />
     <ClCompile Include="..\Common\convutility.cpp" />
@@ -195,9 +195,13 @@
     <ClCompile Include="TrackDBFSatellites.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\Common\Include\CBeaconMessage.h" />
     <ClInclude Include="..\Common\Include\PointerQueue.h" />
+    <ClInclude Include="emsDBFtypes2.h" />
+    <ClInclude Include="SigProcHelper.h" />
     <ClInclude Include="StdAfx.h" />
     <ClInclude Include="TimeElapsed.h" />
+    <ClInclude Include="ToaFoaProcessor.h" />
   </ItemGroup>
   <ItemGroup>
     <Midl Include="..\Common\Include\DataTransmitter.idl">

@@ -1325,8 +1325,17 @@ CDigitalBeamFormer::_OutputWaveEx( EMSTIME tm, ULONG culNumSats, bool bBandwidth
 	//double *probability = m_qrefDBFBeamVectors.ReadFirst( ).probability;
 	//double dProbThreshold = 0.9;
 
+	
+
 	for( int iSat = 0; iSat < culNumSats; iSat++ )
 	{
+		int iPredictedSatIndex = 0;
+		for (int jSat = 0; jSat < culNumSats; jSat++) {
+			if (m_aPassSchedule.rec[jSat].ulSatID == m_aTOAFOA.ulSatID[iSat]) {
+				iPredictedSatIndex = jSat;
+				break;
+			}
+		}
 		
 		//if ( probability[iSat] < dProbThreshold ) continue;
 
@@ -1335,13 +1344,13 @@ CDigitalBeamFormer::_OutputWaveEx( EMSTIME tm, ULONG culNumSats, bool bBandwidth
 		DWORD dwBytes = 0;
 		BYTE* abyData = 0;
 
-		ULONG ulLutID  = m_aPassSchedule.rec[iSat].ulLutID;
-		ULONG ulSatID  = m_aPassSchedule.rec[iSat].ulSatID;
-		WORD  wPlateID = m_aPassSchedule.rec[iSat].wPlateID;
-		double dSatAzimuth = (double) m_aPassSchedule.rec[iSat].fAzimuth;
-		double dSatElevation = (double) m_aPassSchedule.rec[iSat].fElevation;
-		double dPlateAzimuth = (double) m_aPassSchedule.rec[iSat].fPlateAzimuth;
-		double dPlateElevation = (double) m_aPassSchedule.rec[iSat].fPlateElevation;
+		ULONG ulLutID  = m_aPassSchedule.rec[iPredictedSatIndex].ulLutID;
+		ULONG ulSatID  = m_aPassSchedule.rec[iPredictedSatIndex].ulSatID;
+		WORD  wPlateID = m_aPassSchedule.rec[iPredictedSatIndex].wPlateID;
+		double dSatAzimuth = (double) m_aPassSchedule.rec[iPredictedSatIndex].fAzimuth;
+		double dSatElevation = (double) m_aPassSchedule.rec[iPredictedSatIndex].fElevation;
+		double dPlateAzimuth = (double) m_aPassSchedule.rec[iPredictedSatIndex].fPlateAzimuth;
+		double dPlateElevation = (double) m_aPassSchedule.rec[iPredictedSatIndex].fPlateElevation;
 		//if( ulSatID >= 200 && dSatElevation < MEO_MIN_ELEVATION )	//snl added to check > 20 if pass sched has no elev constraints
 		//	continue;
 
@@ -1355,13 +1364,13 @@ CDigitalBeamFormer::_OutputWaveEx( EMSTIME tm, ULONG culNumSats, bool bBandwidth
 		if ( bBandwidthFlag ) ulBytes /= 2;
 
 		// Select satellite id that matches pass schedule ID
-		//for ( int jsat = 0; jsat < culNumSats; jsat++)
+		//for ( int iPredictedSatIndex = 0; iPredictedSatIndex < culNumSats; iPredictedSatIndex++)
 		{
-			//if (( ulSatID == m_iPredictedSATIDs[jsat]) || culNumSats==1 )
+			//if (( ulSatID == m_iPredictedSATIDs[iPredictedSatIndex]) || culNumSats==1 )
 			{
-				//oWaveOut.Write( (unsigned char*)&m_nBeam[iSat][0], ulBytes );
-				oWaveOut.Write( (unsigned char*)&m_nBeam[iSat][0], ulBytes/2 );
-				//oWaveOut.Write( (unsigned char*)&m_nBeam[jsat][0], ulBytes/2 ); // 1 second buffers
+				//oWaveOut.Write( (unsigned char*)&m_nBeam[iPredictedSatIndex][0], ulBytes );
+				oWaveOut.Write( (unsigned char*)&m_nBeam[iPredictedSatIndex][0], ulBytes/2 );
+				//oWaveOut.Write( (unsigned char*)&m_nBeam[iPredictedSatIndex][0], ulBytes/2 ); // 1 second buffers
 				//break;
 			}
 		}
@@ -1387,7 +1396,7 @@ CDigitalBeamFormer::_OutputWaveEx( EMSTIME tm, ULONG culNumSats, bool bBandwidth
 		oWaveOut.GetExtendedInfoRef().GetLutDetailsRef().SetLutID( ulLutID );
 		oWaveOut.GetExtendedInfoRef().GetSatDetailsRef().SetSatID( ulSatID );
 		WORD wAntID = 0;
-		wAntID = wPlateID*100 +  (WORD) iSat;
+		wAntID = wPlateID*100 +  (WORD) iPredictedSatIndex;
 		oWaveOut.GetExtendedInfoRef().GetLutDetailsRef().SetAntennaID( wAntID );
 
 		//EMSTIME tempTime = CEMSSystemClock::GetTime();
@@ -1406,9 +1415,9 @@ CDigitalBeamFormer::_OutputWaveEx( EMSTIME tm, ULONG culNumSats, bool bBandwidth
 		oWaveOut.GetExtendedInfoRef().GetSignalDetailsRef().SetFlags( 0 );
 		
 		//if( predSatIDs )
-		//	oWaveOut.GetExtendedInfoRef().GetSignalDetailsRef().SetFlags( predSatIDs[ iSat ] );
-		if( m_fProbability[iSat] )
-			oWaveOut.GetExtendedInfoRef().GetSignalDetailsRef().SetMeanCarrierFreq( m_fProbability[ iSat ] );
+		//	oWaveOut.GetExtendedInfoRef().GetSignalDetailsRef().SetFlags( predSatIDs[ iPredictedSatIndex ] );
+		if( m_fProbability[iPredictedSatIndex] )
+			oWaveOut.GetExtendedInfoRef().GetSignalDetailsRef().SetMeanCarrierFreq( m_fProbability[ iPredictedSatIndex ] );
 
 		// RR added azimuth and elevation of satellite
 		oWaveOut.GetExtendedInfoRef().GetSignalDetailsRef().SetMaxModIndex( dSatAzimuth );
@@ -1426,9 +1435,9 @@ CDigitalBeamFormer::_OutputWaveEx( EMSTIME tm, ULONG culNumSats, bool bBandwidth
 		oWaveOut.GetExtendedInfoRef().GetPropertiesRef().SetSoftwareVersion( dSoftWareVersion );
 
 		// Add reference beacon indicator
-		if ( m_aPassSchedule.rec[iSat].fBeaconElevation > 0.0 )
+		if ( m_aPassSchedule.rec[iPredictedSatIndex].fBeaconElevation > 0.0 )
 		{
-			DWORD dFlag = (DWORD) m_aPassSchedule.rec[iSat].fFOA;
+			DWORD dFlag = (DWORD) m_aPassSchedule.rec[iPredictedSatIndex].fFOA;
 			oWaveOut.GetExtendedInfoRef().GetSatDetailsRef().SetSatFlags( dFlag );
 		}
 
@@ -2619,7 +2628,7 @@ CDigitalBeamFormer::ComputeChannelData( bool bTimeFreqFlag, bool bBandwidthFlag 
 	ULONG ulBandWidth = (ULONG) (DBF_FREQ_BANDWIDTH / dBinSize);
 	
 	if ( bBandwidthFlag ) ulOffset50 *= 2;
-	ulOffset50 -= 5000;
+	ulOffset50 -= 144;
 
 	double dPower  = 0.0;
 	double dMean = 0.0;

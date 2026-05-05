@@ -3,6 +3,8 @@
 #include <stdio.h>
 #include <math.h>
 
+
+
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 
 void
@@ -66,6 +68,8 @@ CToaFoaProcessor::InitializeTOAFOA(
 		//memset( pTOAFOA, 0, sizeof( EMSDBFTOAFOARECORD ) );
 		memset(pTOAFOA->fTOA, 0, sizeof(pTOAFOA->fTOA));
 		memset(pTOAFOA->fFOA, 0, sizeof(pTOAFOA->fFOA));
+		memset(pTOAFOA->fBeaTOA, 0, sizeof(pTOAFOA->fBeaTOA));
+		memset(pTOAFOA->fBeaFOA, 0, sizeof(pTOAFOA->fBeaFOA));
 		memset(pTOAFOA->fCNR, 0, sizeof(pTOAFOA->fCNR));
 		memset(pTOAFOA->fCORRTOA, 0, sizeof(pTOAFOA->fCORRTOA));
 		memset(pTOAFOA->ulEigen, 0, sizeof(pTOAFOA->ulEigen));
@@ -185,12 +189,13 @@ CToaFoaProcessor::SatelliteTOAFOA(
 	float fCNR        = 0.0;
 	float fCNRthreshold  = 35.0;
 	float fCORRthreshold = 3.0;
-	float fBinsize = 0.5; 
+	//float fBinsize = 0.5; 
+	float fBinsize = (float)DBF_SAMPLE_RATE / (float)DBF_LOG20_SIZE;
 	double dAvePower = 0.0;
 
-	ULONG ulBeaconBandWidth = (ULONG) (10000.0 / fBinsize);
+	ULONG ulBeaconBandWidth = (ULONG) (4000.0 / fBinsize);
 							  
-	ULONG ulFreqBandWidth   = (ULONG) (100000.0 / fBinsize);;
+	ULONG ulFreqBandWidth   = (ULONG) (100000.0 / fBinsize);
 	ULONG ulFreqStart       = (ULONG) (50000.0 / fBinsize);
 	ULONG ulFreq       = 0;
 													   
@@ -210,7 +215,7 @@ CToaFoaProcessor::SatelliteTOAFOA(
 	memset( &fCorrBeacon[0], 0 , sizeof(float) * 4096 );
 	memset( &fTestBeacon[0], 0 , sizeof(float) * 1024 );
 	
-	ulFreq = (ULONG) (pTOAFOA->fRefTxFrequency / fBinsize );
+	ulFreq = (ULONG) (pTOAFOA->fBeaFOA[isat] / fBinsize );
 	ulFreqOffset = ulFreqStart + (ulFreq - ulBeaconBandWidth/2);  // initial offset of 50 kHz
 
 	if (  ulFreqOffset > DBF_LOG19_SIZE - ulFreqBandWidth )
@@ -329,7 +334,7 @@ CToaFoaProcessor::IdentifyTOAFOA(
 
 	int i, j, k;
 	float fTOAdiff;
-	float fTOAthreshold = 0.006f;
+	float fTOAthreshold = 0.001f;
 	float fFOAdiff;
 	float fFOAthreshold = 25.0f;
 
@@ -470,9 +475,11 @@ CToaFoaProcessor::IdentifyTOAFOA(
 			{
 				fTOAdiff = pTOAFOA->fTOA[isat] - pTOAFOA->fBeaTOA[jsat];
 				fFOAdiff = pTOAFOA->fFOA[isat] - pTOAFOA->fBeaFOA[jsat];
-				if ((abs(fTOAdiff) < fTOAthreshold) && (abs(fFOAdiff) < fFOAthreshold))
-				{
+				//if ((abs(fTOAdiff) < fTOAthreshold) && (abs(fFOAdiff) < fFOAthreshold))
+				if (abs(fTOAdiff) < fTOAthreshold)
+					{
 					pProbability[isat] = 9.99999999;
+					if (abs(fFOAdiff-850.0) < 100.0) pProbability[isat] = 12.0;
 					iSatTemp = newPredSatIds[isat];
 					iBeamTemp = newBeamIds[isat];
 
@@ -547,25 +554,35 @@ CToaFoaProcessor::IdentifyTOAFOA(
 			}
 		}
 
-		if (pTOAFOA->fCNR[iDiffIndex] != 0) {
-			printf("Index: %d fCNR: %f, fBeaTOA: %f, fBeaFOA: %f, tDiff: %f, fDiff: %f\n", iDiffIndex, pTOAFOA->fCNR[iDiffIndex],
-				pTOAFOA->fBeaTOA[iDiffIndex], pTOAFOA->fBeaFOA[iDiffIndex], tDiff, fDiff);
-		}
 
 		if (tDiff != 10.0f)
 		{
+			printf(" %d, %5.1f, TOA: %6.3f,%6.3f, FOA: %7.1f,%7.1f, dTOA: %f, dFOA: %f\n",
+				iDiffIndex, pTOAFOA->fCNR[iDiffIndex],
+				pTOAFOA->fBeaTOA[iDiffIndex], pTOAFOA->fTOA[iDiffIndex],
+				pTOAFOA->fBeaFOA[iDiffIndex], pTOAFOA->fFOA[iDiffIndex],
+				tDiff, fDiff);
+			
 			sprintf(szFileName, "C:\\HGT\\DBFPassData\\DBF_TOAFOA_Residuals.csv");
 			lpToaFoaResidualsFile = fopen(szFileName, "a");
+
+			//double fDesiredOffsetFreqMin = -870.5f
+			//double fDesiredOffsetFreqMax = -872.5f
+			//double fFOADiffResult = pTOAFOA->fBeaTOA[iDiffIndex] - pTOAFOA->fBeaFOA[iDiffIndex]
+
+			/*if (fFOADiffResult > fDesiredOffsetFreqMin && fFOADiffResult < fDesiredOffsetFreqMax) {
+
+			}*/
 
 			//if (pTOAFOA->fBeaTOA[iDiffIndex] != 0 && pTOAFOA->fBeaFOA[iDiffIndex] != 0) 
 			{
 				float fTOAdiff = pTOAFOA->fBeaTOA[iDiffIndex] - pTOAFOA->fTOA[iDiffIndex];
 				float fFOAdiff = pTOAFOA->fBeaFOA[iDiffIndex] - pTOAFOA->fFOA[iDiffIndex];
-
 				float fDeltaTime = (float)(pTOAFOA->timestamp.intTime - pPassSchedule->rec[iDiffIndex].timestamp.intTime) * 1e-9;
-				printf(" %15s, %19I64u, %02d:%02d:%02d.%06d DiffTime %f, CNR %5.2f, dTOA0Bea %6.3f, dTOA0 %6.3f, dFOA0Bea %7.1f, dFOA0 %7.1f, satID %d\n",
-					pTOAFOA->cBeaconID, pTOAFOA->timestamp, tmFields.nHour, tmFields.nMinute, tmFields.nSecond, tmFields.lNanosecond / 1000,
-					fDeltaTime, pTOAFOA->fCNR[iDiffIndex], pTOAFOA->fBeaTOA[iDiffIndex],
+				
+				printf(" %15s, %03d %02d:%02d:%02d.%06d, %5.2f, TOA %6.3f, %6.3f, FOA %7.1f, %7.1f, %3d\n",
+					pTOAFOA->cBeaconID, tmFields.nDay, tmFields.nHour, tmFields.nMinute, tmFields.nSecond, tmFields.lNanosecond / 1000,
+					pTOAFOA->fCNR[iDiffIndex], pTOAFOA->fBeaTOA[iDiffIndex],
 					pTOAFOA->fTOA[iDiffIndex], pTOAFOA->fBeaFOA[iDiffIndex],
 					pTOAFOA->fFOA[iDiffIndex], pTOAFOA->ulSatID[iDiffIndex]);
 

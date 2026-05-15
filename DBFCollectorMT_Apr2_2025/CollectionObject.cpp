@@ -197,7 +197,7 @@ CEMSCollectionObject::_Initialize()
 				DWORD dwBufferSize = 128000008;//BUFF_SIZE_PLUS_TIME;
 
 				
-				printf("CEMSCollectionObject _Initialize - Sample Rate: %d, Buffer Size: %d\n", dwSampleRate, dwBufferSize);
+				printf("pADBoard Initialize - Sample Rate: %d, Buffer Size: %d\n", dwSampleRate, dwBufferSize);
 
 				hr = m_pADBoard->Init(dwBufferSize, dwSampleSize, dwSampleRate);
 				if( EMS_OK == hr )
@@ -517,6 +517,9 @@ CEMSCollectionObject::run()
 			//m_bRunning = false;
 		}
 
+		time_t my_time = time(NULL);
+		printf("Initial checks complete - %s", ctime(&my_time));
+		
 		while( m_bRunning )
 		{
 

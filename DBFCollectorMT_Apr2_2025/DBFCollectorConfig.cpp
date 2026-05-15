@@ -23,10 +23,11 @@ CDBFCollectorConfig::CDBFCollectorConfig()
 // ---------------------------------------------------------------------------
 void CDBFCollectorConfig::SetDefaults()
 {
-#define DBF_ROOT   "C:\\Users\\joshua.rehm\\DBFCollectorMT_03_26_26\\"
+#define DBF_ROOT   "..\\"
 #define DBF_OUTPUT DBF_ROOT "Output\\"
 
     // Input / configuration (unchanged location)
+    m_sRootDir           = DBF_ROOT;
     m_sConfigDir         = DBF_ROOT "Config\\";
     m_sConstellationFile = DBF_ROOT "Config\\DBFConstellation.xml";
     m_sDataDrive         = "C:\\";

@@ -169,6 +169,7 @@ CEMSDBFDataMgr::Initialize( int nPlateNumber )
 		if (pos != std::string::npos)
 			sExeDir = sExeDir.substr(0, pos);
 		CDBFCollectorConfig& cfg = CDBFCollectorConfig::GetInstance();
+		//std::string sRootDir = cfg.GetRootDir()
 		if (!cfg.LoadFromFile(sExeDir + "\\..\\..\\..\\Config\\DBFCollectorConfig.xml"))
 			cfg.LoadFromFile(sExeDir + "\\DBFCollectorConfig.xml");
 	}

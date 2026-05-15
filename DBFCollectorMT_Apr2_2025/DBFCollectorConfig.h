@@ -19,6 +19,8 @@ public:
     // Any tag that is absent leaves the corresponding default unchanged.
     bool LoadFromFile(const std::string& filePath);
 
+    const std::string& GetRootDir()     const { return m_sRootDir; }
+
     // --- Pass/data directories ---
     const std::string& GetConfigDir()     const { return m_sConfigDir; }
     const std::string& GetPassDataDir()   const { return m_sPassDataDir; }
@@ -72,6 +74,7 @@ private:
     static std::string  ExtractTagValue(const std::string& xml, const std::string& tag);
     static std::wstring NarrowToWide(const std::string& s);
 
+    std::string m_sRootDir;
     std::string m_sConfigDir;
     std::string m_sPassDataDir;
     std::string m_sWavOutputDir;

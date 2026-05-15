@@ -6,12 +6,20 @@
   <xs:element name="computers" >
     <xs:complexType>
               <xs:sequence>
-				<xs:element name="SP" type="xs:string" minOccurs="1" maxOccurs="unbounded" form="unqualified"/>
+				<xs:element name="SP" type="dbfconstellation:SP" minOccurs="1" maxOccurs="unbounded" form="unqualified"/>
                 <xs:element name="computer" type="dbfconstellation:computer"  minOccurs="1" maxOccurs="unbounded" form="unqualified"/>                
              </xs:sequence>
             <xs:attribute name="version" type="xs:string" use="required"/>
       </xs:complexType>
     </xs:element>
+	
+  <xs:complexType name="SP">
+      <xs:sequence>
+		  <xs:element name="ip_address" type="xs:string"/>
+		  <xs:element name="port_id" type="xs:string"/>
+      </xs:sequence>
+	  <xs:attribute name="id" use="required" type="xs:string"/>
+  </xs:complexType>
 
   <xs:complexType name="computer">
       <xs:sequence>

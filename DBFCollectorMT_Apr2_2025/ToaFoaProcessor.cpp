@@ -84,7 +84,7 @@ CToaFoaProcessor::InitializeTOAFOA(
 		{
 			//pTOAFOA->ulSatID[isat] = pPassSchedule->rec[isat].ulSatID;
 
-			if ( pPassSchedule->rec[isat].fBeaconElevation > 0 )
+			//if ( pPassSchedule->rec[isat].fBeaconElevation > 0 )
 			{
 				pTOAFOA->fBeaFOA[isat] = pPassSchedule->rec[isat].fFOA;
 				pTOAFOA->fBeaTOA[isat] = pPassSchedule->rec[isat].fTOA;
@@ -93,24 +93,25 @@ CToaFoaProcessor::InitializeTOAFOA(
 				pTOAFOA->fPlateAz[isat] = pPassSchedule->rec[isat].fPlateAzimuth;
 				pTOAFOA->fPlateEl[isat] = pPassSchedule->rec[isat].fPlateElevation;
 
-				if ( !bBeaconOK )
+				//if ( !bBeaconOK )
 				{
-					memcpy( &pTOAFOA->cBeaconID[0], &pPassSchedule->rec[isat].cBeaconID[0], 15 );
+					//memcpy( &pTOAFOA->cBeaconID[0], &pPassSchedule->rec[isat].cBeaconID[0], 15 );
 
 					// Establish beacon message FFT for correlation tests
-					char cBeacon[36];
+					char cBeacon[6];
 					ULONG j,n, len2 = 0;
 
 					// Assumes beacon with exactly 400 bps and 200 kHz bandwidth and 2 seconds duration
 					ULONG ulBitSize = (ULONG)(0.0025 / 2 * DBF_LOG16_SIZE);
-					ULONG ulBits   = 112;
+					ULONG ulBits = 24; // 112;
 					ULONG ulSize   = ulBits * ulBitSize + 1;
 					float fBit     = 0.0;
 
 					memset( pTemp1,      0.0, DBF_LOG16_SIZE * sizeof(float) );
 					memset( pAcTemp1,    0.0, DBF_LOG16_SIZE * sizeof(EMSCOMPLEX) );
 					memset( pAcFFTBeacon, 0.0, DBF_LOG16_SIZE * sizeof(EMSCOMPLEX) );
-					memcpy( &cBeacon[0], &pPassSchedule->rec[isat].cBeaconMess[0], 36 );
+					//memcpy( &cBeacon[0], &pPassSchedule->rec[isat].cBeaconMess[0], 36 );
+					memcpy(&cBeacon[0], "FFFED0", 6);
 
 					for ( j = 0; j < ulBits; j++ )
 					{
@@ -193,7 +194,7 @@ CToaFoaProcessor::SatelliteTOAFOA(
 	float fBinsize = (float)DBF_SAMPLE_RATE / (float)DBF_LOG20_SIZE;
 	double dAvePower = 0.0;
 
-	ULONG ulBeaconBandWidth = (ULONG) (4000.0 / fBinsize);
+	ULONG ulBeaconBandWidth = (ULONG) (15000.0 / fBinsize);
 							  
 	ULONG ulFreqBandWidth   = (ULONG) (100000.0 / fBinsize);
 	ULONG ulFreqStart       = (ULONG) (50000.0 / fBinsize);
@@ -215,14 +216,27 @@ CToaFoaProcessor::SatelliteTOAFOA(
 	memset( &fCorrBeacon[0], 0 , sizeof(float) * 4096 );
 	memset( &fTestBeacon[0], 0 , sizeof(float) * 1024 );
 	
-	ulFreq = (ULONG) (pTOAFOA->fBeaFOA[isat] / fBinsize );
+	ulFreq = (ULONG) (pTOAFOA->fRefTxFrequency / fBinsize );
 	ulFreqOffset = ulFreqStart + (ulFreq - ulBeaconBandWidth/2);  // initial offset of 50 kHz
 
 	if (  ulFreqOffset > DBF_LOG19_SIZE - ulFreqBandWidth )
 	{
 		ulFreqOffset = DBF_LOG19_SIZE - ulFreqBandWidth;
 	}
+	// Compare spectrum to noise floor
 
+	/*
+	long i1;
+	float fCorr = 0.0;
+	for (long i = ulFreqStart; i < DBF_LOG19_SIZE - ulFreqStart; i++)
+	{
+		i1 = i + ulBeaconBandWidth + 100;
+		fAvePower = CSigProcHelpers::_EMSsMean(&pTemp1[i], ulBeaconBandWidth);
+		fAvePower += CSigProcHelpers::_EMSsMean(&pTemp1[i1], ulBeaconBandWidth);
+		fCorr += fabs(pTemp1[i1 - 50] - fAvePower / 2.0);
+	}
+	pTOAFOA->fCORRTOA[isat] = fCorr / (float)(DBF_LOG19_SIZE - 2* ulFreqStart);
+	*/
 	// Find Beacon Power and check above CNR threshold
 	// assumes filter with 200 kHz bandwidth
 	fMaxPower = CSigProcHelpers::_EMSsMaxExt( &pTemp1[ulFreqOffset], ulBeaconBandWidth, &ulFreqIndex );
@@ -262,10 +276,9 @@ CToaFoaProcessor::SatelliteTOAFOA(
 		}
 		fMaxPower    = CSigProcHelpers::_EMSsMaxExt( &fCorrBeacon[0], iCorrLength, &ulTimeIndex );
 		fSigmaPower  = (float)CSigProcHelpers::_EMSsMeanStdDev( &fCorrBeacon[0], iCorrLength, &dAvePower );
-		//fMaxPower   -= (float)fAvePower;
-		fMaxPower /= fSigmaPower;
-
+		fMaxPower   /= fSigmaPower;
 		pTOAFOA->fCORRTOA[isat] = fMaxPower;
+
 		pTOAFOA->fCNR[isat]	 = fCNR;
 		if (ulFreqIndex > ulFreqStart) {
 			pTOAFOA->fFOA[isat] = (float)(ulFreqIndex - ulFreqStart) * fBinsize;
@@ -273,11 +286,6 @@ CToaFoaProcessor::SatelliteTOAFOA(
 		//pTOAFOA->fFOA[isat] = (float)((long)ulFreqIndex - (long)ulFreqStart) * fBinsize;
 		pTOAFOA->fTOA[isat]	 = (float)ulTimeIndex * 0.001024f;
 		
-		if (isat==0)
-		{
-			pTOAFOA->fPower[0] = (float)ulTimeIndex;
-			pTOAFOA->fPower[1] = (float)ulFreqIndex;
-		}
 
 		if ( fMaxPower > fCORRthreshold && pPassSchedule->rec[isat].fBeaconElevation > 0)
 		{
@@ -334,7 +342,7 @@ CToaFoaProcessor::IdentifyTOAFOA(
 
 	int i, j, k;
 	float fTOAdiff;
-	float fTOAthreshold = 0.001f;
+	float fTOAthreshold = 0.002f;
 	float fFOAdiff;
 	float fFOAthreshold = 25.0f;
 
@@ -477,20 +485,23 @@ CToaFoaProcessor::IdentifyTOAFOA(
 				fFOAdiff = pTOAFOA->fFOA[isat] - pTOAFOA->fBeaFOA[jsat];
 				//if ((abs(fTOAdiff) < fTOAthreshold) && (abs(fFOAdiff) < fFOAthreshold))
 				if (abs(fTOAdiff) < fTOAthreshold)
-					{
+				{
 					pProbability[isat] = 9.99999999;
-					if (abs(fFOAdiff-850.0) < 100.0) pProbability[isat] = 12.0;
-					iSatTemp = newPredSatIds[isat];
-					iBeamTemp = newBeamIds[isat];
+					if (abs(fFOAdiff - 850.0) < 100.0)
+					{
+						pProbability[isat] = 12.0;
+						iSatTemp = newPredSatIds[isat];
+						iBeamTemp = newBeamIds[isat];
 
-					newPredSatIds[isat] = newPredSatIds[jsat];
-					newPredSatIds[jsat] = iSatTemp;
-					newBeamIds[isat] = newBeamIds[jsat];
-					newBeamIds[jsat] = iBeamTemp;
+						newPredSatIds[isat] = newPredSatIds[jsat];
+						newPredSatIds[jsat] = iSatTemp;
+						newBeamIds[isat] = newBeamIds[jsat];
+						newBeamIds[jsat] = iBeamTemp;
 
-					memcpy(&acBeamTemp[0], &acDBFBeamVectors_In[isat * NUM_CHANNELS], NUM_CHANNELS * sizeof(EMSCOMPLEX));
-					memcpy(&pAcDBFBeamVectors[isat * NUM_CHANNELS], &acDBFBeamVectors_In[jsat * NUM_CHANNELS], NUM_CHANNELS * sizeof(EMSCOMPLEX));
-					memcpy(&pAcDBFBeamVectors[jsat * NUM_CHANNELS], &acBeamTemp[0], NUM_CHANNELS * sizeof(EMSCOMPLEX));
+						memcpy(&acBeamTemp[0], &acDBFBeamVectors_In[isat * NUM_CHANNELS], NUM_CHANNELS * sizeof(EMSCOMPLEX));
+						memcpy(&pAcDBFBeamVectors[isat * NUM_CHANNELS], &acDBFBeamVectors_In[jsat * NUM_CHANNELS], NUM_CHANNELS * sizeof(EMSCOMPLEX));
+						memcpy(&pAcDBFBeamVectors[jsat * NUM_CHANNELS], &acBeamTemp[0], NUM_CHANNELS * sizeof(EMSCOMPLEX));
+					}
 				}
 			}
 		}

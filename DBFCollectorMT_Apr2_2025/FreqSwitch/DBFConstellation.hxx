@@ -227,6 +227,7 @@ namespace xml_schema
 //
 namespace dbfconstellation
 {
+  class SP;
   class computer;
   class computers;
 }
@@ -247,6 +248,94 @@ namespace dbfconstellation
 
 namespace dbfconstellation
 {
+  class SP: public ::xml_schema::type
+  {
+    public:
+    // ip_address
+    //
+    typedef ::xml_schema::string ip_address_type;
+    typedef ::xsd::cxx::tree::traits< ip_address_type, char > ip_address_traits;
+
+    const ip_address_type&
+    ip_address () const;
+
+    ip_address_type&
+    ip_address ();
+
+    void
+    ip_address (const ip_address_type& x);
+
+    void
+    ip_address (::std::auto_ptr< ip_address_type > p);
+
+    // port_id
+    //
+    typedef ::xml_schema::string port_id_type;
+    typedef ::xsd::cxx::tree::traits< port_id_type, char > port_id_traits;
+
+    const port_id_type&
+    port_id () const;
+
+    port_id_type&
+    port_id ();
+
+    void
+    port_id (const port_id_type& x);
+
+    void
+    port_id (::std::auto_ptr< port_id_type > p);
+
+    // id
+    //
+    typedef ::xml_schema::string id_type;
+    typedef ::xsd::cxx::tree::traits< id_type, char > id_traits;
+
+    const id_type&
+    id () const;
+
+    id_type&
+    id ();
+
+    void
+    id (const id_type& x);
+
+    void
+    id (::std::auto_ptr< id_type > p);
+
+    // Constructors.
+    //
+    SP (const ip_address_type&,
+        const port_id_type&,
+        const id_type&);
+
+    SP (const ::xercesc::DOMElement& e,
+        ::xml_schema::flags f = 0,
+        ::xml_schema::container* c = 0);
+
+    SP (const SP& x,
+        ::xml_schema::flags f = 0,
+        ::xml_schema::container* c = 0);
+
+    virtual SP*
+    _clone (::xml_schema::flags f = 0,
+            ::xml_schema::container* c = 0) const;
+
+    virtual
+    ~SP ();
+
+    // Implementation.
+    //
+    protected:
+    void
+    parse (::xsd::cxx::xml::dom::parser< char >&,
+           ::xml_schema::flags);
+
+    protected:
+    ::xsd::cxx::tree::one< ip_address_type > ip_address_;
+    ::xsd::cxx::tree::one< port_id_type > port_id_;
+    ::xsd::cxx::tree::one< id_type > id_;
+  };
+
   class computer: public ::xml_schema::type
   {
     public:
@@ -373,8 +462,25 @@ namespace dbfconstellation
   class computers: public ::xml_schema::type
   {
     public:
+    // SP
+    //
+    typedef ::dbfconstellation::SP SP_type;
+    typedef ::xsd::cxx::tree::sequence< SP_type > SP_sequence;
+    typedef SP_sequence::iterator SP_iterator;
+    typedef SP_sequence::const_iterator SP_const_iterator;
+    typedef ::xsd::cxx::tree::traits< SP_type, char > SP_traits;
+
+    const SP_sequence&
+    SP () const;
+
+    SP_sequence&
+    SP ();
+
+    void
+    SP (const SP_sequence& s);
+
     // computer
-    // 
+    //
     typedef ::dbfconstellation::computer computer_type;
     typedef ::xsd::cxx::tree::sequence< computer_type > computer_sequence;
     typedef computer_sequence::iterator computer_iterator;
@@ -390,25 +496,8 @@ namespace dbfconstellation
     void
     computer (const computer_sequence& s);
 
-    // SP
-    // 
-    typedef ::xml_schema::string SP_type;
-    typedef ::xsd::cxx::tree::traits< SP_type, char > SP_traits;
-
-    const SP_type&
-    SP () const;
-
-    SP_type&
-    SP ();
-
-    void
-    SP (const SP_type& x);
-
-    void
-    SP (::std::auto_ptr< SP_type > p);
-
     // version
-    // 
+    //
     typedef ::xml_schema::string version_type;
     typedef ::xsd::cxx::tree::traits< version_type, char > version_traits;
 
@@ -426,8 +515,7 @@ namespace dbfconstellation
 
     // Constructors.
     //
-    computers (const SP_type&,
-               const version_type&);
+    computers (const version_type&);
 
     computers (const ::xercesc::DOMElement& e,
                ::xml_schema::flags f = 0,
@@ -441,7 +529,7 @@ namespace dbfconstellation
     _clone (::xml_schema::flags f = 0,
             ::xml_schema::container* c = 0) const;
 
-    virtual 
+    virtual
     ~computers ();
 
     // Implementation.
@@ -452,8 +540,8 @@ namespace dbfconstellation
            ::xml_schema::flags);
 
     protected:
+    SP_sequence SP_;
     computer_sequence computer_;
-    ::xsd::cxx::tree::one< SP_type > SP_;
     ::xsd::cxx::tree::one< version_type > version_;
   };
 }
@@ -462,6 +550,9 @@ namespace dbfconstellation
 
 namespace dbfconstellation
 {
+  ::std::ostream&
+  operator<< (::std::ostream&, const SP&);
+
   ::std::ostream&
   operator<< (::std::ostream&, const computer&);
 

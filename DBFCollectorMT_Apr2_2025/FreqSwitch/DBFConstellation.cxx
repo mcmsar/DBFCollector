@@ -18,8 +18,83 @@
 
 namespace dbfconstellation
 {
+  // SP
+  //
+
+  const SP::ip_address_type& SP::
+  ip_address () const
+  {
+    return this->ip_address_.get ();
+  }
+
+  SP::ip_address_type& SP::
+  ip_address ()
+  {
+    return this->ip_address_.get ();
+  }
+
+  void SP::
+  ip_address (const ip_address_type& x)
+  {
+    this->ip_address_.set (x);
+  }
+
+  void SP::
+  ip_address (::std::auto_ptr< ip_address_type > x)
+  {
+    this->ip_address_.set (x);
+  }
+
+  const SP::port_id_type& SP::
+  port_id () const
+  {
+    return this->port_id_.get ();
+  }
+
+  SP::port_id_type& SP::
+  port_id ()
+  {
+    return this->port_id_.get ();
+  }
+
+  void SP::
+  port_id (const port_id_type& x)
+  {
+    this->port_id_.set (x);
+  }
+
+  void SP::
+  port_id (::std::auto_ptr< port_id_type > x)
+  {
+    this->port_id_.set (x);
+  }
+
+  const SP::id_type& SP::
+  id () const
+  {
+    return this->id_.get ();
+  }
+
+  SP::id_type& SP::
+  id ()
+  {
+    return this->id_.get ();
+  }
+
+  void SP::
+  id (const id_type& x)
+  {
+    this->id_.set (x);
+  }
+
+  void SP::
+  id (::std::auto_ptr< id_type > x)
+  {
+    this->id_.set (x);
+  }
+
   // computer
-  // 
+  //
 
   const computer::Switch_type& computer::
   Switch () const
@@ -135,9 +210,26 @@ namespace dbfconstellation
     this->id_.set (x);
   }
 
-
   // computers
-  // 
+  //
+
+  const computers::SP_sequence& computers::
+  SP () const
+  {
+    return this->SP_;
+  }
+
+  computers::SP_sequence& computers::
+  SP ()
+  {
+    return this->SP_;
+  }
+
+  void computers::
+  SP (const SP_sequence& s)
+  {
+    this->SP_ = s;
+  }
 
   const computers::computer_sequence& computers::
   computer () const
@@ -155,30 +247,6 @@ namespace dbfconstellation
   computer (const computer_sequence& s)
   {
     this->computer_ = s;
-  }
-
-  const computers::SP_type& computers::
-  SP () const
-  {
-    return this->SP_.get ();
-  }
-
-  computers::SP_type& computers::
-  SP ()
-  {
-    return this->SP_.get ();
-  }
-
-  void computers::
-  SP (const SP_type& x)
-  {
-    this->SP_.set (x);
-  }
-
-  void computers::
-  SP (::std::auto_ptr< SP_type > x)
-  {
-    this->SP_.set (x);
   }
 
   const computers::version_type& computers::
@@ -210,6 +278,134 @@ namespace dbfconstellation
 
 namespace dbfconstellation
 {
+  // SP
+  //
+
+  SP::
+  SP (const ip_address_type& ip_address,
+      const port_id_type& port_id,
+      const id_type& id)
+  : ::xml_schema::type (),
+    ip_address_ (ip_address, ::xml_schema::flags (), this),
+    port_id_ (port_id, ::xml_schema::flags (), this),
+    id_ (id, ::xml_schema::flags (), this)
+  {
+  }
+
+  SP::
+  SP (const SP& x,
+      ::xml_schema::flags f,
+      ::xml_schema::container* c)
+  : ::xml_schema::type (x, f, c),
+    ip_address_ (x.ip_address_, f, this),
+    port_id_ (x.port_id_, f, this),
+    id_ (x.id_, f, this)
+  {
+  }
+
+  SP::
+  SP (const ::xercesc::DOMElement& e,
+      ::xml_schema::flags f,
+      ::xml_schema::container* c)
+  : ::xml_schema::type (e, f | ::xml_schema::flags::base, c),
+    ip_address_ (f, this),
+    port_id_ (f, this),
+    id_ (f, this)
+  {
+    if ((f & ::xml_schema::flags::base) == 0)
+    {
+      ::xsd::cxx::xml::dom::parser< char > p (e, true, true);
+      this->parse (p, f);
+    }
+  }
+
+  void SP::
+  parse (::xsd::cxx::xml::dom::parser< char >& p,
+         ::xml_schema::flags f)
+  {
+    for (; p.more_elements (); p.next_element ())
+    {
+      const ::xercesc::DOMElement& i (p.cur_element ());
+      const ::xsd::cxx::xml::qualified_name< char > n (
+        ::xsd::cxx::xml::dom::name< char > (i));
+
+      if (n.name () == "ip_address" && n.namespace_ ().empty ())
+      {
+        ::std::auto_ptr< ip_address_type > r (
+          ip_address_traits::create (i, f, this));
+
+        if (!ip_address_.present ())
+        {
+          this->ip_address_.set (r);
+          continue;
+        }
+      }
+
+      if (n.name () == "port_id" && n.namespace_ ().empty ())
+      {
+        ::std::auto_ptr< port_id_type > r (
+          port_id_traits::create (i, f, this));
+
+        if (!port_id_.present ())
+        {
+          this->port_id_.set (r);
+          continue;
+        }
+      }
+
+      break;
+    }
+
+    if (!ip_address_.present ())
+    {
+      throw ::xsd::cxx::tree::expected_element< char > (
+        "ip_address",
+        "");
+    }
+
+    if (!port_id_.present ())
+    {
+      throw ::xsd::cxx::tree::expected_element< char > (
+        "port_id",
+        "");
+    }
+
+    while (p.more_attributes ())
+    {
+      const ::xercesc::DOMAttr& i (p.next_attribute ());
+      const ::xsd::cxx::xml::qualified_name< char > n (
+        ::xsd::cxx::xml::dom::name< char > (i));
+
+      if (n.name () == "id" && n.namespace_ ().empty ())
+      {
+        ::std::auto_ptr< id_type > r (
+          id_traits::create (i, f, this));
+
+        this->id_.set (r);
+        continue;
+      }
+    }
+
+    if (!id_.present ())
+    {
+      throw ::xsd::cxx::tree::expected_attribute< char > (
+        "id",
+        "");
+    }
+  }
+
+  SP* SP::
+  _clone (::xml_schema::flags f,
+          ::xml_schema::container* c) const
+  {
+    return new class SP (*this, f, c);
+  }
+
+  SP::
+  ~SP ()
+  {
+  }
+
   // computer
   //
 
@@ -382,11 +578,10 @@ namespace dbfconstellation
   //
 
   computers::
-  computers (const SP_type& SP,
-             const version_type& version)
+  computers (const version_type& version)
   : ::xml_schema::type (),
+    SP_ (::xml_schema::flags (), this),
     computer_ (::xml_schema::flags (), this),
-    SP_ (SP, ::xml_schema::flags (), this),
     version_ (version, ::xml_schema::flags (), this)
   {
   }
@@ -396,8 +591,8 @@ namespace dbfconstellation
              ::xml_schema::flags f,
              ::xml_schema::container* c)
   : ::xml_schema::type (x, f, c),
-    computer_ (x.computer_, f, this),
     SP_ (x.SP_, f, this),
+    computer_ (x.computer_, f, this),
     version_ (x.version_, f, this)
   {
   }
@@ -407,8 +602,8 @@ namespace dbfconstellation
              ::xml_schema::flags f,
              ::xml_schema::container* c)
   : ::xml_schema::type (e, f | ::xml_schema::flags::base, c),
-    computer_ (f, this),
     SP_ (f, this),
+    computer_ (f, this),
     version_ (f, this)
   {
     if ((f & ::xml_schema::flags::base) == 0)
@@ -428,6 +623,17 @@ namespace dbfconstellation
       const ::xsd::cxx::xml::qualified_name< char > n (
         ::xsd::cxx::xml::dom::name< char > (i));
 
+      // SP
+      //
+      if (n.name () == "SP" && n.namespace_ ().empty ())
+      {
+        ::std::auto_ptr< SP_type > r (
+          SP_traits::create (i, f, this));
+
+        this->SP_.push_back (r);
+        continue;
+      }
+
       // computer
       //
       if (n.name () == "computer" && n.namespace_ ().empty ())
@@ -439,24 +645,10 @@ namespace dbfconstellation
         continue;
       }
 
-      // SP
-      //
-      if (n.name () == "SP" && n.namespace_ ().empty ())
-      {
-        ::std::auto_ptr< SP_type > r (
-          SP_traits::create (i, f, this));
-
-        if (!SP_.present ())
-        {
-          this->SP_.set (r);
-          continue;
-        }
-      }
-
       break;
     }
 
-    if (!SP_.present ())
+    if (SP_.empty ())
     {
       throw ::xsd::cxx::tree::expected_element< char > (
         "SP",
@@ -505,6 +697,15 @@ namespace dbfconstellation
 namespace dbfconstellation
 {
   ::std::ostream&
+  operator<< (::std::ostream& o, const SP& i)
+  {
+    o << ::std::endl << "ip_address: " << i.ip_address ();
+    o << ::std::endl << "port_id: " << i.port_id ();
+    o << ::std::endl << "id: " << i.id ();
+    return o;
+  }
+
+  ::std::ostream&
   operator<< (::std::ostream& o, const computer& i)
   {
     o << ::std::endl << "Switch: " << i.Switch ();
@@ -519,6 +720,13 @@ namespace dbfconstellation
   ::std::ostream&
   operator<< (::std::ostream& o, const computers& i)
   {
+    for (computers::SP_const_iterator
+         b (i.SP ().begin ()), e (i.SP ().end ());
+         b != e; ++b)
+    {
+      o << ::std::endl << "SP: " << *b;
+    }
+
     for (computers::computer_const_iterator
          b (i.computer ().begin ()), e (i.computer ().end ());
          b != e; ++b)
@@ -526,7 +734,6 @@ namespace dbfconstellation
       o << ::std::endl << "computer: " << *b;
     }
 
-    o << ::std::endl << "SP: " << i.SP ();
     o << ::std::endl << "version: " << i.version ();
     return o;
   }
@@ -974,6 +1181,45 @@ namespace dbfconstellation
   }
 
   void
+  operator<< (::xercesc::DOMElement& e, const SP& i)
+  {
+    e << static_cast< const ::xml_schema::type& > (i);
+
+    // ip_address
+    //
+    {
+      ::xercesc::DOMElement& s (
+        ::xsd::cxx::xml::dom::create_element (
+          "ip_address",
+          e));
+
+      s << i.ip_address ();
+    }
+
+    // port_id
+    //
+    {
+      ::xercesc::DOMElement& s (
+        ::xsd::cxx::xml::dom::create_element (
+          "port_id",
+          e));
+
+      s << i.port_id ();
+    }
+
+    // id
+    //
+    {
+      ::xercesc::DOMAttr& a (
+        ::xsd::cxx::xml::dom::create_attribute (
+          "id",
+          e));
+
+      a << i.id ();
+    }
+  }
+
+  void
   operator<< (::xercesc::DOMElement& e, const computer& i)
   {
     e << static_cast< const ::xml_schema::type& > (i);
@@ -1040,6 +1286,20 @@ namespace dbfconstellation
   {
     e << static_cast< const ::xml_schema::type& > (i);
 
+    // SP
+    //
+    for (computers::SP_const_iterator
+         b (i.SP ().begin ()), n (i.SP ().end ());
+         b != n; ++b)
+    {
+      ::xercesc::DOMElement& s (
+        ::xsd::cxx::xml::dom::create_element (
+          "SP",
+          e));
+
+      s << *b;
+    }
+
     // computer
     //
     for (computers::computer_const_iterator
@@ -1052,17 +1312,6 @@ namespace dbfconstellation
           e));
 
       s << *b;
-    }
-
-    // SP
-    //
-    {
-      ::xercesc::DOMElement& s (
-        ::xsd::cxx::xml::dom::create_element (
-          "SP",
-          e));
-
-      s << i.SP ();
     }
 
     // version
@@ -1084,4 +1333,3 @@ namespace dbfconstellation
 //
 //
 // End epilogue.
-

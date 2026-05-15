@@ -36,7 +36,20 @@ void CEMSDBFConfigReader::ReadDBFComputerXMLConfig(const char *inFile)
 		::std::auto_ptr< ::dbfconstellation::computers > dbComputerCfg (::dbfconstellation::computers_(inFile));
 		//std::string szConnectInfo = std::string("<Connection><ip_address>")  + dbComputerCfg->SP() + std::string("</ip_address><port_id>9070</port_id></Connection>");
 
-		CDigitalBeamFormer::SetSPIP( dbComputerCfg->SP() );
+		for( dbfconstellation::computers::SP_const_iterator it( dbComputerCfg->SP().begin() );
+		     it != dbComputerCfg->SP().end(); ++it )
+		{
+			if( it->id() == "1" )
+			{
+				std::string connStr = std::string("<Connection><ip_address>") + std::string(it->ip_address())
+				                    + "</ip_address><port_id>" + std::string(it->port_id()) + "</port_id></Connection>";
+				CDigitalBeamFormer::SetSPIP( connStr );
+			}
+			else if( it->id() == "2" )
+			{
+				CDigitalBeamFormer::SetSPIP2( std::string(it->ip_address()), std::stoi(std::string(it->port_id())) );
+			}
+		}
 		for(::dbfconstellation::computers::computer_const_iterator iter (dbComputerCfg->computer().begin());
 				iter != dbComputerCfg->computer().end(); ++iter)
 		{

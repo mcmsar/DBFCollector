@@ -1,16 +1,23 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <ns2:computers xmlns:ns2="urn:dbfconstellation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="urn:dbfconstellation file:///C:/dev/trunk/DBFCollectorMT_VS2026_04_17_26/Config/DBFConstellation.xsd" version="v1">
-	<SP>1.1.1.211</SP>
-	    <computer id="computer1">
+	<SP id="primary">
+		<ip_address>1.1.1.211</ip_address>
+		<port_id>9070</port_id>
+	</SP>
+	<SP id="secondary">
+		<ip_address>1.1.1.211</ip_address>
+		<port_id>9071</port_id>
+	</SP>
+	<computer id="computer1">
 		<Switch>2</Switch>
 		<SynthesizerIP>1.1.1.32</SynthesizerIP>
 		<!-- <SynthesizerIP>1.1.1.32</SynthesizerIP> -->
 		<EnvSensorIP>1.1.1.17</EnvSensorIP>
 		<FrequencyOffset>50000.0</FrequencyOffset>
-    </computer>
-    <!-- <computer id="computer2"> -->
-		<!-- <Switch>2</Switch> -->
-		<!-- <SynthesizerIP>1.1.1.103</SynthesizerIP> -->
-		<!-- <EnvSensorIP>1.1.1.15</EnvSensorIP> -->
-     <!-- </computer> -->
- </ns2:computers>
+	</computer>
+	<!-- <computer id="computer2">
+		<Switch>2</Switch>
+		<SynthesizerIP>1.1.1.103</SynthesizerIP>
+		<EnvSensorIP>1.1.1.15</EnvSensorIP>
+	</computer> -->
+</ns2:computers>

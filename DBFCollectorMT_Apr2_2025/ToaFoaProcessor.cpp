@@ -568,8 +568,9 @@ CToaFoaProcessor::IdentifyTOAFOA(
 
 		if (tDiff != 10.0f)
 		{
-			printf(" %d, %5.1f, TOA: %6.3f,%6.3f, FOA: %7.1f,%7.1f, dTOA: %f, dFOA: %f\n",
-				iDiffIndex, pTOAFOA->fCNR[iDiffIndex],
+			printf(" %02d:%02d:%02d.%06d, %d, %5.1f, TOA: %6.3f,%6.3f, FOA: %7.1f,%7.1f, dTOA: %6.4f, dFOA: %6.1f\n",
+				tmFields.nHour, tmFields.nMinute, tmFields.nSecond, tmFields.lNanosecond / 1000,
+				pTOAFOA->ulSatID[iDiffIndex], pTOAFOA->fCNR[iDiffIndex],
 				pTOAFOA->fBeaTOA[iDiffIndex], pTOAFOA->fTOA[iDiffIndex],
 				pTOAFOA->fBeaFOA[iDiffIndex], pTOAFOA->fFOA[iDiffIndex],
 				tDiff, fDiff);
@@ -591,11 +592,11 @@ CToaFoaProcessor::IdentifyTOAFOA(
 				float fFOAdiff = pTOAFOA->fBeaFOA[iDiffIndex] - pTOAFOA->fFOA[iDiffIndex];
 				float fDeltaTime = (float)(pTOAFOA->timestamp.intTime - pPassSchedule->rec[iDiffIndex].timestamp.intTime) * 1e-9;
 				
-				printf(" %15s, %03d %02d:%02d:%02d.%06d, %5.2f, TOA %6.3f, %6.3f, FOA %7.1f, %7.1f, %3d\n",
+				/*printf(" %15s, %03d %02d:%02d:%02d.%06d, %5.2f, TOA %6.3f, %6.3f, FOA %7.1f, %7.1f, %3d\n",
 					pTOAFOA->cBeaconID, tmFields.nDay, tmFields.nHour, tmFields.nMinute, tmFields.nSecond, tmFields.lNanosecond / 1000,
 					pTOAFOA->fCNR[iDiffIndex], pTOAFOA->fBeaTOA[iDiffIndex],
 					pTOAFOA->fTOA[iDiffIndex], pTOAFOA->fBeaFOA[iDiffIndex],
-					pTOAFOA->fFOA[iDiffIndex], pTOAFOA->ulSatID[iDiffIndex]);
+					pTOAFOA->fFOA[iDiffIndex], pTOAFOA->ulSatID[iDiffIndex]);*/
 
 				if (lpToaFoaResidualsFile)
 				{

@@ -1,4 +1,4 @@
-/********************************************************************
+﻿/********************************************************************
 *	Module:			emsDBF.cpp 
 *	Process ID:
 *	S/W Platforms:
@@ -39,8 +39,6 @@
 #include <memory.h>
 #include <stdlib.h>
 #include <math.h>
-#include <winsock2.h>
-#pragma comment(lib, "Ws2_32.lib")
 #include <windows.h>
 #include <tchar.h>
 #include <io.h>
@@ -66,8 +64,7 @@
 
 int CDigitalBeamFormer::ms_iNextObjectID = 1;
 std::wstring		CDigitalBeamFormer::m_wsSPIP;
-std::string			CDigitalBeamFormer::m_sIP2;
-int					CDigitalBeamFormer::m_nPort2 = 0;
+std::wstring		CDigitalBeamFormer::m_wsSPIP2;
 
 
 
@@ -90,8 +87,8 @@ CDigitalBeamFormer::CDigitalBeamFormer(CEMSQueue<DBFTrackingData >&  dbfBeamVect
 	//snl added nullptr
 {
 	m_lpTraceFile    = NULL;
-	m_pDataTransmit = NULL;
-	m_sock2         = INVALID_SOCKET;
+	m_pDataTransmit  = NULL;
+	m_pDataTransmit2 = NULL;
 	m_ulLastStartPPS = 0;
 	m_ulRawBuffSize  = 0;
 	m_fFrequencyOffset = static_cast<float>(DBF_FREQ_OFFSET);
@@ -253,11 +250,11 @@ CDigitalBeamFormer::~CDigitalBeamFormer( void )
 		m_pDataTransmit = NULL;
 	}
 
-	if( m_sock2 != INVALID_SOCKET )
+	if( m_pDataTransmit2 )
 	{
-		closesocket(m_sock2);
-		m_sock2 = INVALID_SOCKET;
-		WSACleanup();
+		m_pDataTransmit2->Disconnect();
+		m_pDataTransmit2->Release();
+		m_pDataTransmit2 = NULL;
 	}
 
 	if( m_iBeamIDs )
@@ -514,18 +511,18 @@ CDigitalBeamFormer::Reset( )
 		m_pDataTransmit = NULL;
 	}
 
-	if( m_sock2 != INVALID_SOCKET )
+	if( m_pDataTransmit2 )
 	{
-		closesocket(m_sock2);
-		m_sock2 = INVALID_SOCKET;
-		WSACleanup();
+		m_pDataTransmit2->Disconnect();
+		m_pDataTransmit2->Release();
+		m_pDataTransmit2 = NULL;
 	}
 }
 
 
 //---------------------------------------------------------------------------
 
-EMS_RESULT
+EMS_RESULT 
 CDigitalBeamFormer::BufferStatistics( const unsigned long *m_asRawTimeSeries )
 {
 	EMS_RESULT hr = EMS_BAD_PARAM;
@@ -666,10 +663,9 @@ CDigitalBeamFormer::SetSPIP(string SPIP)
 }
 
 void
-CDigitalBeamFormer::SetSPIP2(std::string ip, int port)
+CDigitalBeamFormer::SetSPIP2(string SPIP2)
 {
-	m_sIP2   = ip;
-	m_nPort2 = port;
+	m_wsSPIP2 = std::wstring(SPIP2.begin(), SPIP2.end());
 }
 
 HRESULT
@@ -699,35 +695,27 @@ CDigitalBeamFormer::_InitDT()
 	return hr;
 }
 
-bool
-CDigitalBeamFormer::_InitSocket2()
+HRESULT
+CDigitalBeamFormer::_InitDT2()
 {
-	if( m_sIP2.empty() || m_nPort2 == 0 )
-		return false;
-	if( m_sock2 != INVALID_SOCKET )
-		return true;
-
-	WSADATA wsaData;
-	if( WSAStartup(MAKEWORD(2,2), &wsaData) != 0 )
-		return false;
-
-	SOCKET s = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
-	if( s == INVALID_SOCKET )
-		return false;
-
-	sockaddr_in addr = {};
-	addr.sin_family      = AF_INET;
-	addr.sin_port        = htons((u_short)m_nPort2);
-	addr.sin_addr.s_addr = inet_addr(m_sIP2.c_str());
-
-	if( connect(s, (sockaddr*)&addr, sizeof(addr)) != 0 )
+	EMS_RESULT hr = E_FAIL;
+	if( m_wsSPIP2.empty() )
+		return hr;
+	if( !m_pDataTransmit2 )
 	{
-		closesocket(s);
-		return false;
-	}
+		hr = CoCreateInstance( CLSID_DataXmitter2, NULL, CLSCTX_ALL,
+							   IID_IEMSDataTransmitter, (void**) &m_pDataTransmit2 );
 
-	m_sock2 = s;
-	return true;
+		if( EMS_OK != hr || m_pDataTransmit2 == NULL )
+		{
+		}
+		else if( EMS_OK != m_pDataTransmit2->Connect(m_wsSPIP2.c_str()) )
+		{
+			m_pDataTransmit2->Release();
+			m_pDataTransmit2 = NULL;
+		}
+	}
+	return hr;
 }
 
 //---------------------------------------------------------------------------
@@ -1223,25 +1211,17 @@ CDigitalBeamFormer::DBFprocessorEP( EMSTIME tm )
 
 		_OutputWaveEx( tm, m_ulSatellites, bBandwidthFlag );
 
-		for ( int i = 0; i < m_ulSatellites; i++ )
+		timeEnd =  CEMSSystemClock::GetTime();
+		if (tmFields.nSecond % 10 == 0 )
 		{
-			timeEnd =  CEMSSystemClock::GetTime();
-			if (tmFields.nSecond % 10 == 0 )
-			{
-				//printf(" * ");
-			}
-			else
-			{
-				//printf("   ");
-			}
-			/*printf("%02d:%02d:%02d.%3d : Rec %d,Sat %d,Az %6.2f(%6.2f),El %5.2f(%5.2f),Prob %5.3f,Time %6.3f,Id:%i\n",
+			printf(" %02d:%02d:%02d.%3d : Time %6.3f: Id %i : Sats %d ( ",
 				tmFields.nHour, tmFields.nMinute, tmFields.nSecond,tmFields.lNanosecond/1000,
-				i, m_aPassSchedule.rec[i].ulSatID,
-				m_aPassSchedule.rec[i].fAzimuth,m_aPassSchedule.rec[i].fPlateAzimuth,
-				m_aPassSchedule.rec[i].fElevation,m_aPassSchedule.rec[i].fPlateElevation, m_fProbability[i],
-				timeStart.SecondsDifferent( timeEnd), GetCurrentThreadId());*/
-
-//			_OutputWaveFile( (unsigned char*)  &m_nBeam[i][0], tm, i, bBandwidthFlag );
+				timeStart.SecondsDifferent( timeEnd), GetCurrentThreadId(), m_ulSatellites);
+			for (int k = 0; k < m_ulSatellites; k++)
+			{
+				printf(" %03d",m_aPassSchedule.rec[k].ulSatID);
+			}
+			printf(")\n");
 		}
 
 	}
@@ -1362,111 +1342,325 @@ CDigitalBeamFormer::GetADCBuffer( const char *szFilename1, const char *szFilenam
 
 //---------------------------------------------------------------------------
 
-CEMSWaveEx
-CDigitalBeamFormer::_BuildWaveEx(
-	EMSTIME tm,
-	const short* pSamples, ULONG ulSampleCount,
-	ULONG ulSampleRate, WORD wSoftwareVersion,
-	ULONG ulLutID, ULONG ulSatID, WORD wAntID,
-	double dMeanADC, double dStdDevADC,
-	float fProbability,
-	double dAz, double dEl, double dPlateAz, double dPlateEl,
-	bool bBeacon, DWORD dwBeaconFlag )
+static CEMSWaveEx _BuildWaveEx(EMSTIME tm,
+		const short* pSamples, ULONG ulSampleCount,
+		ULONG ulSampleRate, WORD wSoftwareVersion,
+		ULONG ulLutID, ULONG ulSatID, WORD wAntID,
+		double dMeanADC, double dStdDevADC,
+		float fProbability,
+		double dAz, double dEl, double dPlateAz, double dPlateEl,
+		bool bBeaconPresent, DWORD dwBeaconFlag)
 {
 	CEMSWaveEx w;
-	w.Write( (unsigned char*)pSamples, ulSampleCount * sizeof(short) );
-	w.GetFormatChunkRef().SetAudioFormat( 1 );
-	w.GetFormatChunkRef().SetNumChannels( 1 );
-	w.GetFormatChunkRef().SetSampleRate( ulSampleRate );
-	w.GetFormatChunkRef().SetBitsPerSample( 16 );
-	w.GetExtendedInfoRef().GetLutDetailsRef().SetLutID( ulLutID );
-	w.GetExtendedInfoRef().GetLutDetailsRef().SetAntennaID( wAntID );
-	w.GetExtendedInfoRef().GetSatDetailsRef().SetSatID( ulSatID );
-	w.GetExtendedInfoRef().GetPropertiesRef().SetTimeStart( tm );
-	w.GetExtendedInfoRef().GetPropertiesRef().SetHardwareVersion( 32 );
-	w.GetExtendedInfoRef().GetPropertiesRef().SetSoftwareVersion( wSoftwareVersion );
-	w.GetExtendedInfoRef().GetSignalDetailsRef().SetMeanADC( dMeanADC );
-	w.GetExtendedInfoRef().GetSignalDetailsRef().SetStdDevADC( dStdDevADC );
-	w.GetExtendedInfoRef().GetSignalDetailsRef().SetDCState( EMS_DC_NO );
-	w.GetExtendedInfoRef().GetSignalDetailsRef().SetFlags( 0 );
-	if( fProbability )
-		w.GetExtendedInfoRef().GetSignalDetailsRef().SetMeanCarrierFreq( fProbability );
-	w.GetExtendedInfoRef().GetSignalDetailsRef().SetMaxModIndex( dAz );
-	w.GetExtendedInfoRef().GetSignalDetailsRef().SetMeanModIndex( dEl );
-	w.GetExtendedInfoRef().GetSignalDetailsRef().SetStdDevCarrierFreq( dPlateAz );
-	w.GetExtendedInfoRef().GetSignalDetailsRef().SetStdDevModIndex( dPlateEl );
+	w.Write((unsigned char*)pSamples, ulSampleCount * sizeof(short));
+	w.GetFormatChunkRef().SetAudioFormat(1);
+	w.GetFormatChunkRef().SetNumChannels(1);
+	w.GetFormatChunkRef().SetSampleRate(ulSampleRate);
+	w.GetFormatChunkRef().SetBitsPerSample(16);
+	w.GetExtendedInfoRef().GetLutDetailsRef().SetLutID(ulLutID);
+	w.GetExtendedInfoRef().GetLutDetailsRef().SetAntennaID(wAntID);
+	w.GetExtendedInfoRef().GetSatDetailsRef().SetSatID(ulSatID);
+	w.GetExtendedInfoRef().GetPropertiesRef().SetTimeStart(tm);
+	w.GetExtendedInfoRef().GetPropertiesRef().SetHardwareVersion(32);
+	w.GetExtendedInfoRef().GetPropertiesRef().SetSoftwareVersion(wSoftwareVersion);
+	w.GetExtendedInfoRef().GetSignalDetailsRef().SetMeanADC(dMeanADC);
+	w.GetExtendedInfoRef().GetSignalDetailsRef().SetStdDevADC(dStdDevADC);
+	w.GetExtendedInfoRef().GetSignalDetailsRef().SetDCState(EMS_DC_NO);
+	w.GetExtendedInfoRef().GetSignalDetailsRef().SetFlags(0);
+	if (fProbability)
+		w.GetExtendedInfoRef().GetSignalDetailsRef().SetMeanCarrierFreq(fProbability);
+	w.GetExtendedInfoRef().GetSignalDetailsRef().SetMaxModIndex(dAz);
+	w.GetExtendedInfoRef().GetSignalDetailsRef().SetMeanModIndex(dEl);
+	w.GetExtendedInfoRef().GetSignalDetailsRef().SetStdDevCarrierFreq(dPlateAz);
+	w.GetExtendedInfoRef().GetSignalDetailsRef().SetStdDevModIndex(dPlateEl);
 	w.GetExtendedInfoRef().GetSignalDetailsRef().SetPhaseModState(
-		ulSatID < 200 ? EMS_PHASE_MOD_YES : EMS_PHASE_MOD_NO );
-	if( bBeacon )
-		w.GetExtendedInfoRef().GetSatDetailsRef().SetSatFlags( dwBeaconFlag );
+		ulSatID < 200 ? EMS_PHASE_MOD_YES : EMS_PHASE_MOD_NO);
+	if (bBeaconPresent)
+		w.GetExtendedInfoRef().GetSatDetailsRef().SetSatFlags(dwBeaconFlag);
 	return w;
 }
 
 //---------------------------------------------------------------------------
 
+//void
+//CDigitalBeamFormer::_OutputWaveEx( EMSTIME tm, ULONG culNumSats, bool bBandwidthFlag  )
+//{
+//	EMSTIME timeStart =  CEMSSystemClock::GetTime();
+//	EMS_RESULT hr = EMS_OK;
+//	if( culNumSats > DBF_MAX_SATELLITES )
+//		culNumSats = DBF_MAX_SATELLITES;
+//	if( !m_bOutputOK )
+//		return;
+//
+//	//int *beamID = m_qrefDBFBeamVectors.ReadFirst( ).predBeamIDs;
+//	//int *predSatIDs = m_qrefDBFBeamVectors.ReadFirst( ).predSatIDs;
+//	//double *probability = m_qrefDBFBeamVectors.ReadFirst( ).probability;
+//	//double dProbThreshold = 0.9;
+//
+//	
+//
+//	for( int iSat = 0; iSat < culNumSats; iSat++ )
+//	{
+//		int iPredictedSatIndex = 0;
+//		for (int jSat = 0; jSat < culNumSats; jSat++) {
+//			if (m_aPassSchedule.rec[jSat].ulSatID == m_aTOAFOA.ulSatID[iSat]) {
+//				iPredictedSatIndex = jSat;
+//				break;
+//			}
+//		}
+//		
+//		//if ( probability[iSat] < dProbThreshold ) continue;
+//
+//		CEMSWaveEx oWaveOut;
+//
+//		DWORD dwBytes = 0;
+//		BYTE* abyData = 0;
+//
+//		ULONG ulLutID  = m_aPassSchedule.rec[iPredictedSatIndex].ulLutID;
+//		ULONG ulSatID  = m_aPassSchedule.rec[iPredictedSatIndex].ulSatID;
+//		WORD  wPlateID = m_aPassSchedule.rec[iPredictedSatIndex].wPlateID;
+//		WORD  wAntennaID = m_aPassSchedule.rec[iPredictedSatIndex].wAntennaID;
+//		double dSatAzimuth = (double) m_aPassSchedule.rec[iPredictedSatIndex].fAzimuth;
+//		double dSatElevation = (double) m_aPassSchedule.rec[iPredictedSatIndex].fElevation;
+//		double dPlateAzimuth = (double) m_aPassSchedule.rec[iPredictedSatIndex].fPlateAzimuth;
+//		double dPlateElevation = (double) m_aPassSchedule.rec[iPredictedSatIndex].fPlateElevation;
+//		//if( ulSatID >= 200 && dSatElevation < MEO_MIN_ELEVATION )	//snl added to check > 20 if pass sched has no elev constraints
+//		//	continue;
+//
+//		WORD dHardWareVersion = 32; // 32 channel ADC
+//		WORD dSoftWareVersion = 2001;  // 200 kHz, 1 second buffer
+//		if ( bBandwidthFlag ) dSoftWareVersion = 1001; // 100 kHz, 1 second buffer
+//		if ( m_ulSamplesPerChannel > 500001 ) dSoftWareVersion += 1; // 2 second buffer
+//
+//
+//		//ULONG ulBytes = sizeof(short) * DBF_OUTPUT_SIZE;
+//		//if ( bBandwidthFlag ) ulBytes /= 2;
+//
+//		// Select satellite id that matches pass schedule ID
+//		//for ( int iPredictedSatIndex = 0; iPredictedSatIndex < culNumSats; iPredictedSatIndex++)
+//		{
+//			//if (( ulSatID == m_iPredictedSATIDs[iPredictedSatIndex]) || culNumSats==1 )
+//			{
+//				//oWaveOut.Write( (unsigned char*)&m_nBeam[iPredictedSatIndex][0], ulBytes );
+//				
+//				//oWaveOut.Write( (unsigned char*)&m_nBeam[iPredictedSatIndex][0], ulBytes/2 );
+//				
+//				//oWaveOut.Write( (unsigned char*)&m_nBeam[iPredictedSatIndex][0], ulBytes/2 ); // 1 second buffers
+//				//break;
+//			}
+//		}
+//		oWaveOut.GetFormatChunkRef().SetAudioFormat( 1 );	// PCM
+//		oWaveOut.GetFormatChunkRef().SetNumChannels( 1 );	// Mono
+//
+//		ULONG ulSampleRate = (ULONG) (0.8 * (float)(m_ulStopPPS - m_ulStartPPS));
+//		
+//		//RR .. Protect against missing PPS signal
+//		if (ulSampleRate < 390000 || ulSampleRate > 410000) ulSampleRate = 400000;
+//		
+//		//if ( bBandwidthFlag )
+//		//{
+//		//	oWaveOut.GetFormatChunkRef().SetSampleRate( ulSampleRate/2 );
+//		//}
+//		//else
+//		//{
+//		//	oWaveOut.GetFormatChunkRef().SetSampleRate( ulSampleRate );
+//		//}
+//		oWaveOut.GetFormatChunkRef().SetBitsPerSample( 16 );
+//
+//
+//		oWaveOut.GetExtendedInfoRef().GetLutDetailsRef().SetLutID( ulLutID );
+//		oWaveOut.GetExtendedInfoRef().GetSatDetailsRef().SetSatID( ulSatID );
+//		WORD wAntID = 0;
+//		//wAntID = wPlateID*100 +  (WORD) iPredictedSatIndex;
+//		wAntID = wAntennaID*100 +  (WORD) iPredictedSatIndex;
+//		oWaveOut.GetExtendedInfoRef().GetLutDetailsRef().SetAntennaID( wAntID );
+//
+//		//EMSTIME tempTime = CEMSSystemClock::GetTime();
+//		//oWaveOut.GetExtendedInfoRef().GetPropertiesRef().SetTimeStart(tempTime);
+//		oWaveOut.GetExtendedInfoRef().GetPropertiesRef().SetTimeStart( tm );
+//
+//		oWaveOut.GetExtendedInfoRef().GetSignalDetailsRef().SetMeanADC( m_dMeanADC );
+//		oWaveOut.GetExtendedInfoRef().GetSignalDetailsRef().SetStdDevADC( m_dStdDevADC );
+//
+//		// Set additional properties indicating whether the signal requires downconversion
+//		oWaveOut.GetExtendedInfoRef().GetSignalDetailsRef().SetDCState( EMS_DC_NO );//EMS_DC_YES
+//	
+//		// Set flag indicating whether the marker bit was found for this measurement.
+//	//	oWaveOut.GetExtendedInfoRef().GetSignalDetailsRef().SetFlags( CEMSWaveExtSignalDetails::EMSWAVEEXSIGNAL_BAD_MARKER_BIT );
+//	//	oWaveOut.GetExtendedInfoRef().GetSignalDetailsRef().SetFlags( m_ulStartPPS );
+//		oWaveOut.GetExtendedInfoRef().GetSignalDetailsRef().SetFlags( 0 );
+//		
+//		//if( predSatIDs )
+//		//	oWaveOut.GetExtendedInfoRef().GetSignalDetailsRef().SetFlags( predSatIDs[ iPredictedSatIndex ] );
+//		if( m_fProbability[iPredictedSatIndex] )
+//			oWaveOut.GetExtendedInfoRef().GetSignalDetailsRef().SetMeanCarrierFreq( m_fProbability[ iPredictedSatIndex ] );
+//
+//		// RR added azimuth and elevation of satellite
+//		oWaveOut.GetExtendedInfoRef().GetSignalDetailsRef().SetMaxModIndex( dSatAzimuth );
+//		oWaveOut.GetExtendedInfoRef().GetSignalDetailsRef().SetMeanModIndex( dSatElevation );
+//		oWaveOut.GetExtendedInfoRef().GetSignalDetailsRef().SetStdDevCarrierFreq( dPlateAzimuth );
+//		oWaveOut.GetExtendedInfoRef().GetSignalDetailsRef().SetStdDevModIndex( dPlateElevation );
+//
+//		// Set additional properties indicating whether the signal requires phase demod
+//		if ( ulSatID < 200 ) // LEO satellites
+//			oWaveOut.GetExtendedInfoRef().GetSignalDetailsRef().SetPhaseModState( EMS_PHASE_MOD_YES);
+//		else
+//			oWaveOut.GetExtendedInfoRef().GetSignalDetailsRef().SetPhaseModState( EMS_PHASE_MOD_NO );
+//
+//		oWaveOut.GetExtendedInfoRef().GetPropertiesRef().SetHardwareVersion( dHardWareVersion );
+//		//oWaveOut.GetExtendedInfoRef().GetPropertiesRef().SetSoftwareVersion( dSoftWareVersion );
+//
+//		// Add reference beacon indicator
+//		if ( m_aPassSchedule.rec[iPredictedSatIndex].fBeaconElevation > 0.0 )
+//		{
+//			DWORD dFlag = (DWORD) m_aPassSchedule.rec[iPredictedSatIndex].fFOA;
+//			oWaveOut.GetExtendedInfoRef().GetSatDetailsRef().SetSatFlags( dFlag );
+//		}
+//
+//		CEMSWaveEx oWaveOut2 = oWaveOut;
+//
+//		hr = _InitDT();
+//		if( m_pDataTransmit )
+//		{
+//			int iSent = 0;
+//			ULONG ulBytes = sizeof(short) * DBF_OUTPUT_SIZE;
+//			short* newBuffer = new short[400000];
+//			int j = 0;
+//
+//			for (int i = 0, j = 0; i < 400000; i++, j += 2) {
+//				newBuffer[i] = m_nBeam[iPredictedSatIndex][j];
+//				if (i % 2) {
+//					newBuffer[i] *= -1;
+//				}
+//			}
+//			oWaveOut.Write((unsigned char*)&newBuffer[0], ulBytes / 2);
+//
+//			// 100 kHz, 2s buffer
+//			oWaveOut.GetExtendedInfoRef().GetPropertiesRef().SetSoftwareVersion(1002);
+//			oWaveOut.GetFormatChunkRef().SetSampleRate(ulSampleRate / 2);
+//			dwBytes = oWaveOut.Serialize(abyData);
+//
+//			if (dwBytes > 0)
+//			{
+//				hr = m_pDataTransmit->Send(dwBytes, abyData, &iSent);
+//			}
+//		}
+//		if(FAILED(hr) )
+//		{
+//
+//			// WAV file output to disk
+//			FILE*	lpWaveFile = NULL;
+//			char	szFileName[256];
+//			ULONG	ulFileNumber = ((ULONG)m_nCounter) % 100;
+//			sprintf(szFileName,"%sDBFRAW_%07d_%03d_%04d.wav", CDBFCollectorConfig::GetInstance().GetWavOutputDir().c_str(), ulFileNumber, ulSatID, ulLutID);
+//
+//			lpWaveFile = fopen(szFileName,"w+b");
+//			if( lpWaveFile != NULL )
+//			{
+//				fwrite(abyData, dwBytes, 1, lpWaveFile);
+//				flushall();
+//				fclose(lpWaveFile);
+//				lpWaveFile = NULL;
+//			}
+//		}
+//
+//		// Forward to secondary destination if configured
+//		_InitDT2();
+//		if( m_pDataTransmit2 )
+//		{
+//			int iSent2 = 0;
+//			ULONG ulBytes = (sizeof(short) * DBF_OUTPUT_SIZE) / 2;
+//				
+//			oWaveOut2.Write((unsigned char*)&m_nBeam[iPredictedSatIndex][0], ulBytes );
+//
+//			oWaveOut2.GetFormatChunkRef().SetSampleRate(ulSampleRate);
+//				
+//			// 200 kHz, 1s buffer
+//			oWaveOut2.GetExtendedInfoRef().GetPropertiesRef().SetSoftwareVersion(2001);
+//			dwBytes = oWaveOut2.Serialize(abyData);
+//
+//			if (dwBytes > 0)
+//			{
+//				hr = m_pDataTransmit2->Send(dwBytes, abyData, &iSent2);
+//			}
+//		}
+//
+//
+//		delete[] abyData;
+//		abyData = 0;
+//	}
+//	
+//
+//	return;
+//}
+
+//---------------------------------------------------------------------------
+
 void
-CDigitalBeamFormer::_OutputWaveEx( EMSTIME tm, ULONG culNumSats, bool bBandwidthFlag  )
+CDigitalBeamFormer::_OutputWaveEx(EMSTIME tm, ULONG culNumSats, bool bBandwidthFlag)
 {
 	EMS_RESULT hr = EMS_OK;
-	if( culNumSats > DBF_MAX_SATELLITES )
+	if (culNumSats > DBF_MAX_SATELLITES)
 		culNumSats = DBF_MAX_SATELLITES;
-	if( !m_bOutputOK )
+	if (!m_bOutputOK)
 		return;
 
 	ULONG ulSampleRate = (ULONG)(0.8f * (float)(m_ulStopPPS - m_ulStartPPS));
-	if( ulSampleRate < 390000 || ulSampleRate > 410000 ) ulSampleRate = 400000;
+	if (ulSampleRate < 390000 || ulSampleRate > 410000) ulSampleRate = 400000;
 
 	// Samples per output: half the available buffer → 1-second payload at Nyquist rate
-	ULONG ulSampleCount = bBandwidthFlag ? (DBF_OUTPUT_SIZE / 4) : (DBF_OUTPUT_SIZE / 2);
-	ULONG ulRate        = bBandwidthFlag ? (ulSampleRate / 2)    : ulSampleRate;
-	WORD  wVersion      = bBandwidthFlag ? 1001                  : 2001;
-	if( m_ulSamplesPerChannel > 500001 ) wVersion++;  // 2 second buffer
+	//ULONG ulSampleCount = bBandwidthFlag ? (DBF_OUTPUT_SIZE / 4) : (DBF_OUTPUT_SIZE / 2);
+	//ULONG ulRate = bBandwidthFlag ? (ulSampleRate / 2) : ulSampleRate;
+	ULONG ulSampleRate2 = (ulSampleRate / 2);
+	WORD  wVersion = bBandwidthFlag ? 1001 : 2001;
+	if (m_ulSamplesPerChannel > 500001) wVersion++;  // 2 second buffer
 
-	for( int iSat = 0; iSat < (int)culNumSats; iSat++ )
+	for (int iSat = 0; iSat < (int)culNumSats; iSat++)
 	{
 		int iPredSat = 0;
-		for( int jSat = 0; jSat < (int)culNumSats; jSat++ )
+		for (int jSat = 0; jSat < (int)culNumSats; jSat++)
 		{
-			if( m_aPassSchedule.rec[jSat].ulSatID == m_aTOAFOA.ulSatID[iSat] )
+			if (m_aPassSchedule.rec[jSat].ulSatID == m_aTOAFOA.ulSatID[iSat])
 			{
 				iPredSat = jSat;
 				break;
 			}
 		}
 
-		ULONG  ulLutID      = m_aPassSchedule.rec[iPredSat].ulLutID;
-		ULONG  ulSatID      = m_aPassSchedule.rec[iPredSat].ulSatID;
-		WORD   wPlateID     = m_aPassSchedule.rec[iPredSat].wPlateID;
-		double dAz          = (double)m_aPassSchedule.rec[iPredSat].fAzimuth;
-		double dEl          = (double)m_aPassSchedule.rec[iPredSat].fElevation;
-		double dPlateAz     = (double)m_aPassSchedule.rec[iPredSat].fPlateAzimuth;
-		double dPlateEl     = (double)m_aPassSchedule.rec[iPredSat].fPlateElevation;
-		bool   bBeacon      = m_aPassSchedule.rec[iPredSat].fBeaconElevation > 0.0f;
+		ULONG  ulLutID = m_aPassSchedule.rec[iPredSat].ulLutID;
+		ULONG  ulSatID = m_aPassSchedule.rec[iPredSat].ulSatID;
+		WORD   wPlateID = m_aPassSchedule.rec[iPredSat].wPlateID;
+		WORD   wAntennaID = m_aPassSchedule.rec[iPredSat].wAntennaID;
+		double dAz = (double)m_aPassSchedule.rec[iPredSat].fAzimuth;
+		double dEl = (double)m_aPassSchedule.rec[iPredSat].fElevation;
+		double dPlateAz = (double)m_aPassSchedule.rec[iPredSat].fPlateAzimuth;
+		double dPlateEl = (double)m_aPassSchedule.rec[iPredSat].fPlateElevation;
+		bool   bBeacon = m_aPassSchedule.rec[iPredSat].fBeaconElevation > 0.0f;
 		DWORD  dwBeaconFlag = bBeacon ? (DWORD)m_aPassSchedule.rec[iPredSat].fFOA : 0;
-		WORD   wAntID       = wPlateID * 100 + (WORD)iPredSat;
+		WORD   wAntID = wAntennaID * 100 + (WORD)iPredSat;
 
-		// Primary output → m_pDataTransmit (file fallback on failure)
+		// Primary output → m_pDataTransmit (200kHz 1s buffer -> SP) (file fallback on failure)
 		{
-			CEMSWaveEx wPrimary = _BuildWaveEx( tm,
-				&m_nBeam[iPredSat][0], ulSampleCount,
-				ulRate, wVersion,
+			CEMSWaveEx wPrimary = _BuildWaveEx(tm,
+				&m_nBeam[iPredSat][0], (DBF_OUTPUT_SIZE / 2),
+				ulSampleRate, wVersion,
 				ulLutID, ulSatID, wAntID,
 				m_dMeanADC, m_dStdDevADC,
 				m_fProbability[iPredSat],
 				dAz, dEl, dPlateAz, dPlateEl,
-				bBeacon, dwBeaconFlag );
+				bBeacon, dwBeaconFlag);
 
 			DWORD dwBytes = 0;
 			BYTE* abyData = 0;
-			dwBytes = wPrimary.Serialize( abyData );
-			if( dwBytes > 0 )
+			dwBytes = wPrimary.Serialize(abyData);
+			if (dwBytes > 0)
 			{
 				int iSent = 0;
 				hr = _InitDT();
-				if( m_pDataTransmit )
-					hr = m_pDataTransmit->Send( dwBytes, abyData, &iSent );
+				if (m_pDataTransmit)
+					hr = m_pDataTransmit->Send(dwBytes, abyData, &iSent);
 
-				if( FAILED(hr) )
+				if (FAILED(hr))
 				{
 					FILE* lpWaveFile = NULL;
 					char  szFileName[256];
@@ -1475,7 +1669,7 @@ CDigitalBeamFormer::_OutputWaveEx( EMSTIME tm, ULONG culNumSats, bool bBandwidth
 						CDBFCollectorConfig::GetInstance().GetWavOutputDir().c_str(),
 						ulFileNumber, ulSatID, ulLutID);
 					lpWaveFile = fopen(szFileName, "w+b");
-					if( lpWaveFile != NULL )
+					if (lpWaveFile != NULL)
 					{
 						fwrite(abyData, dwBytes, 1, lpWaveFile);
 						flushall();
@@ -1486,45 +1680,92 @@ CDigitalBeamFormer::_OutputWaveEx( EMSTIME tm, ULONG culNumSats, bool bBandwidth
 			delete[] abyData;
 		}
 
-		// Secondary output → Winsock (same data, same format)
-		/*if( _InitSocket2() )
+		// Secondary output → m_pDataTransmit2 (100 kHz, 2s buffer -> Gen 10)
+		_InitDT2();
+		if (m_pDataTransmit2)
 		{
-			CEMSWaveEx wSecondary = _BuildWaveEx( tm,
-				&m_nBeam[iPredSat][0], ulSampleCount,
-				ulRate, wVersion,
+			short* newBuffer = new short[400000];
+			//short* newBuffer = new short[200000];
+			memset(&m_afTemp1[0], 0, DBF_LOG20_SIZE * sizeof(float));
+			memset(&m_acTemp1[0], 0, DBF_LOG20_SIZE * sizeof(EMSCOMPLEX));
+			memset(&m_acTemp2[0], 0, DBF_LOG20_SIZE * sizeof(EMSCOMPLEX));
+
+			for (ULONG i = 0; i < 800000; i++) {
+				m_afTemp1[i] = (float)m_nBeam[iPredSat][i];
+			}
+			emssRealFftNip(&m_afTemp1[0], &m_acTemp1[0], DBF_LOG20, EMS_SPL_FWD);
+
+			//memcpy(&m_acTemp2[0], &m_acTemp1[100000], 200000 * sizeof(EMSCOMPLEX));
+			memcpy(&m_acTemp2[0], &m_acTemp1[100000], (DBF_LOG17_SIZE + 1) * sizeof(EMSCOMPLEX));
+			
+			ULONG ulMptsHalf = DBF_LOG18_SIZE;
+			//ULONG ulMptsHalf = DBF_LOG17_SIZE;
+			for (ULONG i = 1; i < ulMptsHalf; i++)
+			{
+				m_acTemp2[ulMptsHalf + i].re = m_acTemp2[ulMptsHalf - i].re;
+				m_acTemp2[ulMptsHalf + i].im = -m_acTemp2[ulMptsHalf - i].im;
+			}
+
+			emscFft(&m_acTemp2[0], DBF_LOG19, EMS_SPL_INV);
+			//emscFft(&m_acTemp2[0], DBF_LOG18, EMS_SPL_INV);
+
+			/*for (ULONG i = 0; i < DBF_LOG19_SIZE; i++)
+			{
+				m_afTemp1[i] = m_acTemp2[i].re / DBF_LOG19_SIZE;
+				m_afTemp2[i] = m_acTemp2[i].im / DBF_LOG19_SIZE;
+			}*/
+			for (ULONG i = 0; i < DBF_LOG19_SIZE; i++)
+			{
+				m_afTemp1[i] = m_acTemp2[i].re / DBF_LOG18_SIZE;
+				m_afTemp2[i] = m_acTemp2[i].im / DBF_LOG18_SIZE;
+			}
+			double dRealAVE = 0.0;
+			double dRealSTD = _EMSsMeanStdDev(&m_afTemp1[0], DBF_LOG19_SIZE, &dRealAVE);
+			double dImagAVE = 0.0;
+			double dImagSTD = _EMSsMeanStdDev(&m_afTemp2[0], DBF_LOG19_SIZE, &dImagAVE);
+			
+			/*for (ULONG i = 1; i < 400000; i++)
+			{
+				newBuffer[i] = (short)(m_acTemp1[i].re);
+			}*/
+			for (ULONG i = 1; i < 400000; i++)
+			{
+				newBuffer[i] = (short)(m_afTemp1[i]);
+			}
+			
+
+			//oWaveOut.Write((unsigned char*)&newBuffer[0], 400000);
+
+			//ULONG ulSampleCount2 = (sizeof(short) * DBF_OUTPUT_SIZE) / 2 / sizeof(short);  // 400,000 shorts
+			//ULONG ulSampleRate2 = (ulSampleRate / 2);
+			ULONG ulSampleCount2 = 400000;
+			ULONG ulSampleRate2 = (ulSampleRate / 2);
+
+			CEMSWaveEx wSecondary = _BuildWaveEx(tm,
+				&newBuffer[0], ulSampleCount2,
+				ulSampleRate2, 1002,
 				ulLutID, ulSatID, wAntID,
 				m_dMeanADC, m_dStdDevADC,
 				m_fProbability[iPredSat],
 				dAz, dEl, dPlateAz, dPlateEl,
-				bBeacon, dwBeaconFlag );
+				bBeacon, dwBeaconFlag);
 
 			DWORD dwBytes2 = 0;
 			BYTE* abyData2 = 0;
-			dwBytes2 = wSecondary.Serialize( abyData2 );
-			if( dwBytes2 > 0 )
+			dwBytes2 = wSecondary.Serialize(abyData2);
+			if (dwBytes2 > 0)
 			{
-				const char* ptr       = (const char*)abyData2;
-				int         remaining = (int)dwBytes2;
-				while( remaining > 0 )
-				{
-					int sent = send( m_sock2, ptr, remaining, 0 );
-					if( sent == SOCKET_ERROR )
-					{
-						closesocket( m_sock2 );
-						m_sock2 = INVALID_SOCKET;
-						WSACleanup();
-						break;
-					}
-					ptr       += sent;
-					remaining -= sent;
-				}
+				int iSent2 = 0;
+				m_pDataTransmit2->Send(dwBytes2, abyData2, &iSent2);
 			}
 			delete[] abyData2;
-		}*/
+			delete[] newBuffer;
+		}
 	}
 
 	return;
 }
+
 //---------------------------------------------------------------------------
 
 //void
@@ -1855,12 +2096,13 @@ CDigitalBeamFormer::ProcessAll()
 
 	m_ProcessFlag = m_aPassSchedule.rec[0].wProcessID;
 
-	//m_ProcessFlag = PROCESS_DEFAULT; //200khz
-
+	m_ProcessFlag = PROCESS_DEFAULT; //200khz
+	
 	// Special test
 	//m_ProcessFlag = 8; // RAW
 
-	m_ProcessFlag = PROCESS_DEFAULT | PROCESS_OUTPUT_SAMPLERATE; // 100khz
+	// Temporary fix
+	//m_ProcessFlag = PROCESS_DEFAULT + PROCESS_OUTPUT_SAMPLERATE; // 100khz
 	
 
 	switch( m_ProcessFlag & 0x00FF ) 

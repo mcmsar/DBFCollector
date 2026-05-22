@@ -58,8 +58,12 @@
 
 
 // {1E47D91E-DE7F-4b86-98BF-B6306E54E403}
-DEFINE_GUID(CLSID_DataXmitter,
+DEFINE_GUID(CLSID_DataXmitter, 
 			0x1e47d91e, 0xde7f, 0x4b86, 0x98, 0xbf, 0xb6, 0x30, 0x6e, 0x54, 0xe4, 0x3);
+
+// {6B134451-0FF9-47AB-AFAC-8A2DBCBEA593}
+DEFINE_GUID(CLSID_DataXmitter2,
+	0x6b134451, 0x0ff9, 0x47ab, 0xaf, 0xac, 0x8a, 0x2d, 0xbc, 0xbe, 0xa5, 0x93);
 
 
 using std::string;
@@ -90,6 +94,7 @@ using std::wstring;
 #define COVARIANCE_SIZE     (DBF_NUM_ELEMENTS * DBF_NUM_ELEMENTS)
 #define DBF_LOG20			(20)
 #define DBF_LOG19           (19)
+#define DBF_LOG18           (18)
 #define DBF_LOG17           (17)
 #define DBF_LOG16           (16)
 #define ADC_OFFSET          (524288)
@@ -176,7 +181,7 @@ public:
 	static int GetNextObjID() {return ms_iNextObjectID++;}
 
 	static void SetSPIP(std::string SPIP);
-	static void SetSPIP2(std::string ip, int port);
+	static void SetSPIP2(std::string SPIP2);
 
 	void SetFrequencyOffset( float fHz ) { m_fFrequencyOffset = fHz; }
 	float GetFrequencyOffset() const     { return m_fFrequencyOffset; }
@@ -184,15 +189,7 @@ public:
 	
 protected:
 	HRESULT _InitDT();
-	bool    _InitSocket2();
-	CEMSWaveEx _BuildWaveEx( EMSTIME tm,
-	                         const short* pSamples, ULONG ulSampleCount,
-	                         ULONG ulSampleRate, WORD wSoftwareVersion,
-	                         ULONG ulLutID, ULONG ulSatID, WORD wAntID,
-	                         double dMeanADC, double dStdDevADC,
-	                         float fProbability,
-	                         double dAz, double dEl, double dPlateAz, double dPlateEl,
-	                         bool bBeacon, DWORD dwBeaconFlag );
+	HRESULT _InitDT2();
 	void _OutputWaveEx( EMSTIME tm, ULONG culNumSats, bool bBandwidthFlag);
 
 	void _OutputWaveFile( unsigned char* aData, EMSTIME tm, int iSat, bool bBandwidthFlag );
@@ -308,7 +305,7 @@ protected:
 	EMSCOMPLEX				m_acPhaseVector[DBF_MAX_CHANNELS];
 
 	IEMSDataTransmitter*    m_pDataTransmit;
-	SOCKET                  m_sock2;
+	IEMSDataTransmitter*    m_pDataTransmit2;
 
 	EMSDBFPASSRECORDS2		m_aPassSchedule;
 
@@ -332,9 +329,8 @@ protected:
 	//covariance file sent time
 	static CEMSTime				m_oDBFCovarFileLastWriteTime;
 	static BOOL					m_bIsCovarFileSendTime;
-	static std::wstring		m_wsSPIP;
-	static std::string		m_sIP2;
-	static int				m_nPort2;
+	static	std::wstring		m_wsSPIP;
+	static	std::wstring		m_wsSPIP2;
 	bool _IsTimeToCopyBufferPhaseFile( const EMSTIME& oCurrentTime );
 	void _IsTimeToCopyCovarFile( const EMSTIME& oCurrentTime );
 	

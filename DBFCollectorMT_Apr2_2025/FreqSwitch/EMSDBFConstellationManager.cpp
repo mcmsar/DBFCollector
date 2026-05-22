@@ -12,12 +12,9 @@ static const std::string& inputXmlFile = CDBFCollectorConfig::GetInstance().GetC
 
 const std::string szFreqInmarSat = "1526.37";
 const std::string cszFreqLeo = "1533.8";
-const std::string cszFreqGalileo = "1533.401487";
-const std::string cszFreqGlonass = "1534.201487";
-const std::string cszFreqBeidou = "1533.5102826";
-//const std::string cszFreqGalileo = "1533.4";
-//const std::string cszFreqGlonass = "1534.2";
-//const std::string cszFreqBeidou = "1533.51";
+const std::string cszFreqGalileo = "1533.4";
+const std::string cszFreqGlonass = "1534.2";
+const std::string cszFreqBeidou = "1533.51";
 
 
 CEMSDBFConstellationManager::CEMSDBFConstellationManager()

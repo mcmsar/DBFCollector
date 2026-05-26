@@ -287,7 +287,37 @@ CDigitalBeamFormer::~CDigitalBeamFormer( void )
 		m_iPrevPassSchedSATIDs = NULL;
 	}
 
+	if (m_acCovariance) 
+	{ 
+		delete[] m_acCovariance;
+		m_acCovariance = NULL; 
+	}
+	if (m_acDBFBeamVectors)
+	{ 
+		delete[] m_acDBFBeamVectors;
+		m_acDBFBeamVectors = NULL;
+	}
+	if (m_acDBFCarrierVectors)
+	{ 
+		delete[] m_acDBFCarrierVectors;
+		m_acDBFCarrierVectors = NULL;
+	}
+	if (m_afPulseShape)
+	{ 
+		delete[] m_afPulseShape;
+		m_afPulseShape = NULL;
+	}
 
+	if (m_nBeam)
+	{
+		for (int i = 0; i < DBF_MAX_SATELLITES; ++i)
+		{
+			delete[] m_nBeam[i];
+			m_nBeam[i] = nullptr;
+		}
+		delete[] m_nBeam;
+		m_nBeam = NULL;
+	}
 }
 
 //---------------------------------------------------------------------------
@@ -475,6 +505,11 @@ CDigitalBeamFormer::Initialize( const TCHAR *cDir )
 				
 //	lstrcat( cTraceFileName, cTempName ); 
 				
+	if (m_lpTraceFile)
+	{
+		fclose(m_lpTraceFile);
+		m_lpTraceFile = nullptr;
+	}
 	m_lpTraceFile  = fopen( cTraceFileName, "wt");
 	m_lpOutputFile = NULL;
 
@@ -1662,6 +1697,12 @@ CDigitalBeamFormer::_OutputWaveEx(EMSTIME tm, ULONG culNumSats, bool bBandwidthF
 
 				if (FAILED(hr))
 				{
+					if (m_pDataTransmit)
+					{
+						m_pDataTransmit->Release();
+						m_pDataTransmit = NULL;
+					}
+
 					FILE* lpWaveFile = NULL;
 					char  szFileName[256];
 					ULONG ulFileNumber = ((ULONG)m_nCounter) % 100;
@@ -1675,6 +1716,8 @@ CDigitalBeamFormer::_OutputWaveEx(EMSTIME tm, ULONG culNumSats, bool bBandwidthF
 						flushall();
 						fclose(lpWaveFile);
 					}
+
+					lpWaveFile = NULL;
 				}
 			}
 			delete[] abyData;
@@ -1696,7 +1739,7 @@ CDigitalBeamFormer::_OutputWaveEx(EMSTIME tm, ULONG culNumSats, bool bBandwidthF
 			emssRealFftNip(&m_afTemp1[0], &m_acTemp1[0], DBF_LOG20, EMS_SPL_FWD);
 
 			//memcpy(&m_acTemp2[0], &m_acTemp1[100000], 200000 * sizeof(EMSCOMPLEX));
-			memcpy(&m_acTemp2[0], &m_acTemp1[100000], (DBF_LOG17_SIZE + 1) * sizeof(EMSCOMPLEX));
+			memcpy(&m_acTemp2[0], &m_acTemp1[100000], (DBF_LOG18_SIZE + 1) * sizeof(EMSCOMPLEX));
 			
 			ULONG ulMptsHalf = DBF_LOG18_SIZE;
 			//ULONG ulMptsHalf = DBF_LOG17_SIZE;
@@ -1716,8 +1759,8 @@ CDigitalBeamFormer::_OutputWaveEx(EMSTIME tm, ULONG culNumSats, bool bBandwidthF
 			}*/
 			for (ULONG i = 0; i < DBF_LOG19_SIZE; i++)
 			{
-				m_afTemp1[i] = m_acTemp2[i].re / DBF_LOG18_SIZE;
-				m_afTemp2[i] = m_acTemp2[i].im / DBF_LOG18_SIZE;
+				m_afTemp1[i] = m_acTemp2[i].re / DBF_LOG19_SIZE;
+				m_afTemp2[i] = m_acTemp2[i].im / DBF_LOG19_SIZE;
 			}
 			double dRealAVE = 0.0;
 			double dRealSTD = _EMSsMeanStdDev(&m_afTemp1[0], DBF_LOG19_SIZE, &dRealAVE);
@@ -1728,7 +1771,7 @@ CDigitalBeamFormer::_OutputWaveEx(EMSTIME tm, ULONG culNumSats, bool bBandwidthF
 			{
 				newBuffer[i] = (short)(m_acTemp1[i].re);
 			}*/
-			for (ULONG i = 1; i < 400000; i++)
+			for (ULONG i = 0; i < 400000; i++)
 			{
 				newBuffer[i] = (short)(m_afTemp1[i]);
 			}
@@ -1737,9 +1780,9 @@ CDigitalBeamFormer::_OutputWaveEx(EMSTIME tm, ULONG culNumSats, bool bBandwidthF
 			//oWaveOut.Write((unsigned char*)&newBuffer[0], 400000);
 
 			//ULONG ulSampleCount2 = (sizeof(short) * DBF_OUTPUT_SIZE) / 2 / sizeof(short);  // 400,000 shorts
-			//ULONG ulSampleRate2 = (ulSampleRate / 2);
-			ULONG ulSampleCount2 = 400000;
 			ULONG ulSampleRate2 = (ulSampleRate / 2);
+			ULONG ulSampleCount2 = 400000;
+			//ULONG ulSampleRate2 = (ulSampleRate / 4);
 
 			CEMSWaveEx wSecondary = _BuildWaveEx(tm,
 				&newBuffer[0], ulSampleCount2,
@@ -1752,7 +1795,15 @@ CDigitalBeamFormer::_OutputWaveEx(EMSTIME tm, ULONG culNumSats, bool bBandwidthF
 
 			DWORD dwBytes2 = 0;
 			BYTE* abyData2 = 0;
-			dwBytes2 = wSecondary.Serialize(abyData2);
+			try
+			{
+				dwBytes2 = wSecondary.Serialize(abyData2);
+			}
+			catch (...)
+			{
+				delete[] newBuffer;
+				throw;
+			}
 			if (dwBytes2 > 0)
 			{
 				int iSent2 = 0;

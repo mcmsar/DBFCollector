@@ -359,18 +359,24 @@ CEMSWaveDataChunk::GetData( BYTE*& abyData ) const
 	return dwRet;
 }
 
-CEMSWaveDataChunk& 
+CEMSWaveDataChunk&
 CEMSWaveDataChunk::operator=( const CEMSWaveDataChunk& coRHS )
 {
+	if( this != &coRHS )
+	{
+		if( m_strWaveData.abyData )
+		{
+			delete[] m_strWaveData.abyData;
+			m_strWaveData.abyData = 0;
+		}
 
-	memcpy( &m_strWaveData.dwSubChunkID, ms_cszDefaultID,
-			(strlen(ms_cszDefaultID) > sizeof(m_strWaveData.dwSubChunkID)) ? sizeof(m_strWaveData.dwSubChunkID) : strlen(ms_cszDefaultID) );
+		memcpy( &m_strWaveData.dwSubChunkID, ms_cszDefaultID,
+				(strlen(ms_cszDefaultID) > sizeof(m_strWaveData.dwSubChunkID)) ? sizeof(m_strWaveData.dwSubChunkID) : strlen(ms_cszDefaultID) );
 
-	m_strWaveData.dwSubChunkSize = 0;
+		m_strWaveData.dwSubChunkSize = 0;
 
-	m_strWaveData.abyData = 0;
-
-	Write( coRHS.m_strWaveData.abyData, coRHS.m_strWaveData.dwSubChunkSize );
+		Write( coRHS.m_strWaveData.abyData, coRHS.m_strWaveData.dwSubChunkSize );
+	}
 
 	return *this;
 }

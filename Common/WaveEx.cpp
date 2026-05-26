@@ -96,6 +96,12 @@ CEMSWaveEx::Serialize( BYTE*& abyData )
 	}
 	catch( ... )
 	{
+		if( abyDataTemp )
+		{
+			delete[] abyDataTemp;
+			abyDataTemp = 0;
+		}
+
 		if( abyData )
 		{
 			delete[] abyData;

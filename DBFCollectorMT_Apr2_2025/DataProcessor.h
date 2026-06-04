@@ -71,7 +71,7 @@ class CEMSDataProcessor : public CEMSThread, public CApiObjBase
 		CEMSCriticalSection		m_oCSFreeObjs;
 
 		//CEMSPointerList<CEMSRawBuffObj>     m_lstFreeBuffObjs;
-		CEMSPointerList<CEMSRawBuffObj>&     m_lstFreeBuffObjs;
+		CEMSPointerList<CEMSRawBuffObj>*	m_lstFreeBuffObjs;
 
 		CEMSPointerList<CEMSRawBuffObj>     m_lstUsedBuffObjs;
 		CEMSPointerList<CEMSRawBuffObj>     m_lstIncomingBuffObjs;

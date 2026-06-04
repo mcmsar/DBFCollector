@@ -358,6 +358,7 @@ BOOL WINAPI CtrlHandler(DWORD dwCtrlType)
 	case CTRL_BREAK_EVENT:
 	case CTRL_CLOSE_EVENT:
 	case CTRL_SHUTDOWN_EVENT:
+		printf("Ctrl + C pressed - closing threads...");
 		if (g_hShutdownEvent)
 			SetEvent(g_hShutdownEvent);
 		// Wait for main to finish cleanup rather than sleeping a fixed amount.

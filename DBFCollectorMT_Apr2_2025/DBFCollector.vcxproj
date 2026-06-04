@@ -22,6 +22,7 @@
     <SccProjectName />
     <SccLocalPath />
     <ProjectGuid>{5B77D649-577C-FEA6-1EA3-73B0EAE9F86C}</ProjectGuid>
+    <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
@@ -29,6 +30,7 @@
     <UseOfMfc>false</UseOfMfc>
     <CharacterSet>MultiByte</CharacterSet>
     <PlatformToolset>v143</PlatformToolset>
+    <EnableASAN>false</EnableASAN>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
@@ -69,8 +71,8 @@
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
-    <OutDir>.\Release\</OutDir>
-    <IntDir>.\Release\</IntDir>
+    <OutDir>.\x64\Release\</OutDir>
+    <IntDir>.\x64\Release\</IntDir>
     <LinkIncremental>false</LinkIncremental>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -98,7 +100,7 @@
       <Optimization>MaxSpeed</Optimization>
       <SuppressStartupBanner>true</SuppressStartupBanner>
       <WarningLevel>Level3</WarningLevel>
-      <AdditionalIncludeDirectories>..\DBFPassScheduler;..\3rdParty\microsoft\microsoft sdk\include;..\3rdParty\microsoft\msxml4;..\common\include;..\3rdParty\intel\mkl\include;.\;..\3rdParty\XSD-3.3\include;.\FreqSwitch;..\3rdParty\intel\mkl;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\DBFPassScheduler;..\3rdParty\microsoft\microsoft sdk\include;..\3rdParty\microsoft\msxml4;..\common\include;..\3rdParty\Intel\IPP\2022.3\include;..\3rdParty\intel\mkl\include;.\;..\3rdParty\Apache\xerces\c\libx64\include;..\3rdParty\XSD-3.3\include;.\FreqSwitch;..\3rdParty\intel\mkl;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>WIN32;NDEBUG;_CONSOLE;_WIN32_WINNT=0x400;EMS_USE_INTEL_PP;_64BITS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AssemblerListingLocation>.\Release\</AssemblerListingLocation>
       <PrecompiledHeaderOutputFile>.\Release\DBFCollector.pch</PrecompiledHeaderOutputFile>
@@ -121,12 +123,16 @@
     <Link>
       <SuppressStartupBanner>true</SuppressStartupBanner>
       <SubSystem>Console</SubSystem>
-      <OutputFile>.\Release\DBFCollector.exe</OutputFile>
-      <AdditionalDependencies>odbc32.lib;odbccp32.lib;ws2_32.lib;EMSConfigClientCPP x64.lib;ipps.lib;ippm.lib;Wsnmp32.lib;xerces-c_3.lib;mkl_intel_lp64.lib;mkl_core.lib;mkl_sequential.lib;comsuppw.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <AdditionalLibraryDirectories>..\Common\Library;..\3rdParty\apache\xerces\c\libx64;..\3rdParty\Intel\mkl\;..\3rdParty\Intel\IPP\8.0\intel64\stublib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <OutputFile>.\x64\Release\DBFCollector.exe</OutputFile>
+      <AdditionalDependencies>odbc32.lib;odbccp32.lib;ws2_32.lib;ippi.lib;ipps.lib;ippcore.lib;ippvm.lib;ippcv.lib;Wsnmp32.lib;xerces-c_3.lib;mkl_intel_lp64.lib;mkl_core.lib;mkl_sequential.lib;comsuppw.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>..\Common\Library;..\3rdParty\Apache\xerces\c\libx64\lib;..\3rdParty\Intel\MKL;..\3rdParty\Intel\IPP\2022.3\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <GenerateDebugInformation>false</GenerateDebugInformation>
       <AdditionalOptions>/verbose %(AdditionalOptions)</AdditionalOptions>
     </Link>
+    <PostBuildEvent>
+      <Command>if exist "$(ProjectDir)..\Redist\x64\$(Configuration)\*" xcopy /Y /D "$(ProjectDir)..\Redist\x64\$(Configuration)\*" "$(OutDir)"</Command>
+      <Message>Copying runtime DLLs from Redist\x64\$(Configuration)</Message>
+    </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <ClCompile>
@@ -204,7 +210,7 @@
       <SubSystem>Console</SubSystem>
       <OutputFile>x64\Debug\DBFCollector.exe</OutputFile>
       <AdditionalDependencies>odbc32.lib;odbccp32.lib;ws2_32.lib;ippi.lib;ipps.lib;ippcore.lib;ippvm.lib;ippcv.lib;Wsnmp32.lib;xerces-c_3D.lib;mkl_intel_lp64.lib;mkl_core.lib;mkl_sequential.lib;comsuppw.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <AdditionalLibraryDirectories>..\3rdParty\Intel\IPP\2022.3\lib;..\Common\Library;..\3rdParty\Intel\MKL;..\3rdParty\Apache\xerces\c\libx64\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>..\Common\Library;..\3rdParty\Apache\xerces\c\libx64\lib;..\3rdParty\Intel\MKL;..\3rdParty\Intel\IPP\2022.3\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
     <PostBuildEvent>
       <Command>if exist "$(ProjectDir)..\Redist\x64\$(Configuration)\*" xcopy /Y /D "$(ProjectDir)..\Redist\x64\$(Configuration)\*" "$(OutDir)"</Command>
@@ -336,10 +342,11 @@
     <ClInclude Include="DBFCollectorConfig.h" />
     <ClInclude Include="TimeElapsed.h" />
     <ClInclude Include="ToaFoaProcessor.h" />
+    <ClInclude Include="TransmitQueue.h" />
   </ItemGroup>
   <ItemGroup>
     <Midl Include="..\Common\Include\DataTransmitter.idl">
-	  <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">..\Common\Include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">..\Common\Include</AdditionalIncludeDirectories>
       <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">..\Common\Include</AdditionalIncludeDirectories>
       <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='Release|x64'">..\Common\Include</AdditionalIncludeDirectories>
       <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">..\Common\Include</AdditionalIncludeDirectories>

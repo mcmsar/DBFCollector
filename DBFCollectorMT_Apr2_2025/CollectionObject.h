@@ -113,7 +113,8 @@ private:
 	CEMSQueue<DBFTrackingData >			m_qDBFBeamVectors;
 	//CDBFBeamVectorCalculator	*m_pDBFBeamVectorCalculator;
 
-
+	FILE* m_lpLogFile;
+	int		m_nDispatchCount;
 };
 
 #endif

@@ -4,7 +4,7 @@
 *	S/W Platforms:
 *	H/W Platforms:
 *	Compiler:
-*	Description: 	
+*	Description:
 *
 *	Usage:
 *	Entry Point:
@@ -16,8 +16,8 @@
 *	              Copyright (c) 2006 by EMS Technologies, Inc.,
 *										All rights reserved
 *	This program is unpublished software and contains the trade secrets
-*	and confidential information of EMS Technologies, Inc.  It may not be 
-* reproduced in whole or in part, in any form or by any means whatsoever 
+*	and confidential information of EMS Technologies, Inc.  It may not be
+* reproduced in whole or in part, in any form or by any means whatsoever
 * without the express written permission of EMS Technologies, Inc.
 *
 ********************************************************************/
@@ -55,11 +55,17 @@
 #include <initguid.h>
 #include "datatransmitter.h"
 #include <fstream>
+#include <thread>
+#include "TransmitQueue.h"
 
 
 // {1E47D91E-DE7F-4b86-98BF-B6306E54E403}
-DEFINE_GUID(CLSID_DataXmitter,
-			0x1e47d91e, 0xde7f, 0x4b86, 0x98, 0xbf, 0xb6, 0x30, 0x6e, 0x54, 0xe4, 0x3);
+DEFINE_GUID( CLSID_DataXmitter,
+	0x1e47d91e, 0xde7f, 0x4b86, 0x98, 0xbf, 0xb6, 0x30, 0x6e, 0x54, 0xe4, 0x3 );
+
+// {6B134451-0FF9-47AB-AFAC-8A2DBCBEA593}
+DEFINE_GUID( CLSID_DataXmitter2,
+	0x6b134451, 0x0ff9, 0x47ab, 0xaf, 0xac, 0x8a, 0x2d, 0xbc, 0xbe, 0xa5, 0x93 );
 
 
 using std::string;
@@ -90,6 +96,7 @@ using std::wstring;
 #define COVARIANCE_SIZE     (DBF_NUM_ELEMENTS * DBF_NUM_ELEMENTS)
 #define DBF_LOG20			(20)
 #define DBF_LOG19           (19)
+#define DBF_LOG18           (18)
 #define DBF_LOG17           (17)
 #define DBF_LOG16           (16)
 #define ADC_OFFSET          (524288)
@@ -111,23 +118,24 @@ public:
 
 	~CDigitalBeamFormer( void );
 	CDigitalBeamFormer( CEMSQueue<DBFTrackingData >& );
-	CEMSQueue<DBFTrackingData >&	m_qrefDBFBeamVectors;
-	
-	CDigitalBeamFormer( const CDigitalBeamFormer& x ) ;
+	CEMSQueue<DBFTrackingData >& m_qrefDBFBeamVectors;
 
-	virtual EMS_RESULT Initialize( const TCHAR *cDir);
+	CDigitalBeamFormer( const CDigitalBeamFormer& x );
+
+	virtual EMS_RESULT Initialize( const TCHAR* cDir );
 
 	EMS_RESULT SetRawData( const unsigned char* abytes, int iSize );
 
 	EMSVECTORD Convert2UnitVector( const double dAzimuth, const double dElevation );
 
-	EMS_RESULT BufferStatistics( const unsigned long *clpRawTimeSeries );
+	EMS_RESULT BufferStatistics( const unsigned long* clpRawTimeSeries );
 
-	EMS_RESULT RemoveTimePulse( float *afRawTimeSeries);
+	EMS_RESULT RemoveTimePulse( float* afRawTimeSeries );
 
-	EMS_RESULT ComputeDBFBeamVectors( INT nNumBeams, const EMSCOMPLEX *m_acCovariance);
-	EMS_RESULT PerformEigenDecomposition(const EMSCOMPLEX *m_acCovariance, float* EigenValues, MKL_Complex8 *acEigenVectors);
-	EMS_RESULT PerformEigenVectorNormalization(const MKL_Complex8 *acEigenVectors, EMSCOMPLEXD *acNormalizedEigenVectors);
+	EMS_RESULT ComputeDBFBeamVectors( INT nNumBeams, const EMSCOMPLEX* m_acCovariance );
+	EMS_RESULT ComputeDBFBeamVectorsMVDR( INT nNumBeams, const EMSCOMPLEX* acCovariance );
+	EMS_RESULT PerformEigenDecomposition( const EMSCOMPLEX* m_acCovariance, float* EigenValues, MKL_Complex8* acEigenVectors );
+	EMS_RESULT PerformEigenVectorNormalization( const MKL_Complex8* acEigenVectors, EMSCOMPLEXD* acNormalizedEigenVectors );
 
 	EMS_RESULT DBFprocessorPP( EMSTIME tm ); // Predicted Phase
 	EMS_RESULT DBFprocessorCP( EMSTIME tm ); // Carrier Phase
@@ -137,63 +145,57 @@ public:
 	EMS_RESULT DBFprocessorSUM( EMSTIME tm ); // utput Covariance and trace file update
 	EMS_RESULT InitializeMemory();
 
-	EMS_RESULT DBFCarrierTrack( EMSTIME tm, ULONG *m_ulFreqIndex, float *m_fMaxpower );
+	EMS_RESULT DBFCarrierTrack( EMSTIME tm, ULONG* m_ulFreqIndex, float* m_fMaxpower );
 	EMS_RESULT BiasEstimator( EMSTIME tm );
-	EMS_RESULT ComputeNullingVectors(const EMSCOMPLEX *acNormalizedEigenVectors, const int nNumBeams, EMSCOMPLEX *acDBFBeamVectors);
+	EMS_RESULT ComputeNullingVectors( const EMSCOMPLEX* acNormalizedEigenVectors, const int nNumBeams, EMSCOMPLEX* acDBFBeamVectors );
 	EMS_RESULT ApplyDBFBeamVectors( ULONG m_ulSatellites, bool bTimeFreqFlag, bool bBandwidthFlag );
 	EMS_RESULT ComputeCovariance( ULONG ulNumSamples );
-	EMS_RESULT ComputeChannelData( bool bTimeFreqFlag, bool bBandwidthFlag ); 
+	EMS_RESULT ComputeCovariance_cblas_cherk( ULONG ulNumSamples );
+	EMS_RESULT ComputeChannelData( bool bTimeFreqFlag, bool bBandwidthFlag );
 
-	EMS_RESULT GetADCBuffer( const char *szFilename1, const char *szFilename2, const char *szFilename3, const char *szFilename4 );
+	EMS_RESULT GetADCBuffer( const char* szFilename1, const char* szFilename2, const char* szFilename3, const char* szFilename4 );
 	EMS_RESULT GetPassSchedule( EMSTIME tm );
 	EMS_RESULT SetPassSchedule( EMSDBFPASSRECORDS2* pPassRecords, EMSTIME tm );
 
 	EMS_RESULT ConvertComplex2Real( EMSCOMPLEX* cData, float* fData, ULONG ulNpts );
-	
-	EMS_RESULT SatelliteIdentify(ULONG m_ulSatellites );
 
-	EMS_RESULT	InitializeTOAFOA( EMSTIME timestamp);
-	
+	EMS_RESULT SatelliteIdentify( ULONG m_ulSatellites );
+
+	EMS_RESULT	InitializeTOAFOA( EMSTIME timestamp );
+
 	EMS_RESULT	SeparationAngle( ULONG m_ulSatellites );
 
-	bool	    SatelliteTOAFOA(  int isat );
+	bool	    SatelliteTOAFOA( int isat );
 
 	bool		IdentifyTOAFOA( EMSTIME tm, EMSCOMPLEX* acDBFBeamVectors );
 
-	bool		ReferenceBeaconCheck(  int isat, ULONG* ulFreqIndex, float* fCNR );
+	bool		ReferenceBeaconCheck( int isat, ULONG* ulFreqIndex, float* fCNR );
 
-	bool		CheckBit(  char cHex[36], int iBit );
+	bool		CheckBit( char cHex[36], int iBit );
 
-	WORD        GetProcess( ){ return ( m_aPassSchedule.rec[0].wProcessID ); };
+	WORD        GetProcess() { return (m_aPassSchedule.rec[0].wProcessID); };
 
 	void ProcessAll();
 
-	void Reset( );
+	void Reset();
 
 	EMS_RESULT TestDBFprocessor( int nProcess );
-	int DirectoryList(string sfolder, string sfiletype);
+	int DirectoryList( string sfolder, string sfiletype );
 
-	static int GetNextObjID() {return ms_iNextObjectID++;}
+	static int GetNextObjID() { return ms_iNextObjectID++; }
 
-	static void SetSPIP(std::string SPIP);
-	static void SetSPIP2(std::string ip, int port);
+	static void SetSPIP( std::string SPIP );
+	static void SetSPIP2( std::string SPIP2 );
 
 	void SetFrequencyOffset( float fHz ) { m_fFrequencyOffset = fHz; }
-	float GetFrequencyOffset() const     { return m_fFrequencyOffset; }
+	float GetFrequencyOffset() const { return m_fFrequencyOffset; }
 	//funcs added on Sichun's behalf
-	
+
 protected:
 	HRESULT _InitDT();
-	bool    _InitSocket2();
-	CEMSWaveEx _BuildWaveEx( EMSTIME tm,
-	                         const short* pSamples, ULONG ulSampleCount,
-	                         ULONG ulSampleRate, WORD wSoftwareVersion,
-	                         ULONG ulLutID, ULONG ulSatID, WORD wAntID,
-	                         double dMeanADC, double dStdDevADC,
-	                         float fProbability,
-	                         double dAz, double dEl, double dPlateAz, double dPlateEl,
-	                         bool bBeacon, DWORD dwBeaconFlag );
-	void _OutputWaveEx( EMSTIME tm, ULONG culNumSats, bool bBandwidthFlag);
+	HRESULT _InitDT2();
+	void _OutputWaveEx( EMSTIME tm, ULONG culNumSats, bool bBandwidthFlag );
+	void _TransmitThreadProc( CTransmitQueue& queue, const std::wstring& wsIP, REFCLSID clsid, REFIID iid );
 
 	void _OutputWaveFile( unsigned char* aData, EMSTIME tm, int iSat, bool bBandwidthFlag );
 	EMSTIME _SetActualTime( EMSTIME tm );
@@ -203,21 +205,21 @@ protected:
 	void _OutputCalibData( EMSTIME tm );
 	void _OpenCalibFile();
 
-	int _GetMostCommonIndex( ULONG* arr, int iCount);
+	int _GetMostCommonIndex( ULONG* arr, int iCount );
 
-	void _EMScbPowerSpectr(const EMSCOMPLEX *src, float *spectr,ULONG length);
-	void _EMSsbNormalize( const float *src, float *dst, ULONG n, const float valuesub, const float valuediv );
-	void _EMScbMpy1( const EMSCOMPLEX val, EMSCOMPLEX *dst, ULONG n );
-	void _EMScbAdd2( const EMSCOMPLEX *src, EMSCOMPLEX *dst, ULONG n );
-	void _EMSsbMpy1( const float val, float *dst, ULONG n );
+	void _EMScbPowerSpectr( const EMSCOMPLEX* src, float* spectr, ULONG length );
+	void _EMSsbNormalize( const float* src, float* dst, ULONG n, const float valuesub, const float valuediv );
+	void _EMScbMpy1( const EMSCOMPLEX val, EMSCOMPLEX* dst, ULONG n );
+	void _EMScbAdd2( const EMSCOMPLEX* src, EMSCOMPLEX* dst, ULONG n );
+	void _EMSsbMpy1( const float val, float* dst, ULONG n );
 
-	void _EMSGetPhaseOffsets( const unsigned long *clpRawTimeSeries, ULONG ulSatMaxFreq, double *dPeakPhase );
+	void _EMSGetPhaseOffsets( const unsigned long* clpRawTimeSeries, ULONG ulSatMaxFreq, double* dPeakPhase );
 
-	
-	float _EMSsMean(const float *vec, ULONG len);
-	double _EMSsMeanStdDev(const float *vec, ULONG len, double* pfMean );
-	float _EMSsMaxExt(const float  *vec, int len, ULONG* index);
-	float _EMSsMinExt(const float  *vec, int len, ULONG* index);
+
+	float _EMSsMean( const float* vec, ULONG len );
+	double _EMSsMeanStdDev( const float* vec, ULONG len, double* pfMean );
+	float _EMSsMaxExt( const float* vec, int len, ULONG* index );
+	float _EMSsMinExt( const float* vec, int len, ULONG* index );
 	int   _Power2( ULONG ulInput );
 	int   _Hex2Int( char cHex );
 
@@ -225,31 +227,31 @@ protected:
 
 	void _OutpuRawDigitalDataFile( unsigned char* aData, EMSTIME tm, ULONG culSize );
 
-	BOOL  _BuildDBFSatsTrackingInfo( EMSCOMPLEXD*);
+	BOOL  _BuildDBFSatsTrackingInfo( EMSCOMPLEXD* );
 
 	void  _FormatWAVoutput( int isat );
 
-	EMS_RESULT  _CopyData(  float* fTest, float fValue, ULONG nCount );
+	EMS_RESULT  _CopyData( float* fTest, float fValue, ULONG nCount );
 
 
 
-//private: // methods
+	//private: // methods
 
 private: // data
-	EMSCOMPLEX*				m_acCovariance;     // Covariance matrix
-	EMSCOMPLEX*				m_acMatrix;
-	
+	EMSCOMPLEX* m_acCovariance;     // Covariance matrix
+	EMSCOMPLEX* m_acMatrix;
+
 protected:
-	EMSCOMPLEX*				m_acTemp1;
-	EMSCOMPLEX*				m_acTemp2;
-	EMSCOMPLEX*				m_acTemp3;
-	EMSCOMPLEX*				m_acFFTBeacon;
+	EMSCOMPLEX* m_acTemp1;
+	EMSCOMPLEX* m_acTemp2;
+	EMSCOMPLEX* m_acTemp3;
+	EMSCOMPLEX* m_acFFTBeacon;
 
-	short**					m_nBeam;
+	short** m_nBeam;
 
-	FILE 					*m_lpTraceFile;
-	FILE 					*m_lpOutputFile;
-	FILE*					m_lpCalibFile;
+	FILE* m_lpTraceFile;
+	FILE* m_lpOutputFile;
+	FILE* m_lpCalibFile;
 
 	TCHAR					m_cFilePath[256];
 
@@ -262,14 +264,14 @@ protected:
 	float					m_fMaxPower;
 	float					m_fFrequencyOffset;  // Hz – set from DBFConstellation.xml <FrequencyOffset>
 
-	unsigned long*			m_asRawTimeSeries;
-//	short*					m_asPhaseVector;
-	short*					m_asDBFVector;
+	unsigned long* m_asRawTimeSeries;
+	//	short*					m_asPhaseVector;
+	short* m_asDBFVector;
 
-	float*					m_afRawInputSamples;
-	float*					m_afPowerSpectrum;
-	float*					m_afPowerSpectrum1;
-	
+	float* m_afRawInputSamples;
+	float* m_afPowerSpectrum;
+	float* m_afPowerSpectrum1;
+
 	ULONG					m_ulPhaseBiasFrequency;
 
 	ULONG					m_ulStartPPS;		// One second pulse start sample index
@@ -283,11 +285,17 @@ protected:
 	ULONG					m_ulMaxPowerIndex;  // frequency index of maximum power
 	ULONG					m_ulMaxPowerIndex1;  // frequency index of maximum power
 
-	float*					m_afPulseShape;    // 1 PPS pulse shape
+	float* m_afPulseShape;    // 1 PPS pulse shape
 
-	float*					m_afTemp1;
-	float*					m_afTemp2;
-	float*					m_afChan0;
+	float* m_afTemp1;
+	float* m_afTemp2;
+	float* m_afChan0;
+
+	// Per-channel scratch buffers for the parallelised ComputeChannelData loop.
+	float      ( *m_afChanTemp1 )[DBF_LOG20_SIZE];  // [DBF_NUM_ELEMENTS][DBF_LOG20_SIZE]
+	float      ( *m_afChanTemp2 )[DBF_LOG20_SIZE];  // [DBF_NUM_ELEMENTS][DBF_LOG20_SIZE]
+	EMSCOMPLEX( *m_acChanTemp1 )[DBF_LOG20_SIZE];  // [DBF_NUM_ELEMENTS][DBF_LOG20_SIZE]
+	EMSCOMPLEX( *m_acChanTemp2 )[DBF_LOG19_SIZE];  // [DBF_NUM_ELEMENTS][DBF_LOG19_SIZE]
 
 	CEMSTime                m_oLastPPS;
 
@@ -307,8 +315,13 @@ protected:
 	double					m_dCellPositionY[DBF_MAX_CHANNELS];
 	EMSCOMPLEX				m_acPhaseVector[DBF_MAX_CHANNELS];
 
-	IEMSDataTransmitter*    m_pDataTransmit;
-	SOCKET                  m_sock2;
+	IEMSDataTransmitter* m_pDataTransmit;
+	IEMSDataTransmitter* m_pDataTransmit2;
+
+	CTransmitQueue          m_txQueue;
+	CTransmitQueue          m_txQueue2;
+	std::thread             m_txThread;
+	std::thread             m_txThread2;
 
 	EMSDBFPASSRECORDS2		m_aPassSchedule;
 
@@ -317,8 +330,11 @@ protected:
 	EMSDBFARRAY				m_aDBFplate;
 
 	EMSDBFCALIBRECORD       m_LastCalibRecord;
-		
+
 	EMSDBFTOAFOARECORD		m_aTOAFOA;
+
+	EMSCOMPLEX* m_acAvgCovariance;   // same size as m_acCovariance (COVARIANCE_SIZE)
+	float       m_fCovAvgAlpha;      // forgetting factor, e.g. 0.1–0.3
 
 	bool	m_bOutputOK;
 	bool	m_bEigenFlag;
@@ -332,20 +348,19 @@ protected:
 	//covariance file sent time
 	static CEMSTime				m_oDBFCovarFileLastWriteTime;
 	static BOOL					m_bIsCovarFileSendTime;
-	static std::wstring		m_wsSPIP;
-	static std::string		m_sIP2;
-	static int				m_nPort2;
+	static	std::wstring		m_wsSPIP;
+	static	std::wstring		m_wsSPIP2;
 	bool _IsTimeToCopyBufferPhaseFile( const EMSTIME& oCurrentTime );
 	void _IsTimeToCopyCovarFile( const EMSTIME& oCurrentTime );
-	
 
-	EMSCOMPLEX*		m_acDBFBeamVectors; //[MAX_BEAMS*DBF_NUM_ELEMENTS] 
-	EMSCOMPLEX*		m_acDBFCarrierVectors;//[MAX_BEAMS*DBF_NUM_ELEMENTS]
-	float*			m_fPrevPhaseBias;
-	int*			m_iBeamIDs;
-	int*			m_iPredictedSATIDs;
-	float*			m_fProbability;
-	int*			m_iPrevPassSchedSATIDs;
+
+	EMSCOMPLEX* m_acDBFBeamVectors; //[MAX_BEAMS*DBF_NUM_ELEMENTS] 
+	EMSCOMPLEX* m_acDBFCarrierVectors;//[MAX_BEAMS*DBF_NUM_ELEMENTS]
+	float* m_fPrevPhaseBias;
+	int* m_iBeamIDs;
+	int* m_iPredictedSATIDs;
+	float* m_fProbability;
+	int* m_iPrevPassSchedSATIDs;
 
 	//for debug
 	//CTimeElapsed	m_timeElapsed;
@@ -354,27 +369,24 @@ protected:
 
 	// Process flag establishes input/output and beamformer process	
 	WORD			m_ProcessFlag;
-	int*			m_iOutputBuffer;
+	int* m_iOutputBuffer;
 	ULONG			m_ulOutputLength;
 
 
-	const char*		m_FileNames[MAX_TEST_FILES];
+	const char* m_FileNames[MAX_TEST_FILES];
 
 #ifdef _LOGPHASECORR_
 
-	static void LogPhaseCorrection ( INT64, std::string, ULONG, double, ULONG, EMSCOMPLEX &param1 );
-	private:
-		static FILE *m_pLogPhaseCorrection;		
-		static CEMSCriticalSection		m_csFileHandler;
+	static void LogPhaseCorrection( INT64, std::string, ULONG, double, ULONG, EMSCOMPLEX& param1 );
+private:
+	static FILE* m_pLogPhaseCorrection;
+	static CEMSCriticalSection		m_csFileHandler;
 
 #endif		
-		
-//private: // constants
+
+	//private: // constants
 
 };
 
 
 #endif // INC_EMSDBF
-
-
-

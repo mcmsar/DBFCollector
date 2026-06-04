@@ -2,9 +2,9 @@ name: Build and DLL Test
 
 on:
   push:
-    branches: [ main, master, DBF_2026 ]
+    branches: [ main, master ]
   pull_request:
-    branches: [ main, master, DBF_2026 ]
+    branches: [ main, master ]
   workflow_dispatch:
 
 # All dependencies (Intel IPP 2022.3 import libs/headers, Xerces x64, Intel MKL
